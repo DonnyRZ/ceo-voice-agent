@@ -1,0 +1,150 @@
+.auth-shell {
+  position: relative;
+  display: grid;
+  min-height: 100svh;
+  padding: 105px 16px 36px;
+  place-items: center;
+  background: linear-gradient(135deg, #f1f5f4, #ebf3f3);
+}
+
+.auth-shell > .brand {
+  position: absolute;
+  top: clamp(18px, 1.65vw, 28px);
+  left: clamp(24px, 2.8vw, 48px);
+  width: clamp(195px, 16.65vw, 278px);
+}
+
+.auth-card,
+.account-panel {
+  border: 1px solid var(--border);
+  border-radius: clamp(15px, 1.7vw, 29px);
+  background: var(--surface);
+}
+.auth-card {
+  width: clamp(460px, 43.5vw, 728px);
+  overflow: hidden;
+  box-shadow: 0 5px 16px #163f4010;
+}
+.auth-intro {
+  display: flex;
+  align-items: center;
+  gap: clamp(13px, 1.7vw, 30px);
+  padding: clamp(21px, 2.2vw, 38px) clamp(25px, 2.75vw, 47px);
+  background: #e0f0ed;
+}
+.auth-intro-icon {
+  display: grid;
+  flex: none;
+  width: clamp(46px, 4.95vw, 85px);
+  aspect-ratio: 1.1;
+  place-items: center;
+  border-radius: 18%;
+  background: #c9e8e1;
+  color: var(--teal);
+}
+.auth-intro-icon svg { width: 57%; height: 57%; stroke-width: 1.55; }
+.auth-card h1 {
+  margin: 0;
+  font-size: clamp(25px, 2.45vw, 42px);
+  font-weight: 750;
+  line-height: 1.13;
+  letter-spacing: -.035em;
+}
+.auth-intro p { margin: .3em 0 0; color: var(--muted); }
+.auth-form {
+  position: relative;
+  display: grid;
+  gap: 7px;
+  padding: clamp(19px, 1.9vw, 34px) clamp(25px, 2.75vw, 47px) clamp(24px, 2.4vw, 42px);
+}
+.auth-intro p,
+.auth-form { font-size: clamp(15px, 1.32vw, 23px); }
+.auth-form label { font-weight: 680; }
+.auth-input {
+  display: flex;
+  position: relative;
+  align-items: center;
+  margin-bottom: clamp(10px, 1.2vw, 21px);
+}
+.auth-input-icon {
+  position: absolute;
+  z-index: 1;
+  left: 14px;
+  pointer-events: none;
+  width: 1.25em;
+  height: 1.25em;
+  color: var(--muted);
+}
+.auth-input input {
+  width: 100%;
+  min-height: clamp(45px, 3.4vw, 57px);
+  padding: 8px 14px 8px calc(24px + 1.25em);
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid #adc1c7;
+  border-radius: 11px;
+}
+.auth-input input::placeholder { color: #50656d; }
+.auth-input input#work-password { padding-right: 44px; }
+.auth-password-toggle {
+  position: absolute;
+  right: 4px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--muted);
+}
+.auth-password-toggle svg { width: 21px; height: 21px; }
+.auth-form .ui-button {
+  width: 100%;
+  min-height: clamp(44px, 3.85vw, 65px);
+  margin-top: 8px;
+  font-size: clamp(16px, 1.5vw, 26px);
+}
+.auth-error { margin: 0; color: #a72331; }
+
+.account-page { padding-inline: clamp(0px, .66vw, 12px); }
+.account-heading {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 35px);
+  padding: clamp(17px, 2.15vw, 36px);
+  margin-top: clamp(16px, 2.2vw, 38px);
+  background: #deefec;
+  border-radius: 16px;
+}
+.account-heading h2 { margin: 0; font-weight: 740; font-size: clamp(20px, 2.15vw, 37px); line-height: 1.2; }
+.account-heading p { margin: .34em 0 0; color: var(--muted); font-size: clamp(14px, 1.46vw, 25px); }
+.account-email { display: flex; align-items: center; gap: .42em; overflow-wrap: anywhere; }
+.account-email svg { width: 1.15em; height: 1.15em; flex: none; }
+.account-icon {
+  display: grid;
+  width: clamp(52px, 7.3vw, 124px);
+  aspect-ratio: 1;
+  flex: none;
+  place-items: center;
+  border-radius: 22%;
+  background: #087868;
+  color: white;
+  font-size: clamp(23px, 3vw, 52px);
+  font-weight: 710;
+}
+.account-panel { margin-top: clamp(14px, 1.8vw, 30px); padding: 3px clamp(12px, 2vw, 35px); }
+.account-panel .auth-error { margin-top: 12px; }
+.account-logout {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: clamp(12px, 2.4vw, 42px);
+  padding: 10px 2px;
+  min-height: clamp(54px, 7.25vw, 124px);
+  border-radius: 8px;
+  font-size: clamp(16px, 1.77vw, 30px);
+  font-weight: 680;
+  text-align: left;
+}
+.account-logout:hover:not(:disabled) { color: var(--teal); }
+.account-logout svg { width: 1.25em; height: 1.25em; flex: none; }
+.account-logout svg:last-child { margin-left: auto; color: var(--muted); }

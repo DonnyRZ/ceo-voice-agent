@@ -1,0 +1,149 @@
+@media (max-width: 767px) {
+  .dashboard { gap: clamp(13px, 3.97vw, 18px); }
+  .dashboard-heading { padding-inline: 3px; }
+  .dashboard .page-title { font-size: clamp(25px, 6.64vw, 30px); }
+  .dashboard-meta {
+    display: flex;
+    gap: 0;
+    margin-top: clamp(7px, 1.85vw, 10px);
+    color: var(--muted);
+    font-size: clamp(15px, 4.18vw, 19px);
+    font-weight: 530;
+  }
+  .dashboard-breadcrumb,
+  .dashboard-period svg { display: none; }
+  .dashboard-mobile-division { display: inline; white-space: pre; }
+  .dashboard-period {
+    display: inline-flex;
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+
+  .dashboard-team {
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 4.15vw, 19px);
+    min-height: clamp(72px, 19.9vw, 88px);
+    padding: clamp(11px, 3.64vw, 17px);
+    background: #def0ed;
+    border-radius: 15px;
+  }
+  .dashboard-team-icon, .dashboard-project-icon {
+    display: grid;
+    width: clamp(42px, 13.1vw, 58px);
+    aspect-ratio: 1.06;
+    flex: none;
+    place-items: center;
+    color: var(--teal);
+    background: #ccece4;
+    border-radius: 22%;
+  }
+  .dashboard-team-icon svg, .dashboard-project-icon svg { width: 63%; height: 63%; stroke-width: 1.65; }
+  .dashboard-team div { display: grid; min-width: 0; gap: 2px; overflow-wrap: anywhere; }
+  .dashboard-team strong { font-size: clamp(19px, 5.45vw, 24px); line-height: 1.15; font-weight: 760; }
+  .dashboard-team small {
+    width: fit-content;
+    padding: 3px 9px;
+    background: #caece4;
+    color: #005b51;
+    border-radius: 8px;
+    font-size: clamp(11px, 2.75vw, 13px);
+    font-weight: 650;
+  }
+
+  .dashboard-stats {
+    gap: 0;
+    min-height: clamp(78px, 23.27vw, 100px);
+    align-items: center;
+    padding-inline: 0;
+    background: #def0ed;
+    border-radius: 15px;
+  }
+  .dashboard-stat { min-height: auto; justify-content: center; padding: 0 2px; background: transparent; border-radius: 0; }
+  .dashboard-stat + .dashboard-stat { border-left: 1px solid #b8d9d5; }
+  .dashboard-stat-icon { display: none; }
+  .dashboard-stat div { justify-items: center; gap: 5px; }
+  .dashboard-stat strong { font-size: clamp(24px, 7.55vw, 34px); }
+  .dashboard-stat span {
+    padding: 4px clamp(7px, 3.2vw, 15px);
+    color: var(--status-color);
+    border-radius: 999px;
+    font-size: clamp(10px, 3.12vw, 14px);
+    font-weight: 680;
+  }
+  .dashboard-stat--pending span { background: #ffe1ac; }
+  .dashboard-stat--on_progress span { background: #c9e4fc; }
+  .dashboard-stat--done span { background: #bdeed0; }
+
+  .dashboard-open {
+    gap: clamp(12px, 4.3vw, 20px);
+    min-height: clamp(51px, 14.5vw, 65px);
+    margin-block: 3px 0;
+    padding: 8px clamp(16px, 5.5vw, 24px);
+    background: #006459;
+    color: white;
+    border-radius: 13px;
+  }
+  .dashboard-open:hover { background: #00564d; }
+  .dashboard-open strong, .dashboard-arrow, .dashboard-desktop-calendar { display: none; }
+  .dashboard-mobile-calendar { display: block; }
+  .dashboard-open-icon {
+    width: clamp(25px, 7.0vw, 31px);
+    background: transparent;
+    color: white;
+  }
+  .dashboard-open-icon svg { width: 100%; height: 100%; stroke-width: 1.7; }
+  .dashboard-open-action {
+    width: 100%;
+    min-height: auto;
+    justify-content: space-between;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    font-size: clamp(15px, 4.4vw, 20px);
+    font-weight: 690;
+  }
+  .dashboard-open:hover .dashboard-open-action { background: transparent; }
+  .dashboard-chevron { display: block; width: 1.15em; height: 1.15em; }
+
+  .dashboard-recent {
+    min-height: auto;
+    margin: clamp(6px, 2.5vw, 13px) 0 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+  }
+  .dashboard-recent h2 { margin-bottom: clamp(11px, 4vw, 18px); font-size: clamp(20px, 5.25vw, 24px); }
+  .desktop-recent { display: none; }
+  .mobile-recent { display: block; }
+  .dashboard-projects {
+    margin: 0;
+    padding: 1px clamp(11px, 3.6vw, 17px);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    background: var(--surface);
+    list-style: none;
+  }
+  .dashboard-projects li + li { border-top: 1px solid var(--border); }
+  .dashboard-projects li a {
+    display: flex;
+    min-height: clamp(59px, 17.58vw, 77px);
+    align-items: center;
+    gap: clamp(9px, 3.2vw, 15px);
+    padding-block: 7px;
+    font-size: clamp(14px, 4.0vw, 18px);
+    font-weight: 680;
+    line-height: 1.24;
+    text-decoration: none;
+  }
+  .dashboard-projects li a:hover { color: var(--teal); }
+  .dashboard-project-icon { background: #e1f2ee; width: clamp(38px, 12.4vw, 55px); }
+  .project-arrow { margin-left: auto; width: 19px; height: 19px; color: var(--muted); flex: none; }
+}

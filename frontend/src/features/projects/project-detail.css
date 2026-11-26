@@ -1,0 +1,166 @@
+.project-mobile-description, .project-task-chevron { display: none; }
+
+.project-detail-summary {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.55rem, 1.4vw, 1.4rem);
+  padding: clamp(0.4rem, 0.65vw, 0.75rem) clamp(0.8rem, 1.4vw, 1.65rem);
+  border-radius: 0.95rem;
+  background: var(--project-tint);
+}
+.project-detail-summary .project-hero .project-icon { width: clamp(2.7rem, 4.65vw, 4.7rem); }
+.project-hero-description {
+  flex: 1;
+  border-left: 1px solid #afd5ce;
+  padding-inline-start: clamp(0.55rem, 1.4vw, 1.5rem);
+  font-size: clamp(0.86rem, 1.2vw, 1.15rem);
+  color: #27484f;
+}
+.project-edit-link {
+  min-width: clamp(7.5rem, 15.3vw, 16rem);
+  white-space: nowrap;
+}
+.project-task-panel { margin-top: clamp(0.95rem, 1.6vw, 1.65rem); }
+.project-task-panel h2 {
+  margin-bottom: 0.7rem;
+  font-size: clamp(1.15rem, 1.85vw, 1.75rem);
+  font-weight: 750;
+}
+.project-task-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: start;
+}
+.project-task-table tr { position: relative; }
+.project-task-table th {
+  padding: 0.57rem 0.85rem;
+  background: var(--project-tint);
+  text-align: start;
+  font-size: clamp(0.88rem, 1.22vw, 1.2rem);
+}
+.project-task-table th:first-child {
+  width: 31%;
+  border-radius: 0.6rem 0 0 0.6rem;
+}
+.project-task-table th:last-child {
+  width: 26%;
+  border-radius: 0 0.6rem 0.6rem 0;
+}
+.project-task-table td {
+  padding: 1.17rem 0.85rem;
+  border-bottom: 1px solid #e7eef0;
+  font-size: clamp(0.9rem, 1.4vw, 1.28rem);
+}
+.project-task-title { font-weight: 700; }
+.project-task-title a:hover { text-decoration: underline; }
+.project-task-description { color: #344d56; }
+.project-task-status .status-badge {
+  gap: 0.42rem;
+  min-width: clamp(6.2rem, 14vw, 14rem);
+  border-radius: 0.54rem;
+  justify-content: flex-start;
+  padding: 0.32rem 0.62rem;
+  font-size: 0.96em;
+  font-weight: 650;
+}
+
+@media (min-width: 768px) {
+  .project-detail-page .project-heading { margin-bottom: clamp(1.1rem, 1.65vw, 1.85rem); }
+}
+
+@media (max-width: 767px) {
+  .project-detail-summary {
+    display: grid;
+    gap: 0.95rem;
+    padding: 0;
+    background: none;
+  }
+  .project-hero-description { display: none; }
+  .project-mobile-description {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.56rem 0.8rem;
+    border-radius: 0.85rem;
+    background: var(--project-panel);
+  }
+  .project-mobile-description strong { font-size: 0.9rem; }
+  .project-mobile-description p {
+    font-size: 0.84rem;
+    color: #3b565c;
+    line-height: 1.43;
+  }
+  .project-edit-link { width: 100%; }
+  .project-task-panel {
+    margin-top: 1.15rem;
+    padding: 0;
+    background: transparent;
+  }
+  .project-task-panel h2 {
+    margin: 0 0 0.7rem;
+    font-size: 1.22rem;
+  }
+  .project-task-table {
+    display: block;
+    border-radius: 0.9rem;
+    background: var(--project-panel);
+  }
+  .project-task-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .project-task-table tbody {
+    display: block;
+    padding: 0 0.86rem;
+  }
+  .project-task-table tbody tr {
+    display: grid;
+    align-content: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'title status' 'desc status';
+    gap: 0.08rem 0.5rem;
+    min-height: 3.68rem;
+    border-bottom: 1px solid #e7eef0;
+  }
+  .project-task-table tbody tr:last-child { border-bottom: 0; }
+  .project-task-table td {
+    padding: 0;
+    border: 0;
+  }
+  .project-task-table .project-task-title {
+    grid-area: title;
+    font-size: 0.91rem;
+  }
+  .project-task-title a::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+  }
+  .project-task-table .project-task-description {
+    grid-area: desc;
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
+  .project-task-table .project-task-status {
+    grid-area: status;
+    display: flex;
+    align-items: center;
+    gap: 0.28rem;
+  }
+  .project-task-chevron {
+    display: block;
+    width: 1.02rem;
+  }
+  .project-task-status .status-badge {
+    min-width: 4.5em;
+    justify-content: center;
+    border-radius: 2rem;
+    padding: 0.2rem 0.62rem;
+    font-size: 0.72rem;
+  }
+  .project-task-status .status-badge svg { display: none; }
+}

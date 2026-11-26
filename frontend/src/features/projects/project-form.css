@@ -1,0 +1,186 @@
+.project-form-page { position: relative; }
+.project-form-page .project-heading { margin-bottom: clamp(1rem, 2vw, 2.05rem); }
+.project-create-page .project-heading { padding-inline-end: min(30%, 15rem); }
+.project-create-page .project-division {
+  position: absolute;
+  inset: 0 0 auto auto;
+  min-width: clamp(11.5rem, 19vw, 18rem);
+  justify-content: space-between;
+  gap: clamp(0.32rem, 0.9vw, 0.9rem);
+  border-radius: 0.78rem;
+  padding: 0.45rem 0.82rem;
+}
+.project-create-page .project-division .project-icon {
+  width: clamp(1.8rem, 2.8vw, 2.85rem);
+  background: transparent;
+}
+.project-create-page .project-division .project-icon svg {
+  width: 82%;
+  height: 82%;
+}
+.project-create-page .project-division strong { font-size: clamp(1.02rem, 1.74vw, 1.5rem); }
+.project-create-page .project-division small {
+  padding-inline-start: 0.65rem;
+  border-left: 1px solid #afd5ce;
+  white-space: nowrap;
+  color: #37565b;
+  font-size: clamp(0.75rem, 1.12vw, 1.03rem);
+}
+.project-form { background: transparent; }
+.project-create-page .project-form {
+  display: flex;
+  flex-direction: column;
+  min-height: min(43.2vw, 45.2rem);
+  border-radius: 1.4rem;
+  padding: clamp(1rem, 1.8vw, 1.95rem);
+  background: var(--project-panel);
+}
+.project-form-fields {
+  display: grid;
+  gap: 0.95rem;
+}
+.project-create-page .project-form-fields { gap: clamp(1.05rem, 2.25vw, 2.4rem); }
+.project-form-field {
+  display: grid;
+  align-items: start;
+  gap: 0.32rem;
+  min-width: 0;
+}
+.project-create-page .project-form-field {
+  grid-template-columns: minmax(5.5rem, 16.5%) minmax(0, 1fr);
+  gap: clamp(0.6rem, 1.15vw, 1.2rem);
+}
+.project-form-field label {
+  font-size: clamp(0.9rem, 1.42vw, 1.3rem);
+  font-weight: 700;
+}
+.project-create-page .project-form-field label { padding-block: 0.62rem; }
+.project-form-field input, .project-form-field textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--project-border);
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.65);
+  color: inherit;
+  padding: clamp(0.54rem, 0.8vw, 0.82rem) 0.83rem;
+  font: inherit;
+  font-size: clamp(0.9rem, 1.38vw, 1.27rem);
+  line-height: 1.35;
+}
+.project-form-field textarea {
+  resize: vertical;
+  min-height: 4.8rem;
+}
+.project-create-page .project-form-field textarea { min-height: clamp(6rem, 9vw, 10rem); }
+.project-form-field input[readonly] {
+  background: #e6eff0;
+  color: #253e48;
+}
+.project-form-field :is(input, textarea)[aria-invalid='true'] { border-color: #ba4438; }
+.project-field-error {
+  margin-top: 0.38rem;
+  color: #9b2a21;
+  font-size: 0.84rem;
+}
+.project-form .project-error { margin-top: 1rem; }
+.project-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(0.55rem, 1.15vw, 1.15rem);
+}
+.project-form-actions .project-button { min-width: 8.1rem; }
+.project-create-page .project-form-actions {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  margin-top: auto;
+  border-top: 1px solid #e7eef0;
+  padding-top: clamp(0.85rem, 1.7vw, 1.8rem);
+}
+.project-create-page .project-form-actions .project-button-outline {
+  min-width: 9.25rem;
+  border-color: #5d9188;
+}
+.project-create-page .project-form-actions .project-button-primary { min-width: clamp(10rem, 16vw, 14.3rem); }
+.project-edit-hero {
+  background: var(--project-tint);
+  padding: clamp(0.58rem, 1vw, 1.15rem) clamp(0.65rem, 1.8vw, 1.9rem);
+  border-radius: 1rem;
+  margin-bottom: clamp(0.75rem, 1.25vw, 1.28rem);
+}
+.project-edit-hero h2 { font-size: clamp(1.35rem, 2.4vw, 2.4rem); }
+.project-edit-page .project-form-fields {
+  border-radius: 1.05rem;
+  padding: clamp(0.72rem, 1.45vw, 1.42rem);
+  background: var(--project-panel);
+}
+.project-edit-page .project-form-actions { margin-top: clamp(1.05rem, 2.6vw, 2.75rem); }
+.project-icon-mobile, .project-name-mobile { display: none; }
+
+@media (max-width: 767px) {
+  .project-form-page .project-heading {
+    margin-bottom: 0.88rem;
+    padding-inline-end: 0;
+  }
+  .project-create-page .project-division {
+    position: static;
+    justify-content: flex-start;
+    gap: 0.9rem;
+    min-height: 3.6rem;
+    margin-bottom: 0.82rem;
+    background: #dfeaec;
+  }
+  .project-create-page .project-division .project-icon { width: 2.55rem; }
+  .project-create-page .project-division strong { font-size: 1.5rem; }
+  .project-create-page .project-division small, .project-create-page .project-division-field { display: none; }
+  .project-create-page .project-form {
+    display: block;
+    padding: 0;
+    min-height: auto;
+    background: transparent;
+  }
+  .project-edit-page .project-form-fields, .project-create-page .project-form-fields {
+    padding: 0.72rem 0.82rem 1.1rem;
+    border-radius: 0.85rem;
+    background: var(--project-panel);
+  }
+  .project-create-page .project-form-fields { padding-block-start: 0.53rem; }
+  .project-create-page .project-form-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.33rem;
+  }
+  .project-create-page .project-form-field.project-division-field { display: none; }
+  .project-create-page .project-form-field label { padding: 0; }
+  .project-form-field label {
+    font-size: 0.9rem;
+    line-height: 1.28;
+  }
+  .project-form-field input, .project-form-field textarea {
+    border-radius: 0.53rem;
+    font-size: 1rem;
+  }
+  .project-create-page .project-form-field input { padding-block: 0.35rem; }
+  .project-form-field textarea, .project-create-page .project-form-field textarea {
+    height: 4.4rem;
+    min-height: 4.4rem;
+  }
+  .project-name-desktop, .project-icon-desktop { display: none; }
+  .project-name-mobile, .project-icon-mobile { display: inline; }
+  .project-edit-hero {
+    min-height: 4.34rem;
+    margin-bottom: 1.05rem;
+  }
+  .project-edit-hero h2 { font-size: 1.25rem; }
+  .project-create-page .project-form-actions, .project-edit-page .project-form-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: normal;
+    margin-top: 1.18rem;
+    padding-top: 0;
+    gap: 0.56rem;
+    border: 0;
+  }
+  .project-form-actions .project-button { width: 100%; }
+}

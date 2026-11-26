@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --ink: #08171d;
+  --muted: #405e63;
+  --teal: #00675c;
+  --mint: #d8efeb;
+  --surface: #f9fafb;
+  --border: #dbe7e9;
+  --mobile-nav-height: clamp(66px, 18.2vw, 82px);
+  font-family: 'Inter Variable', Inter, Arial, sans-serif;
+  color: var(--ink);
+  background: #ebf4f5;
+  font-synthesis: none;
+}
+
+body {
+  min-width: 300px;
+  margin: 0;
+  background: linear-gradient(125deg, #e8f2f4, #edf5f5 65%, #e8f3f3);
+}
+
+:focus-visible { outline: 3px solid #087765; outline-offset: 3px; }
+
+button,
+select,
+input[type=month] { cursor: pointer; }
+
+button:disabled,
+input:disabled,
+select:disabled { cursor: not-allowed; }
+
+.page-title {
+  margin: 0;
+  font-size: clamp(30px, 2.85vw, 49px);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -.035em;
+}
+
+.ui-button {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 45px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 17px;
+  color: #fff;
+  background: var(--teal);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.ui-button:hover:not(:disabled) { background: #00574d; }
+.ui-button:disabled { opacity: .68; }
+.ui-button svg { width: 20px; height: 20px; }
+
+.status-badge {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.status-badge svg { width: 1.2em; height: 1.2em; flex: none; }
+.status-badge--pending { color: #8a4600; background: #ffe2ab; }
+.status-badge--on_progress { color: #064d92; background: #d8eaff; }
+.status-badge--done { color: #136b24; background: #d3f5da; }
+
+.load-problem {
+  padding: clamp(14px, 3vw, 28px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+}
+.load-problem p,
+.load-problem h1 { margin-block: 0 14px; }
+.session-status { display: grid; min-height: 100svh; place-items: center; }
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  transform: translateY(-150%);
+  padding: 8px 12px;
+  color: var(--teal);
+  background: #fff;
+  border-radius: 8px;
+}
+.skip-link:focus { transform: translateY(0); }

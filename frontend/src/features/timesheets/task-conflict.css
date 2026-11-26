@@ -1,0 +1,36 @@
+.ts-conflict-banner {
+  gap: clamp(10px, 1.2vw, 21px);
+  padding: clamp(10px, 1.02vw, 18px) clamp(12px, 1.45vw, 25px);
+}
+.ts-conflict-banner > .ts-icon-tile { width: clamp(40px, 4.4vw, 74px); }
+.ts-conflict-banner strong { font-size: clamp(15px, 1.5vw, 25px); font-weight: 730; }
+.ts-conflict-banner p, .ts-conflict-description span { color: #345b62; font-size: clamp(12px, 1.07vw, 18px); }
+.ts-conflict-statuses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; background: none; }
+.ts-conflict-statuses > p { display: grid; justify-items: start; gap: 4px; padding: 12px 18px; border-radius: 12px; background: var(--ts-status-bg); }
+.ts-conflict-statuses > p .ts-status { padding: 0; color: var(--ink); font-size: clamp(15px, 1.32vw, 22px); }
+.ts-conflict-statuses > p > span:first-child { color: #345b62; font-size: clamp(12px, 1.08vw, 18px); }
+.ts-conflict-task { display: none; }
+.ts-conflict-description { order: 1; display: flex; gap: clamp(9px, 1.55vw, 25px); align-items: center; padding: 9px 18px; }
+.ts-conflict-description div { display: grid; min-width: 0; }
+.ts-conflict-description strong { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ts-conflict-review { order: 2; padding: clamp(12px, 1.45vw, 24px); }
+.ts-conflict-review h2 { margin-bottom: 9px; font-size: clamp(19px, 1.72vw, 29px); font-weight: 735; }
+.ts-conflict-review .ts-table td, .ts-conflict-review .ts-table th { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+.ts-conflict-review .ts-table tbody th { background: none; }
+.ts-conflict-review .ts-button { display: flex; margin: 12px 0 0 auto; }
+
+@media (max-width: 767px) {
+  .ts-conflict-description { order: 0; background: #fff0d7; }
+  .ts-conflict-description > .ts-icon-tile { color: #a75200; background: #ffe7b9; }
+  .ts-conflict-statuses { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 11px clamp(12px, 3.25vw, 16px); border: 1px solid var(--border); background: var(--surface); }
+  .ts-conflict-task { display: flex; align-items: center; gap: 12px; padding-bottom: 8px; }
+  .ts-conflict-task strong { display: block; overflow-wrap: anywhere; font-size: 16px; }
+  .ts-conflict-task p { color: var(--muted); font-size: 13px; }
+  .ts-conflict-statuses > p { display: flex; justify-content: space-between; align-items: center; gap: 6px; min-height: 55px; padding: 5px 0; border-top: 1px solid var(--border); border-radius: 0; background: transparent; }
+  .ts-conflict-statuses > p > span:first-child { color: var(--ink); font-size: 14px; font-weight: 640; }
+  .ts-conflict-statuses > p .ts-status { padding: 4px 8px; color: var(--ts-status-text); font-size: 13px; }
+  .ts-conflict-review { padding: 0; background: transparent; }
+  .ts-conflict-review h2, .ts-conflict-review .ts-table { display: none; }
+  .ts-conflict-review .ts-button { width: 100%; margin: 0; color: var(--teal); background: #dbf2eb; }
+  .ts-conflict-review .ts-button:hover { background: #ceede4; }
+}

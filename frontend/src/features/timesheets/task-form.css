@@ -1,0 +1,123 @@
+.ts-form-context { display: none; }
+.ts-form {
+  padding: clamp(16px, 1.86vw, 32px);
+  margin-inline: clamp(0px, .2vw, 4px);
+}
+.ts-form-card-title {
+  margin-bottom: clamp(14px, 1.23vw, 21px);
+  padding-bottom: clamp(10px, .9vw, 15px);
+  border-bottom: 1px solid var(--border);
+  font-size: clamp(18px, 1.92vw, 33px);
+  font-weight: 735;
+  letter-spacing: -.018em;
+}
+.ts-form-fields { display: grid; gap: clamp(9px, .92vw, 16px); }
+.ts-form--new .ts-form-fields { max-width: 80%; }
+.ts-form-row {
+  display: grid;
+  grid-template-columns: 21% minmax(0, 1fr);
+  gap: 4px clamp(12px, 1.4vw, 24px);
+  align-items: center;
+}
+.ts-form-row > label { font-size: clamp(14px, 1.31vw, 22px); font-weight: 680; }
+.ts-form-row--description > label { align-self: start; padding-top: clamp(4px, .52vw, 9px); }
+.ts-form-row .ts-form-tile { display: none; }
+.ts-field-wrap { position: relative; min-width: 0; }
+.ts-field-wrap input:not([type='radio']), .ts-field-wrap textarea, .ts-field-wrap select {
+  width: 100%;
+  min-height: clamp(38px, 3vw, 51px);
+  padding: 5px clamp(10px, 1vw, 17px);
+  color: var(--ink);
+  background: #fbfcfc;
+  border: 1px solid #bfccd4;
+  border-radius: clamp(7px, .7vw, 12px);
+  font-size: clamp(13px, 1.22vw, 21px);
+  line-height: 1.3;
+}
+.ts-field-wrap select { appearance: none; padding-right: 38px; text-overflow: ellipsis; }
+.ts-field-wrap textarea { min-height: clamp(66px, 5.35vw, 90px); resize: vertical; }
+.ts-date-display, .ts-status-display { display: none; }
+.ts-date-display {
+  position: absolute;
+  top: 50%;
+  left: clamp(10px, 1vw, 17px);
+  transform: translateY(-50%);
+  color: var(--ink);
+  font-size: clamp(13px, 1.22vw, 21px);
+  line-height: 1.3;
+  pointer-events: none;
+}
+.ts-field-wrap input[type='date']:not(:focus) { color: transparent; }
+.ts-field-wrap input[type='date']:not(:focus)::-webkit-datetime-edit { color: transparent; }
+.ts-field-wrap input[type='date']:not(:focus) + .ts-date-display { display: block; }
+.ts-form--edit .ts-date-display { left: clamp(34px, 3vw, 51px); }
+.ts-input-icon { position: absolute; inset: 50% auto auto 11px; width: clamp(16px, 1.45vw, 24px); height: clamp(16px, 1.45vw, 24px); transform: translateY(-50%); pointer-events: none; color: var(--teal); }
+.ts-form--new .ts-input-icon, .ts-form--edit .ts-form-row--title .ts-input-icon, .ts-form--edit .ts-form-row--description .ts-input-icon, .ts-form--edit .ts-form-row--status .ts-input-icon { display: none; }
+.ts-form--edit .ts-form-row--date .ts-field-wrap { max-width: min(70%, 690px); }
+.ts-form--edit .ts-form-row--date input, .ts-form--edit .ts-form-row--projectId select, .ts-form--edit .ts-form-row--picId select, .ts-form--new .ts-status-select select { padding-left: clamp(34px, 3vw, 51px); }
+.ts-form--new .ts-form-row--status .ts-input-icon { display: inline; z-index: 1; color: #cb7400; }
+.ts-status-select select { color: var(--ts-status-text); background: var(--ts-status-bg); }
+.ts-form--edit .ts-status-select, .ts-status-options { display: none; }
+.ts-form--edit .ts-status-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(7px, 1vw, 17px); }
+.ts-status-option {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, .62vw, 11px);
+  min-height: clamp(36px, 3.5vw, 59px);
+  padding: 5px clamp(5px, .75vw, 13px);
+  border-radius: clamp(6px, .75vw, 13px);
+  background: var(--ts-status-bg);
+  font-size: clamp(11px, 1.07vw, 18px);
+  line-height: 1.15;
+  cursor: pointer;
+}
+.ts-status-option svg { width: 1.35em; height: 1.35em; flex: none; color: var(--ts-status-icon); }
+.ts-status-option input { margin-left: auto; flex: none; accent-color: var(--ts-status-icon); cursor: pointer; }
+.ts-form-actions { display: flex; align-items: center; gap: clamp(8px, .95vw, 16px); margin-top: clamp(15px, 1.6vw, 27px); padding-top: clamp(11px, 1.12vw, 19px); border-top: 1px solid var(--border); }
+.ts-form--edit .ts-form-actions { justify-content: flex-end; }
+.ts-form-actions .ts-cancel-button { min-width: clamp(86px, 9vw, 151px); }
+.ts-form-actions .ts-button--primary { min-width: clamp(120px, 14.4vw, 242px); }
+.ts-form-actions .ts-button { font-size: clamp(14px, 1.26vw, 22px); }
+.ts-save-icon { display: none; }
+.ts-field-error { grid-column: 2; color: #b62428; font-size: clamp(12px, 1.05vw, 18px); }
+.ts-field-wrap [aria-invalid='true'] { border-color: #d74847; background: #fff1ef; }
+.ts-field-wrap [aria-invalid='true']:focus-visible { outline-color: #b62428; outline-offset: 1px; }
+.ts-save-warning {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.1vw, 18px);
+  padding: clamp(10px, 1vw, 17px) clamp(12px, 1.5vw, 25px);
+  border-radius: clamp(10px, 1vw, 17px);
+  background: #ffedca;
+  color: #874600;
+  font-size: clamp(14px, 1.31vw, 22px);
+  font-weight: 670;
+}
+.ts-save-warning svg { width: 1.4em; height: 1.4em; }
+
+@media (min-width: 768px) {
+  .ts-form--edit .ts-form-fields { gap: clamp(11px, 1.2vw, 21px); }
+  .ts-form--edit .ts-field-wrap input:not([type='radio']), .ts-form--edit .ts-field-wrap select { min-height: clamp(40px, 3.25vw, 56px); }
+  .ts-form--new.ts-form--invalid .ts-form-card-title { display: none; }
+  .ts-form--new.ts-form--invalid .ts-form-fields, .ts-form--failed .ts-form-fields { max-width: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+  .ts-form--new.ts-form--invalid .ts-form-row, .ts-form--failed .ts-form-row { grid-template-columns: minmax(0, 1fr); }
+  .ts-form--new.ts-form--invalid .ts-field-error, .ts-form--failed .ts-field-error { grid-column: 1; }
+  .ts-form--new.ts-form--invalid .ts-form-row--date { grid-area: 1 / 1; }
+  .ts-form--new.ts-form--invalid .ts-form-row--projectId { grid-area: 1 / 2; }
+  .ts-form--new.ts-form--invalid .ts-form-row--title { grid-area: 2 / 1; }
+  .ts-form--new.ts-form--invalid .ts-form-row--picId { grid-area: 2 / 2; }
+  .ts-form--new.ts-form--invalid .ts-form-row--description { grid-column: 1 / -1; }
+  .ts-form--new.ts-form--invalid .ts-form-row--status { grid-column: 1 / -1; }
+  .ts-form--new.ts-form--invalid .ts-status-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 65%; }
+  .ts-form--new.ts-form--invalid .ts-status-select, .ts-form--new.ts-form--invalid .ts-form-row--status .ts-input-icon { display: none; }
+  .ts-form--new.ts-form--invalid .ts-form-actions { justify-content: center; }
+  .ts-form--failed .ts-form-row--title { grid-area: 1 / 1; }
+  .ts-form--failed .ts-form-row--date { grid-area: 1 / 2; }
+  .ts-form--failed .ts-form-row--description { grid-area: 2 / 1 / 4; }
+  .ts-form--failed .ts-form-row--projectId { grid-area: 4 / 1; }
+  .ts-form--failed .ts-form-row--picId { grid-area: 2 / 2; }
+  .ts-form--failed .ts-form-row--status { grid-area: 3 / 2; }
+  .ts-form--failed .ts-form-row--date .ts-field-wrap { max-width: none; }
+  .ts-form--failed .ts-status-select { display: block; }
+  .ts-form--failed .ts-status-options { display: none; }
+}

@@ -1,0 +1,27 @@
+name: Uji Anggota Divisi
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run env:init
+      - run: docker compose up -d --wait db
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - run: npm run test:backend
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Uji desktop dan mobile
+        run: npm run test:e2e
