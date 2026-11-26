@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronRight, LogOut, Mail } from 'lucide-react';
 import { api } from '../../shared/api';
-import { sessionQuery, useSessionUser } from '../../shared/session';
+import { sessionQuery, useCurrentSessionUser } from '../../shared/session';
 import './auth.css';
 
 export function AccountPage() {
-  const user = useSessionUser();
+  const user = useCurrentSessionUser();
   const initials = user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
   const queryClient = useQueryClient();
   const logout = useMutation({
@@ -24,7 +24,7 @@ export function AccountPage() {
         <span className="account-icon" aria-hidden="true">{initials}</span>
         <div>
           <h2>{user.name}</h2>
-          <p>Anggota Divisi {user.divisionName}</p>
+          <p>{user.role === 'superadmin' ? 'Superadmin' : `Anggota Divisi ${user.divisionName}`}</p>
           <p className="account-email"><Mail aria-hidden="true" />{user.email}</p>
         </div>
       </div>

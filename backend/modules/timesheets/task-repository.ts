@@ -64,12 +64,15 @@ async function validateAssignment(
   db: PoolClient,
   divisionId: string,
   { projectId, picId }: Pick<TaskInput, 'projectId' | 'picId'>,
+  taskId?: string,
 ) {
   const { rows: [assignment] } = await db.query<{ project: boolean; pic: boolean }>(`
     SELECT
       EXISTS (SELECT 1 FROM projects WHERE division_id = $1 AND id = $2) AS project,
-      EXISTS (SELECT 1 FROM members WHERE division_id = $1 AND id = $3) AS pic
-  `, [divisionId, projectId, picId]);
+      (app_private.is_active_member($1, $3) OR EXISTS (
+        SELECT 1 FROM tasks WHERE division_id = $1 AND id = $4 AND pic_id = $3
+      )) AS pic
+  `, [divisionId, projectId, picId, taskId ?? null]);
 
   const fields: Record<string, string> = {};
   if (!assignment.project) fields.projectId = 'Pilih proyek yang tersedia di divisi Anda.';
@@ -93,7 +96,7 @@ export async function updateTask(
   id: string,
   input: TaskEdit,
 ) {
-  await validateAssignment(db, divisionId, input);
+  await validateAssignment(db, divisionId, input, id);
   const updated = await db.query(`
     UPDATE tasks
     SET date = $3, title = $4, description = COALESCE($5, description), project_id = $6, pic_id = $7,

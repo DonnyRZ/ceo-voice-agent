@@ -1,0 +1,33 @@
+.admin-task-fields { padding: 6px clamp(6px, 1.35vw, 23px) 0; }
+.admin-task-fields > div { display: grid; grid-template-columns: minmax(115px, .2fr) minmax(0, 1fr); gap: 10px; font-size: var(--admin-font); padding: 9px 0; }
+.admin-task-fields > div + div { border-top: 1px solid var(--border); }
+.admin-task-fields dt { position: relative; color: var(--muted); padding-right: 20px; }
+.admin-task-fields dt::after { content: ':'; position: absolute; right: 12px; }
+.admin-task-fields dd { font-weight: 645; margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.admin-task-fields .admin-tile, .admin-task-fields .admin-mobile-field, .admin-timeline-list { display: none; }
+.admin-task-information .admin-banner { min-height: clamp(67px, 6.9vw, 117px); }
+.admin-task-information .admin-banner .admin-tile { width: clamp(46px, 5.2vw, 88px); }
+.admin-timeline-table { border: 1px solid var(--border); border-radius: 12px; }
+.admin-timeline-table th:first-child, .admin-timeline-table td:first-child { width: 13%; text-align: center; }
+.admin-timeline-table tbody tr:last-child td { border: 0; }
+
+@media (max-width: 767px) {
+  .admin-task-information .admin-banner, .admin-timeline-table { display: none; }
+  .admin-task-fields { padding: 0; }
+  .admin-task-fields > div, .admin-task-fields .admin-mobile-field { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 2px 12px; padding: 8px 2px; }
+  .admin-task-fields > div:first-child { padding-top: 0; }
+  .admin-task-fields > div:last-child { padding-bottom: 0; }
+  .admin-task-fields .admin-tile { display: inline-grid; grid-row: span 2; width: 41px; }
+  .admin-task-fields dt { padding: 0; font-size: clamp(11px, 3vw, 13px); line-height: 1.2; }
+  .admin-task-fields dt::after { content: none; }
+  .admin-task-fields dd { line-height: 1.24; }
+  .admin-timeline { padding: 0; background: transparent; }
+  .admin-timeline h2 { margin: 1px 0 10px; }
+  .admin-timeline-list { display: grid; gap: 11px; padding: 14px 17px; background: var(--admin-pane); border: 1px solid var(--border); border-radius: var(--admin-radius); }
+  .admin-timeline-list li { position: relative; display: flex; align-items: center; gap: 14px; }
+  .admin-timeline-list li::before { content: ''; width: 12px; height: 12px; border: 1.5px solid currentColor; background: var(--admin-pane); border-radius: 50%; z-index: 1; }
+  .admin-timeline-list li:not(:last-child)::after { position: absolute; content: ''; width: 1px; height: calc(100% + 11px); top: 50%; left: 5px; background: #a7d4cb; }
+  .admin-timeline-pending { color: #aa5600; }
+  .admin-timeline-on_progress { color: #0068d0; }
+  .admin-timeline-done { color: #127539; }
+}

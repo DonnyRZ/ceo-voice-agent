@@ -5,7 +5,7 @@ import type { FormEvent } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { api, ApiError } from '../../shared/api';
 import { Brand } from '../../shared/brand';
-import { sessionQuery } from '../../shared/session';
+import { sessionHome, sessionQuery } from '../../shared/session';
 import type { SessionUser } from '../../shared/types';
 import './auth.css';
 import './auth-mobile.css';
@@ -17,10 +17,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const requested = location.state?.from?.pathname;
-  const next = typeof requested === 'string' && requested.startsWith('/') && !requested.startsWith('//')
-    ? requested
-    : '/';
+  const requested: unknown = location.state?.from?.pathname;
 
   const login = useMutation({
     mutationFn: async () => {
@@ -37,7 +34,14 @@ export function LoginPage() {
     },
   });
 
-  if (session.data) return <Navigate to={next} replace />;
+  if (session.data) {
+    const home = sessionHome(session.data.role);
+    const safe = typeof requested === 'string' && requested.startsWith('/') && !requested.startsWith('//')
+      && !requested.includes('\\') && requested !== '/login' && requested !== '/activate';
+    const adminPage = safe && (requested === '/admin' || requested.startsWith('/admin/'));
+    const matchesRole = safe && adminPage === (session.data.role === 'superadmin');
+    return <Navigate to={matchesRole ? requested : home} replace />;
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

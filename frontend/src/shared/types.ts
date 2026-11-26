@@ -1,12 +1,24 @@
 export type Status = 'pending' | 'on_progress' | 'done';
 
-export interface SessionUser {
+interface SessionIdentity {
   id: string;
   name: string;
   email: string;
+}
+
+export interface MemberSessionUser extends SessionIdentity {
+  role: 'member';
   divisionId: string;
   divisionName: string;
 }
+
+export interface SuperadminSessionUser extends SessionIdentity {
+  role: 'superadmin';
+  divisionId: null;
+  divisionName: null;
+}
+
+export type SessionUser = MemberSessionUser | SuperadminSessionUser;
 
 export interface Member {
   id: string;

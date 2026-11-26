@@ -4,8 +4,16 @@ import Fastify from 'fastify';
 import { Pool } from 'pg';
 import type { AppConfig } from './config.js';
 import { ApiError, installErrorHandler } from './http/api-error.js';
+import { adminAccess } from './modules/admin/access.js';
+import { registerAuditAdminRoutes } from './modules/admin/audit/routes.js';
+import { registerDivisionAdminRoutes } from './modules/admin/divisions/routes.js';
+import { registerReportAdminRoutes } from './modules/admin/reports/routes.js';
+import { registerActivationRoute } from './modules/admin/users/activation.js';
+import { createInvitationMailer, type SendInvitation } from './modules/admin/users/invitation-mailer.js';
+import { registerInvitationRoutes, registerUserAdminRoutes } from './modules/admin/users/routes.js';
 import { createAuth, registerAuthRoutes } from './modules/auth/auth.js';
 import { memberAccess } from './modules/auth/member-access.js';
+import { sessionAccess } from './modules/auth/session-access.js';
 import { registerDivisionRoutes } from './modules/divisions/routes.js';
 import { registerProjectRoutes } from './modules/projects/routes.js';
 import { registerTaskRoutes } from './modules/timesheets/routes.js';
@@ -13,11 +21,22 @@ import { registerTaskRoutes } from './modules/timesheets/routes.js';
 type Options = {
   log?: boolean;
   serveFrontend?: boolean;
+  sendInvitation?: SendInvitation;
 };
 
 export async function createApp(config: AppConfig, options: Options = {}) {
   const app = Fastify({
-    logger: options.log ? { redact: ['req.headers.cookie', 'req.headers.authorization'] } : false,
+    logger: options.log ? {
+      redact: ['req.headers.cookie', 'req.headers.authorization'],
+      serializers: {
+        err: (error: Error & { code?: string }) => ({
+          type: error.name,
+          code: error.code,
+          message: 'Kesalahan server.',
+          stack: '',
+        }),
+      },
+    } : false,
     bodyLimit: 64 * 1024,
   });
   const pool = new Pool({
@@ -39,11 +58,24 @@ export async function createApp(config: AppConfig, options: Options = {}) {
   });
 
   const auth = createAuth(pool, config.APP_ORIGIN, config.BETTER_AUTH_SECRET);
-  const requireMember = memberAccess(pool, auth);
+  const requireSession = sessionAccess(pool, auth);
+  const requireMember = memberAccess(requireSession);
+  const requireAdmin = adminAccess(requireSession);
   registerAuthRoutes(app, auth, config.APP_ORIGIN);
+  app.get('/api/session', (request) => requireSession(request, async ({ actor }) => ({ user: actor })));
   registerDivisionRoutes(app, requireMember);
   registerProjectRoutes(app, requireMember);
   registerTaskRoutes(app, requireMember);
+  registerUserAdminRoutes(app, requireAdmin);
+  registerInvitationRoutes(app, requireAdmin, {
+    pool,
+    origin: config.APP_ORIGIN,
+    sendInvitation: options.sendInvitation ?? createInvitationMailer(),
+  });
+  registerActivationRoute(app, pool);
+  registerDivisionAdminRoutes(app, requireAdmin);
+  registerReportAdminRoutes(app, requireAdmin);
+  registerAuditAdminRoutes(app, requireAdmin);
 
   app.get('/api/health', async () => {
     try {

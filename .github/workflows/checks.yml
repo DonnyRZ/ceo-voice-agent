@@ -1,4 +1,4 @@
-name: Uji Anggota Divisi
+name: Uji Ruang Kerja
 
 on: [push, pull_request]
 
@@ -18,9 +18,24 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run env:init
-      - run: docker compose up -d --wait db
+      - name: Siapkan dan lindungi kredensial pengujian
+        run: |
+          npm run env:init
+          node --env-file=.env --input-type=module <<'JS'
+          const keys = ['POSTGRES_PASSWORD', 'DATABASE_APP_PASSWORD', 'DATABASE_ADMIN_URL',
+            'DATABASE_URL', 'BETTER_AUTH_SECRET', 'SEED_PASSWORD', 'SMTP_PASSWORD', 'SUPERADMIN_PASSWORD'];
+          for (const key of keys) {
+            const value = process.env[key];
+            if (value) process.stdout.write(`::add-mask::${value}\n`);
+          }
+          JS
+      - run: docker compose up -d --wait db mailpit
       - run: npm run db:migrate
+      - name: Uji kebijakan PostgreSQL dan audit
+        run: |
+          docker compose exec -T -u root db sh -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends postgresql-17-pgtap'
+          docker compose exec -T db psql -X -U ruang_kerja_admin -d ruang_kerja \
+            -v ON_ERROR_STOP=1 -v app_role=ruang_kerja_app < backend/db/pgtap.sql
       - run: npm run db:seed
       - run: npm run test:backend
       - run: npm run build

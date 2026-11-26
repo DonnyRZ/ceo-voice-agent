@@ -1,0 +1,102 @@
+.mgmt-invite-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  grid-template-areas: 'form stats';
+  align-items: stretch;
+  gap: clamp(0.72rem, 1.25vw, 1.35rem);
+}
+.mgmt-invite-page > .mgmt-alert { margin-bottom: 0.85rem; }
+.mgmt-invite-form { grid-area: form; }
+.mgmt-invite-form .mgmt-alert { margin-top: 0.9rem; }
+.mgmt-invite-form .mgmt-actions { margin-top: clamp(0.84rem, 1.65vw, 1.65rem); }
+.mgmt-invite-stats {
+  grid-area: stats;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(0.4rem, 0.95vw, 0.95rem);
+  padding: clamp(0.56rem, 1.1vw, 1.1rem);
+  background: var(--mgmt-surface);
+  border-radius: 0.85rem;
+}
+.mgmt-invite-email-control { position: relative; display: flex; align-items: center; }
+.mgmt-invite-email-control svg { display: none; }
+.mgmt-invite-email-control input[aria-invalid='true']:focus { outline: 2px solid #b84235; outline-offset: 1px; }
+.mgmt-invite-history { margin-top: clamp(0.75rem, 1.35vw, 1.35rem); }
+.mgmt-invite-history table { width: 100%; text-align: left; }
+.mgmt-invite-history th { background: var(--mgmt-tint); font-weight: 725; }
+.mgmt-invite-history th, .mgmt-invite-history td { padding: 0.5rem 0.65rem; }
+.mgmt-invite-history td { border-bottom: 1px solid #e5eeef; }
+.mgmt-invite-history a:hover { text-decoration: underline; }
+.mgmt-invite-history p { padding: 0.7rem 0.65rem; color: #405b60; }
+.mgmt-invite-success {
+  display: grid;
+  min-height: clamp(19rem, 37vw, 36rem);
+  align-content: center;
+  justify-items: center;
+  gap: clamp(0.9rem, 1.6vw, 1.65rem);
+  text-align: center;
+}
+.mgmt-invite-success-icon {
+  display: grid;
+  place-items: center;
+  width: clamp(4.65rem, 8vw, 7.3rem);
+  aspect-ratio: 1;
+  border-radius: 1.15rem;
+  background: #ddf3ee;
+}
+.mgmt-invite-success-icon img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+.mgmt-invite-success h2 { color: #0e322e; font-size: clamp(1.35rem, 2.5vw, 2.4rem); }
+.mgmt-invite-email {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.58rem 0.9rem;
+  max-width: 100%;
+  border-radius: 0.8rem;
+  background: #e4f3ef;
+  overflow-wrap: anywhere;
+}
+.mgmt-invite-email svg { width: 1.22rem; height: 1.22rem; flex: none; color: #14695f; }
+.mgmt-invite-result-stats { display: none; }
+.mgmt-invite-summary { margin: 0; }
+.mgmt-invite-summary > div {
+  display: grid;
+  grid-template-columns: auto minmax(6.5rem, 0.26fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem;
+}
+.mgmt-invite-summary > div + div { border-top: 1px solid #deebeb; }
+.mgmt-invite-summary .mgmt-tile { width: clamp(2.2rem, 3vw, 3.1rem); }
+.mgmt-invite-summary dt { color: #385960; }
+.mgmt-invite-summary dd { margin: 0; overflow-wrap: anywhere; font-weight: 675; }
+.mgmt-invite-failure > .mgmt-actions { flex-direction: row-reverse; justify-content: flex-start; margin-top: 0.92rem; }
+
+@media (max-width: 767px) {
+  .mgmt-invite-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'stats' 'form'; }
+  .mgmt-invite-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0.67rem 0.4rem; background: #e0f1ed; }
+  .mgmt-invite-form { background: transparent; padding: 0; }
+  .mgmt-invite-form .mgmt-form-fields { background: var(--mgmt-surface); border-radius: 0.85rem; padding: 0.95rem; gap: 1rem; }
+  .mgmt-invite-form .mgmt-actions { margin-top: 0.9rem; }
+  .mgmt-invite-form .mgmt-actions svg { display: none; }
+  .mgmt-invite-email-control svg { display: block; position: absolute; left: 0.65rem; width: 1.1rem; pointer-events: none; color: #386e68; }
+  .mgmt-invite-email-control input { padding-left: 2.18rem; }
+  .mgmt-invite-history { display: none; }
+  .mgmt-invite-success { min-height: 20rem; padding: 1.1rem; }
+  .mgmt-invite-success .mgmt-button { width: 100%; }
+  .mgmt-invite-result-stats { display: grid; width: 100%; }
+  .mgmt-invite-success .mgmt-invite-result-stats { background: none; padding: 0.18rem 0; }
+  .mgmt-invite-result-stats strong { display: none; }
+  .mgmt-invite-failure .mgmt-invite-result-stats { margin-top: 0.8rem; }
+  .mgmt-invite-failure > .mgmt-actions { justify-content: normal; }
+  .mgmt-invite-summary > div {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'icon label' 'icon detail';
+    gap: 0.06rem 0.66rem;
+    padding: 0.46rem 0.1rem;
+  }
+  .mgmt-invite-summary .mgmt-tile { grid-area: icon; }
+  .mgmt-invite-summary dt { grid-area: label; font-size: 0.79rem; }
+  .mgmt-invite-summary dd { grid-area: detail; align-self: center; }
+  .mgmt-invite-summary > div:first-child dd { grid-area: auto; grid-column: 2; grid-row: 1 / span 2; }
+  .mgmt-invite-summary > div:first-child dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}

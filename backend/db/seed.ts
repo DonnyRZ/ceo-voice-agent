@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 import { readConfig } from '../config.js';
 import { createAuth } from '../modules/auth/auth.js';
+import { devAdminEmail, ensureAdminAccount } from './admin-account.js';
 import { divisions, firstTaskId, it, projects, seededTaskId, tasks, users } from './seed-data.js';
 
 if (process.env.NODE_ENV === 'production') {
@@ -37,8 +38,12 @@ try {
     for (const { id, divisionId, name } of accounts) {
       await db.query(`
         INSERT INTO members (id, division_id, name) VALUES ($1, $2, $3)
-        ON CONFLICT (id) DO NOTHING
+        ON CONFLICT (division_id, id) DO NOTHING
       `, [id, divisionId, name]);
+      await db.query(`
+        INSERT INTO account_access (user_id, role, division_id)
+        VALUES ($1, 'member', $2) ON CONFLICT (user_id) DO NOTHING
+      `, [id, divisionId]);
     }
     for (const project of projects) {
       await db.query(`
@@ -65,13 +70,14 @@ try {
       }
     }
     await db.query('COMMIT');
-    console.log('Data contoh divisi IT dan Finance siap.');
   } catch (error) {
     await db.query('ROLLBACK');
     throw error;
   } finally {
     db.release();
   }
+  await ensureAdminAccount(pool, devAdminEmail, password);
+  console.log('Data contoh IT, Finance, dan Superadmin siap.');
 } finally {
   await pool.end();
 }

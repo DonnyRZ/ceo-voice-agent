@@ -40,10 +40,18 @@ try {
         GRANT SELECT, INSERT, UPDATE, DELETE ON
             public."user", public.session, public.account, public.verification TO ${runtime};
         GRANT SELECT ON public.divisions, public.members TO ${runtime};
+        GRANT INSERT, UPDATE ON public.divisions, public.members TO ${runtime};
+        GRANT SELECT, INSERT, UPDATE ON public.account_access TO ${runtime};
+        GRANT SELECT (id, email, role, division_id, expires_at, status, version, updated_at),
+            INSERT, UPDATE ON public.invitations TO ${runtime};
+        GRANT SELECT ON public.audit_log TO ${runtime};
         GRANT SELECT, INSERT, UPDATE ON public.projects, public.tasks TO ${runtime};
         GRANT EXECUTE ON FUNCTION
             app_private.member_division_id(), app_private.active_division_id(),
-            public.task_status_history(uuid) TO ${runtime};
+            app_private.is_superadmin(), app_private.is_active_member(uuid, text),
+            public.task_status_history(uuid), public.invitation_is_open(text),
+            public.complete_invitation(text, text, text, text, text),
+            public.fail_invitation_delivery(uuid, text) TO ${runtime};
     `);
 
     console.info(`${migrations.length} migrasi diterapkan. Akses runtime siap.`);

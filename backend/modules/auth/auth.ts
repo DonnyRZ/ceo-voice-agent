@@ -2,6 +2,9 @@ import { betterAuth } from 'better-auth';
 import { fromNodeHeaders } from 'better-auth/node';
 import type { FastifyInstance } from 'fastify';
 import type { Pool } from 'pg';
+import { inTransaction } from '../../db/transaction.js';
+import { ApiError } from '../../http/api-error.js';
+import { loadIdentity } from './session-access.js';
 
 export function createAuth(pool: Pool, origin: string, secret: string, allowRegistration = false) {
   return betterAuth({
@@ -9,6 +12,16 @@ export function createAuth(pool: Pool, origin: string, secret: string, allowRegi
     baseURL: origin,
     secret,
     trustedOrigins: [origin],
+    databaseHooks: allowRegistration ? undefined : {
+      session: {
+        create: {
+          before: async ({ userId }) => {
+            const identity = await inTransaction(pool, (db) => loadIdentity(db, userId));
+            if (!identity) return false;
+          },
+        },
+      },
+    },
     emailAndPassword: {
       enabled: true,
       disableSignUp: !allowRegistration,
@@ -21,12 +34,16 @@ export type Auth = ReturnType<typeof createAuth>;
 
 export function registerAuthRoutes(app: FastifyInstance, auth: Auth, origin: string) {
   app.route({
-    method: ['GET', 'POST'],
+    method: 'POST',
     url: '/api/auth/*',
     async handler(request, reply) {
+      const url = new URL(request.url, origin);
+      if (url.pathname !== '/api/auth/sign-in/email' && url.pathname !== '/api/auth/sign-out') {
+        throw new ApiError(404, 'Halaman tidak ditemukan.');
+      }
       const headers = fromNodeHeaders(request.headers);
       headers.delete('content-length');
-      const response = await auth.handler(new Request(new URL(request.url, origin), {
+      const response = await auth.handler(new Request(url, {
         method: request.method,
         headers,
         body: request.body == null ? undefined : JSON.stringify(request.body),

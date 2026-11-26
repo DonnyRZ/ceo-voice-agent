@@ -1,0 +1,78 @@
+.mgmt-division-list-stats { margin-bottom: clamp(0.85rem, 1.55vw, 1.65rem); }
+.mgmt-division-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(0.65rem, 1.1vw, 1.2rem);
+  margin-bottom: clamp(0.85rem, 1.55vw, 1.65rem);
+}
+.mgmt-division-search { position: relative; display: flex; align-items: center; min-width: 0; flex: 1; }
+.mgmt-division-search input {
+  width: 100%;
+  min-height: clamp(2.4rem, 3.65vw, 3.5rem);
+  padding: 0.5rem 0.75rem 0.5rem 2.55rem;
+  border: 1px solid var(--mgmt-border);
+  border-radius: 0.68rem;
+  background: #fbfcfc;
+}
+.mgmt-division-search svg { position: absolute; left: 0.75rem; width: 1.25rem; pointer-events: none; color: #3d5b63; }
+.mgmt-division-status-filters, .mgmt-division-status-filters > div { display: flex; align-items: center; gap: clamp(0.4rem, 0.8vw, 0.84rem); }
+.mgmt-division-status-filters span { color: #40575b; white-space: nowrap; }
+.mgmt-division-status-filters button {
+  min-height: 2.4rem;
+  padding: 0.46rem clamp(0.55rem, 0.9vw, 1.04rem);
+  border: 1px solid #dce7e9;
+  border-radius: 0.64rem;
+  background: #fcfdfd;
+  white-space: nowrap;
+}
+.mgmt-division-status-filters button[aria-pressed='true'] { background: #c8eee6; border-color: transparent; color: #065b52; font-weight: 680; }
+.mgmt-add-division { white-space: nowrap; }
+.mgmt-divisions-table ul { list-style: none; padding: 0; }
+.mgmt-divisions-table > p { margin: 1rem 0; }
+.mgmt-division-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  padding: 0.54rem 0.72rem;
+  background: var(--mgmt-tint);
+  border-radius: 0.58rem;
+  font-weight: 720;
+}
+.mgmt-division-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.5fr) minmax(0, 1.06fr) auto;
+  align-items: center;
+  gap: clamp(0.4rem, 0.9vw, 0.9rem);
+  min-height: 3.6rem;
+  padding: 0.48rem 0.72rem;
+  border-bottom: 1px solid #e4eeef;
+}
+.mgmt-division-row:hover { background: #ecf8f3; }
+.mgmt-division-row .mgmt-tile { width: clamp(2.2rem, 3.3vw, 3.4rem); }
+.mgmt-division-chevron { width: 1.12rem; color: #43666c; }
+
+@media (max-width: 767px) {
+  .mgmt-division-list-stats { display: none; }
+  .mgmt-division-tools, .mgmt-division-status-filters { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .mgmt-division-tools { gap: 0.85rem; }
+  .mgmt-division-status-filters > span { font-size: 0.85rem; font-weight: 700; }
+  .mgmt-filter-colon { display: none; }
+  .mgmt-division-status-filters > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mgmt-division-status-filters button { min-height: 2.3rem; font-size: 0.85rem; }
+  .mgmt-division-search input { min-height: 2.75rem; font-size: 1rem; }
+  .mgmt-divisions-table { padding: 0 0.65rem; }
+  .mgmt-division-head { display: none; }
+  .mgmt-division-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'icon title arrow' 'icon state arrow';
+    grid-template-rows: auto auto;
+    gap: 0.2rem 0.65rem;
+    min-height: 4.3rem;
+    padding-inline: 0;
+  }
+  .mgmt-division-row .mgmt-tile { grid-area: icon; align-self: center; width: 2.55rem; }
+  .mgmt-division-row strong { grid-area: title; align-self: end; }
+  .mgmt-division-row .mgmt-badge { grid-area: state; align-self: start; }
+  .mgmt-division-chevron { grid-area: arrow; }
+  .mgmt-divisions-table li:last-child .mgmt-division-row { border-bottom: 0; }
+}

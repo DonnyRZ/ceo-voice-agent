@@ -21,6 +21,11 @@ function TaskFormPage({ taskId }: { taskId?: string }) {
   const projects = useQuery({ queryKey: ['projects'], queryFn: () => api<Project[]>('/api/projects') })
   const members = useQuery({ queryKey: ['members'], queryFn: () => api<Member[]>('/api/members') })
   const failing = [projects, members, ...(taskId ? [task] : [])].find((query) => !query.data && query.isError)
+  const currentTask = task.data
+  const activeMembers = members.data ?? []
+  const choices = currentTask && !activeMembers.some(({ id }) => id === currentTask.picId)
+    ? [...activeMembers, { id: currentTask.picId, name: `${currentTask.picName} (PIC tercatat)` }]
+    : activeMembers
 
   return (
     <section className="ts-page ts-form-page">
@@ -29,7 +34,7 @@ function TaskFormPage({ taskId }: { taskId?: string }) {
         <LoadState error={failing.error instanceof ApiError && failing.error.status === 404 ? 'Tugas tidak ditemukan.' : 'Formulir belum dapat dimuat.'}
           retry={() => { void failing.refetch() }} />
       ) : !projects.data || !members.data || (taskId && !task.data) ? <LoadState /> : (
-        <TaskForm key={taskId ?? 'create'} task={task.data} projects={projects.data} members={members.data} divisionName={user.divisionName} />
+        <TaskForm key={taskId ?? 'create'} task={task.data} projects={projects.data} members={choices} divisionName={user.divisionName} />
       )}
     </section>
   )
