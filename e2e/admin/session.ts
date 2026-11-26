@@ -7,10 +7,10 @@ export function adminFixtureName(label: string) {
 }
 
 export async function signInAdmin(page: Page) {
-  const password = process.env.E2E_ADMIN_PASSWORD ?? process.env.SUPERADMIN_PASSWORD ?? process.env.E2E_PASSWORD ?? process.env.SEED_PASSWORD;
+  const password = process.env.E2E_ADMIN_PASSWORD || process.env.E2E_PASSWORD || process.env.SEED_PASSWORD;
   if (!password) throw new Error("Set the local Superadmin fixture password in SEED_PASSWORD.");
   await page.goto("/login");
-  await submitLogin(page, process.env.E2E_ADMIN_EMAIL ?? process.env.SUPERADMIN_EMAIL ?? "superadmin@ruangkerja.test", password);
+  await submitLogin(page, process.env.E2E_ADMIN_EMAIL || "superadmin@ruangkerja.test", password);
   await expect(page.getByRole("heading", { name: "Dashboard Superadmin" })).toBeVisible();
 }
 

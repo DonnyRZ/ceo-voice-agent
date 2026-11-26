@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { devAdminEmail as adminEmail } from '../db/admin-account.js';
 import { prepareAdminFixture } from './admin-fixture.js';
 
 type Fixture = Awaited<ReturnType<typeof prepareAdminFixture>>;
@@ -13,7 +14,6 @@ const invitationPath = '/api/admin/invitations';
 const usersPath = '/api/admin/users';
 const divisionsPath = '/api/admin/divisions';
 const email = `undangan-${randomUUID().slice(0, 8)}@ruangkerja.test`;
-const adminEmail = process.env.SUPERADMIN_EMAIL ?? 'superadmin@ruangkerja.test';
 
 describe('API undangan dan akses Superadmin', () => {
   let fixture: Fixture;
@@ -28,7 +28,7 @@ describe('API undangan dan akses Superadmin', () => {
         if (links.length === 1) throw new Error('Pengiriman SMTP sementara gagal.');
       },
     });
-    admin = await fixture.login(adminEmail, process.env.SUPERADMIN_PASSWORD);
+    admin = await fixture.login(adminEmail);
   }, 45_000);
 
   afterAll(async () => { await fixture?.close(); });

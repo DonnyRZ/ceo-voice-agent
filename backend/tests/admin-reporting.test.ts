@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { devAdminEmail } from '../db/admin-account.js';
 import { firstTaskId } from '../db/seed-data.js';
 import { prepareAdminFixture } from './admin-fixture.js';
 
@@ -25,7 +26,7 @@ describe('API laporan, divisi, dan audit Superadmin', () => {
 
   beforeAll(async () => {
     fixture = await prepareAdminFixture();
-    admin = await fixture.login(process.env.SUPERADMIN_EMAIL ?? 'superadmin@ruangkerja.test', process.env.SUPERADMIN_PASSWORD);
+    admin = await fixture.login(devAdminEmail);
     member = await fixture.login('doni@ruangkerja.test');
   }, 45_000);
 
@@ -121,7 +122,7 @@ describe('API laporan, divisi, dan audit Superadmin', () => {
     expect(archived.json()).toEqual([expect.objectContaining({ id: result.id, description: 'Terbaru' })]);
     const entry = await fixture.app.inject({ url: '/api/admin/audit?entity=division&action=UPDATE', headers: admin });
     expect(entry.json()).toEqual(expect.arrayContaining([expect.objectContaining({
-      recordId: result.id, actorEmail: process.env.SUPERADMIN_EMAIL ?? 'superadmin@ruangkerja.test',
+      recordId: result.id, actorEmail: devAdminEmail,
       before: expect.objectContaining({ description: 'Awal' }), after: expect.objectContaining({ description: 'Terbaru' }),
     })]));
   });
