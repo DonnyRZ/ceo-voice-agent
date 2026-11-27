@@ -19,11 +19,13 @@ Semua aturan kerja tersimpan dalam [agents/deployments/](../agents/deployments/R
 
 ## Pipeline ringan
 
-`.github/workflows/checks.yml` menjalankan validasi branch, unit/backend/frontend, kebijakan PostgreSQL, typecheck/build, dan tes script. Tidak menginstal atau menjalankan Chromium. Setelah merge ke develop/main, job package membangun image di runner, menjalankan smoke test UI/API/database pada container sementara, serta menguji pengalihan gateway dengan HTTP/SSE nyata. Ini tidak memakai browser atau OpenAI berbayar.
+`.github/workflows/checks.yml` menjalankan validasi branch, unit/backend/frontend, kebijakan PostgreSQL, typecheck/build, dan tes script deployment. Tidak menginstal atau menjalankan Chromium. Frontend dan backend dikompilasi sekali di runner. Hasil build diteruskan sebagai artifact commit yang sama ke job package; Docker hanya memasang dependency produksi dan mengemas hasil yang sudah diperiksa. Setelah merge ke develop/main, image menjalankan smoke test UI/API/database pada container sementara. Ini tidak memakai browser atau OpenAI berbayar.
 
-`.github/workflows/ui-regression.yml` menjalankan Playwright dan pengujian browser secara terpisah pada PR atau manual. Job ini bernama `ui-regression`, bukan `checks`, dan bukan dependensi atau required check jalur deployment. Pengujian browser tetap tersedia untuk pengembangan tanpa memperlambat setiap deployment.
+`.github/workflows/ui-regression.yml` menjalankan Playwright, pengujian alat evaluasi AI, stress test gateway, dan audit dependency secara terpisah pada PR atau manual. pgTAP hanya dijalankan pada checks utama; setup database pada regresi terpisah cukup migrasi dan seed. Job ini bernama `ui-regression`, bukan `checks`, dan bukan dependensi atau required check jalur deployment. Pengujian browser tetap tersedia untuk pengembangan tanpa memperlambat setiap deployment.
 
-VPS menerima image yang sudah diuji; tidak menjalankan npm install/build, browser, atau pengujian aplikasi. Image release memakai SHA dan run/attempt unik. Commit yang sudah digantikan head branch terbaru tidak di-deploy. Concurrency workflow dan `flock` VPS mencegah dua release lingkungan yang sama berjalan bersamaan. Image PostgreSQL client dan gateway dipakai ulang jika sudah tersedia.
+Versi PostgreSQL dan konfigurasi backup diambil dalam satu koneksi preflight. Audit npm dilakukan terpisah dari install dependency. Artifact build otomatis kedaluwarsa dalam satu hari.
+
+VPS menerima image yang sudah diuji; tidak menjalankan npm install/build, browser, atau pengujian aplikasi. Image release memakai SHA dan run/attempt unik. Commit yang sudah digantikan head branch terbaru tidak di-deploy. Checks dan packaging commit yang sudah digantikan dibatalkan otomatis; job deployment yang sudah menyentuh server tidak dibatalkan. Concurrency deployment dan `flock` VPS mencegah dua release lingkungan yang sama berjalan bersamaan. Image PostgreSQL client dan gateway dipakai ulang jika sudah tersedia.
 
 ## Pergantian versi tanpa menghentikan slot aktif
 
@@ -87,7 +89,7 @@ Pemilik/admin membuat Environment `stage` dan `prod`, membatasi branch masing-ma
 
 Sesudah server, database, proxy/domain, backup, dan smoke test siap, aktifkan repository variable `STAGE_DEPLOY_ENABLED=true`, uji stage, lalu `PROD_DEPLOY_ENABLED=true`. Tanpa flag tersebut, package tetap tersedia dan deploy VPS dilewati. Runner mentransfer image lewat SSH, tanpa menyimpan token registry di VPS.
 
-SSH, domain, dan Environment secrets sedang ditunda sesuai arahan pemilik. Pemeriksaan sebelumnya menemukan SSH port 22 ditolak sebelum autentikasi dan akses administrasi Environments/branch protection HTTP 403. Belum ada database, layanan, akun, firewall, atau proxy VPS yang diubah.
+SSH, domain, dan Environment secrets sedang ditunda sesuai arahan pemilik. Pemeriksaan platform terbaru mengonfirmasi `policy.tcp.enabled=false`: akses HTTP/HTTPS terbuka, tetapi jalur TCP environment tidak aktif. Pengguna berhasil SSH dari laptop; penolakan dari workspace bukan bukti layanan SSH VPS mati. Tool perubahan environment saat ini hanya menyediakan pengaturan HTTP/HTTPS. Jalur SSH runner GitHub terpisah dan perlu diuji setelah secrets siap. Akses administrasi Environments/branch protection juga mengembalikan HTTP 403. Belum ada database, layanan, akun, firewall, atau proxy VPS yang diubah.
 
 ## Verifikasi
 
@@ -118,3 +120,12 @@ Smoke database menggunakan dua database pada PostgreSQL sementara, bukan VPS. Uj
 - Uji lokal memakai ulang image aplikasi yang sudah dibangun karena perubahan ini hanya menyentuh deployment/test/rules. Tidak ada panggilan OpenAI berbayar atau perubahan VPS. Bukti ini tidak menyatakan stage/prod sudah aktif.
 
 Gateway tidak di-reload pada rilis rutin karena reload HTTP/1 dapat menutup koneksi pada celah penerimaan permintaan; lihat [laporan upstream Caddy](https://github.com/caddyserver/caddy/issues/8233). Rute berbasis file menggunakan [matcher file resmi Caddy](https://caddyserver.com/docs/caddyfile/matchers#file), tanpa modul tambahan atau layanan berlangganan.
+
+### Audit efisiensi pipeline
+
+- Hapus build frontend/backend dan instalasi dependency development di Docker; image memakai artifact dari build runner yang sama.
+- Hapus instalasi/restart pgTAP dan uji SQL ganda pada workflow regresi UI. Pengujian kebijakan database tetap di checks utama.
+- Pindahkan tes alat bantu pilot AI dan stress test gateway dari jalur rilis ke regresi mendalam. Unit deployment tetap wajib.
+- Pisahkan audit npm dari install dependency; audit tetap tersedia pada regresi mendalam.
+- Gabungkan pembacaan versi PostgreSQL dan metadata backup menjadi satu koneksi, dengan validasi database/ekstensi tetap berjalan.
+- Pertahankan pengujian kode hasil merge karena hasil penggabungan dapat berbeda dari branch PR yang diuji. Backup, migrasi, isolasi data, verifikasi SSH/image, health check, dan perlindungan sesi aktif tetap diperlukan.

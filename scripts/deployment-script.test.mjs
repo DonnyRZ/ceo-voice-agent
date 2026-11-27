@@ -38,8 +38,7 @@ if [[ "$1" == run ]]; then
   if [[ "$*" == *'caddy validate'* ]]; then
     echo validate >> "$TRACE"
     [[ "$MODE" != config-failure || -f "$ROOT/validated" ]] || { touch "$ROOT/validated"; exit 1; }
-  elif [[ "$*" == *'ops/database.mjs version'* ]]; then echo 17
-  elif [[ "$*" == *'ops/database.mjs pg-env'* ]]; then echo PGDATABASE=ceo_voice_agent_stage
+  elif [[ "$*" == *'ops/database.mjs pg-env'* ]]; then printf 'PGVERSION=17\nPGDATABASE=ceo_voice_agent_stage\n'
   elif [[ "$*" == *pg_dump* ]]; then echo backup >> "$TRACE"; echo fixture-backup
   elif [[ "$*" == *db/migrate.js* ]]; then
     echo migrate >> "$TRACE"; [[ "$MODE" != migration-failure ]] || exit 1

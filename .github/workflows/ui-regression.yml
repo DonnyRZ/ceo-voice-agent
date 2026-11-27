@@ -1,4 +1,4 @@
-name: Regresi UI terpisah
+name: Regresi mendalam terpisah
 
 on: [pull_request, workflow_dispatch]
 
@@ -7,6 +7,9 @@ permissions:
 
 jobs:
   ui-regression:
+    concurrency:
+      group: deep-regression-${{ github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -17,7 +20,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
       - name: Siapkan dan lindungi kredensial pengujian
         run: |
           npm run env:init
@@ -30,17 +33,14 @@ jobs:
           }
           JS
       - run: docker compose up -d --wait db mailpit
-      - name: Pasang pgTAP
-        run: |
-          docker compose exec -T -u root db sh -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends postgresql-17-pgtap'
-          docker compose restart db
-          docker compose up -d --wait db
       - run: npm run db:migrate
-      - name: Uji kebijakan PostgreSQL dan audit
-        run: |
-          docker compose exec -T db psql -X -U ruang_kerja_admin -d ruang_kerja \
-            -v ON_ERROR_STOP=1 -v app_role=ruang_kerja_app < backend/db/pgtap.sql
       - run: npm run db:seed
+      - name: Audit dependency terpisah dari deployment
+        run: npm audit --omit=dev
+        continue-on-error: true
+      - run: npm run test:pilot-tools
+      - name: Stress test pergantian proxy
+        run: node --test infra/deploy/gateway-smoke.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser-tools
       - run: npm run test:e2e
