@@ -137,7 +137,7 @@ jobs:
     if: >-
       (needs.package.outputs.environment == 'stage' && vars.STAGE_DEPLOY_ENABLED == 'true') ||
       (needs.package.outputs.environment == 'prod' && vars.PROD_DEPLOY_ENABLED == 'true')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
     timeout-minutes: 20
     environment: ${{ needs.package.outputs.environment }}
     concurrency:
@@ -151,18 +151,13 @@ jobs:
         with:
           ref: ${{ needs.package.outputs.sha }}
           persist-credentials: false
-      - name: Kirim image terverifikasi dan deploy lingkungan
+      - name: Jalankan image terverifikasi pada VPS
         env:
           GH_TOKEN: ${{ github.token }}
-          VPS_HOST: ${{ vars.VPS_HOST }}
-          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
-          VPS_USER: ${{ vars.VPS_USER || 'root' }}
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
           PUBLIC_APP_URL: ${{ vars.APP_URL }}
           RELEASE_IMAGE: ${{ needs.package.outputs.image }}
-          RELEASE_ID: ${{ needs.package.outputs.image_id }}
-          RELEASE_SHA: ${{ needs.package.outputs.sha }}
+          RELEASE_IMAGE_ID: ${{ needs.package.outputs.image_id }}
+          RELEASE_ID: ${{ needs.package.outputs.sha }}
           RELEASE_BRANCH: ${{ needs.package.outputs.branch }}
           RELEASE_ENV: ${{ needs.package.outputs.environment }}
         run: bash infra/deploy/publish.sh

@@ -1,46 +1,47 @@
 #!/usr/bin/env bash
+# Runs on the dedicated VPS runner; builds/tests stay on GitHub-hosted runners.
 set -Eeuo pipefail
 umask 077
 [[ "${PUBLIC_APP_URL:-}" =~ ^https://[a-zA-Z0-9.-]+(:[0-9]+)?/?$ ]] || { echo 'APP_URL HTTPS wajib dikonfigurasi sebelum aktivasi.' >&2; exit 78; }
-[[ "$VPS_HOST" =~ ^[a-zA-Z0-9.-]+$ && "$VPS_USER" =~ ^[a-z_][a-z0-9_-]*$ && "$VPS_PORT" =~ ^[0-9]{1,5}$ ]]
-(( 10#$VPS_PORT > 0 && 10#$VPS_PORT <= 65535 ))
-[[ "$RELEASE_ENV" =~ ^(stage|prod)$ && "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+[[ "$RELEASE_ENV" =~ ^(stage|prod)$ && "$RELEASE_ID" =~ ^[a-f0-9]{40}$ ]]
+[[ "$GITHUB_REPOSITORY" =~ ^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$ ]]
 [[ "$RELEASE_IMAGE" =~ ^ghcr\.io/[a-z0-9._/-]+:(stage|prod)-sha-([a-f0-9]{40})-[0-9]+-[0-9]+$ ]]
-[[ "${BASH_REMATCH[1]}" == "$RELEASE_ENV" && "${BASH_REMATCH[2]}" == "$RELEASE_SHA" ]]
-[[ "$RELEASE_ID" =~ ^sha256:[a-f0-9]{64}$ ]]
+[[ "${BASH_REMATCH[1]}" == "$RELEASE_ENV" && "${BASH_REMATCH[2]}" == "$RELEASE_ID" ]]
+[[ "${RELEASE_IMAGE%%:*}" == "ghcr.io/${GITHUB_REPOSITORY,,}" ]]
+[[ "$RELEASE_IMAGE_ID" =~ ^sha256:[a-f0-9]{64}$ ]]
 [[ ( "$RELEASE_ENV" == stage && "$RELEASE_BRANCH" == develop ) || ( "$RELEASE_ENV" == prod && "$RELEASE_BRANCH" == main ) ]]
-[[ -n "$VPS_SSH_KEY" && -n "$VPS_KNOWN_HOSTS" ]]
+site="${CEO_DEPLOY_ROOT:-/var/www/ceo-agent}/$RELEASE_ENV"
+[[ -d "$site/shared" ]] || { echo 'Konfigurasi shared VPS belum disiapkan.' >&2; exit 78; }
 latest=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$RELEASE_BRANCH" --jq '.object.sha')
-[[ "$latest" == "$RELEASE_SHA" ]] || { echo 'Versi lama tidak boleh menggantikan commit terbaru.' >&2; exit 1; }
+[[ "$latest" == "$RELEASE_ID" ]] || { echo 'Versi lama tidak boleh menggantikan commit terbaru.' >&2; exit 1; }
 scratch=$(mktemp -d "$RUNNER_TEMP/ceo-deploy.XXXXXX")
-remote_ready=false
+locked=false
 cleanup() {
   code=$?; trap - EXIT
-  if (( code != 0 )) && $remote_ready; then
-    remote_cleanup || echo 'Cleanup release tertunda; akan dicoba pada deploy berikutnya.' >&2
+  if $locked; then
+    bash infra/deploy/cleanup.sh "$RELEASE_ENV" "${RELEASE_IMAGE%%:*}" || echo 'Cleanup image ditunda sampai rilis berikutnya.' >&2
   fi
-  rm -rf -- "$scratch"; docker logout ghcr.io >/dev/null 2>&1 || true
+  rm -rf -- "$scratch"
   exit "$code"
 }
 trap cleanup EXIT
-printf '%s\n' "$VPS_SSH_KEY" > "$scratch/key"
-printf '%s\n' "$VPS_KNOWN_HOSTS" > "$scratch/known_hosts"
-unset VPS_SSH_KEY VPS_KNOWN_HOSTS
-ssh_args=(-F /dev/null -i "$scratch/key" -p "$VPS_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$scratch/known_hosts" -o ConnectTimeout=15)
-remote="$VPS_USER@$VPS_HOST"
-release="/opt/ceo-voice-agent/releases/$RELEASE_SHA"
-remote_cleanup() {
-  ssh "${ssh_args[@]}" "$remote" "if test -d '/opt/ceo-voice-agent/$RELEASE_ENV'; then flock -n '/opt/ceo-voice-agent/$RELEASE_ENV/deploy.lock' bash '$release/cleanup.sh' '$RELEASE_ENV' '${RELEASE_IMAGE%%:*}'; fi"
-}
+# Do not leave the automatic token in the VPS user's persistent Docker credentials.
+export DOCKER_CONFIG="$scratch/docker"
+mkdir -m 700 "$DOCKER_CONFIG"
+exec 8>"$site/deploy.lock"; flock -n 8 || exit 75
+locked=true
+bash infra/deploy/cleanup.sh "$RELEASE_ENV" "${RELEASE_IMAGE%%:*}"
 printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 docker pull "$RELEASE_IMAGE"
-[[ $(docker image inspect "$RELEASE_IMAGE" --format '{{.Id}}') == "$RELEASE_ID" ]]
-# No registry token or application .env is sent to GitHub/VPS command arguments.
-tar -C infra/deploy -czf - compose.yaml gateway.compose.yaml deploy.sh gateway.sh database.sh cleanup.sh assets.sh assets-cleanup.py | ssh "${ssh_args[@]}" "$remote" "umask 077; mkdir -p '$release'; tar -xzf - -C '$release'"
-remote_ready=true
-remote_cleanup
-docker save "$RELEASE_IMAGE" | gzip -1 | ssh "${ssh_args[@]}" "$remote" 'gzip -dc | docker load'
+[[ $(docker image inspect "$RELEASE_IMAGE" --format '{{.Id}}') == "$RELEASE_IMAGE_ID" ]]
 latest=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$RELEASE_BRANCH" --jq '.object.sha')
-[[ "$latest" == "$RELEASE_SHA" ]] || { echo 'Commit baru ditemukan; aplikasi VPS tidak diganti.' >&2; exit 1; }
-ssh "${ssh_args[@]}" "$remote" "bash '$release/deploy.sh' '$RELEASE_ENV' '$RELEASE_IMAGE' '$RELEASE_ID'"
+[[ "$latest" == "$RELEASE_ID" ]] || { echo 'Commit baru ditemukan; aplikasi VPS tidak diganti.' >&2; exit 1; }
+rm -rf -- "$DOCKER_CONFIG"; unset DOCKER_CONFIG GH_TOKEN
+release="$site/releases/$RELEASE_ID"
+mkdir -p "$release"
+for file in compose.yaml gateway.compose.yaml deploy.sh gateway.sh database.sh cleanup.sh assets.sh assets-cleanup.py config.sh; do
+  install -m 600 "infra/deploy/$file" "$release/$file"
+done
+# FD 8 stays locked throughout deploy; deploy.sh reuses it rather than relocking.
+CEO_DEPLOY_LOCK_HELD=true bash "$release/deploy.sh" "$RELEASE_ENV" "$RELEASE_IMAGE" "$RELEASE_IMAGE_ID"
 curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-connrefused --max-time 10 "${PUBLIC_APP_URL%/}/api/health"
