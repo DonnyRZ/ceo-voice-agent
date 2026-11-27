@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { existsSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { chromium } from '@playwright/test';
 import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
@@ -148,8 +147,7 @@ test('Chromium intercepts the one-shot response and resumes the page fetch with 
     let capture;
     try {
       browser = await chromium.launch({ headless: true, timeout: 10_000, args: ['--no-sandbox'],
-        executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
-          ?? (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined) });
+        executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE });
       const page = await browser.newPage();
       page.setDefaultNavigationTimeout(8_000);
       capture = await observePilotDelivery(page, { ...options, origin: localOrigin });

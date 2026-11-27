@@ -92,6 +92,8 @@ Hasil verifikasi 27 November 2026: 244 tes backend, 8 tes frontend, 40 tes tool/
 
 CI awal main menemukan timeout pada uji intersepsi browser yang lulus di develop. Harness sekarang membatasi launch/navigasi/fetch, memberi waktu untuk cleanup, dan menutup koneksi server uji. Pemeriksaan kesamaan byte WAV tidak diubah. Kasus Chromium tersebut lulus dalam 12 pengulangan lokal setelah perbaikan.
 
+Log CI kemudian memperlihatkan timeout terjadi saat launch Chromium sistem. Pemilihan otomatis browser sistem dihapus agar CI menggunakan browser yang dipasang oleh Playwright. Instalasi lokal khusus tetap didukung melalui `PLAYWRIGHT_CHROMIUM_EXECUTABLE`, mengikuti konfigurasi Playwright aplikasi.
+
 ## Status koneksi awal
 
 Pada 27 November 2026 koneksi SSH ke VPS yang diberikan pada port 22 ditolak sebelum autentikasi, termasuk percobaan dari sandbox, dengan akses jaringan tambahan, dan di luar sandbox. HTTP VPS memberi respons, tetapi itu tidak membuktikan SSH tersedia. Domain stage/prod ditunda oleh pemilik. Belum ada perubahan layanan, database, akun, firewall, atau proxy pada VPS.
