@@ -2,6 +2,8 @@
 
 Domain yang ditetapkan: stage `https://ceo-stage.egiresources.com`, prod `https://ceo.egiresources.com`; keduanya mengarah ke VPS `212.85.24.238`. Sesudah verifikasi DNS, tinjau proxy yang sudah melayani port 80/443 sebelum menambahkan host CEO. Jangan mengganti default site atau konfigurasi aplikasi lain.
 
+Inspeksi server menemukan Nginx native dan Certbot. Untuk pemasangan domain oleh engineer root, ikuti [langkah Nginx dan origin CEO](ceo-domains.md); contoh Caddy hanya berlaku jika proxy publik yang digunakan memang Caddy.
+
 | Branch | Lingkungan | Database di PostgreSQL bersama | Gateway lokal | Slot blue / green |
 | --- | --- | --- | --- | --- |
 | `develop` | stage | `ceo_voice_agent_stage` | `127.0.0.1:4311` | `4321` / `4331` |
