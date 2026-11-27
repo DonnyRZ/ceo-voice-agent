@@ -26,7 +26,8 @@ cleanup() {
   rm -rf -- "$root"
 }
 trap cleanup EXIT
-mkdir "$root/stage"
+mkdir -p "$root/stage/shared"
+cp infra/deploy/compose.stage.env.example "$root/stage/shared/compose.env"
 printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 32)" > "$root/postgres.env"
 docker run -d --name "$name" --env-file "$root/postgres.env" -p 127.0.0.1::5432 pgvector/pgvector:pg17-trixie >/dev/null
 for i in {1..60}; do
@@ -37,8 +38,8 @@ port=$(docker inspect "$name" --format '{{(index (index .NetworkSettings.Ports "
 owner=$(openssl rand -hex 32); app=$(openssl rand -hex 32)
 printf 'CEO_OWNER_PASSWORD=%s\nCEO_APP_PASSWORD=%s\n' "$owner" "$app" > "$root/bootstrap.env"
 docker exec -i --env-file "$root/bootstrap.env" "$name" psql -X -U postgres -d postgres -v environment=stage < infra/deploy/bootstrap-database.sql > "$root/bootstrap.log"
-printf 'DATABASE_URL=postgresql://ceo_stage_app:%s@127.0.0.1:%s/ceo_voice_agent_stage\nAPP_ORIGIN=https://example.invalid\nBETTER_AUTH_SECRET=%s\nDEPLOY_CONTROL_TOKEN=%s\nAI_VOICE_ENABLED=false\n' "$app" "$port" "$(openssl rand -hex 32)" "$(openssl rand -hex 32)" > "$root/stage/runtime.env"
-printf 'DATABASE_ADMIN_URL=postgresql://ceo_stage_owner:%s@127.0.0.1:%s/ceo_voice_agent_stage\n' "$owner" "$port" > "$root/stage/migrate.env"
+printf 'DATABASE_URL=postgresql://ceo_stage_app:%s@127.0.0.1:%s/ceo_voice_agent_stage\nAPP_ORIGIN=https://example.invalid\nBETTER_AUTH_SECRET=%s\nDEPLOY_CONTROL_TOKEN=%s\nAI_VOICE_ENABLED=false\n' "$app" "$port" "$(openssl rand -hex 32)" "$(openssl rand -hex 32)" > "$root/stage/shared/api.env"
+printf 'DATABASE_ADMIN_URL=postgresql://ceo_stage_owner:%s@127.0.0.1:%s/ceo_voice_agent_stage\n' "$owner" "$port" > "$root/stage/shared/migrate.env"
 for attempt in 1 2; do
   char=a
   printf -v sha '%040d' 0; sha=${sha//0/$char}

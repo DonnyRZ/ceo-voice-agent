@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sourced by deploy.sh. The old app continues serving during backup/migration.
-run_db() { docker run --rm --network host --env-file "$site/runtime.env" --env-file "$site/migrate.env" "$image" "$@"; }
+run_db() { docker run --rm --network host --env-file "$RUNTIME_ENV_FILE" --env-file "$MIGRATE_ENV_FILE" "$image" "$@"; }
 backup_and_migrate() {
   local major backup
   # Fetch version and backup connection metadata in one checked DB connection.
@@ -15,6 +15,6 @@ backup_and_migrate() {
   [[ -s "$backup.partial" ]] || return 65
   mv "$backup.partial" "$backup"
   # Bound lock waits so a migration cannot block live writes indefinitely.
-  docker run --rm --network host --env-file "$site/runtime.env" --env-file "$site/migrate.env" \
+  docker run --rm --network host --env-file "$RUNTIME_ENV_FILE" --env-file "$MIGRATE_ENV_FILE" \
     -e 'PGOPTIONS=-c lock_timeout=3000 -c statement_timeout=60000' "$image" node build/backend/db/migrate.js
 }

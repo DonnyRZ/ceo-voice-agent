@@ -9,13 +9,15 @@ expected_id=${3:?ID image wajib diisi}
 [[ "${BASH_REMATCH[1]}" == "$stage" ]] || exit 64
 revision=${BASH_REMATCH[2]}
 [[ "$expected_id" =~ ^sha256:[a-f0-9]{64}$ ]] || exit 64
-site="${CEO_DEPLOY_ROOT:-/opt/ceo-voice-agent}/$stage"
+site="${CEO_DEPLOY_ROOT:-/var/www/ceo-agent}/$stage"
 ops=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-[[ -f "$site/runtime.env" && -f "$site/migrate.env" ]] || exit 78
-exec 9>"$site/deploy.lock"; flock -n 9 || exit 75
-export DEPLOY_ENV="$stage" APP_IMAGE="$image" RUNTIME_ENV_FILE="$site/runtime.env"
-export GATEWAY_PORT=4311 BLUE_PORT=4321 GREEN_PORT=4331
-if [[ "$stage" == prod ]]; then GATEWAY_PORT=4312; BLUE_PORT=4322; GREEN_PORT=4332; fi
+# shellcheck source=infra/deploy/config.sh
+source "$ops/config.sh"
+if [[ "${CEO_DEPLOY_LOCK_HELD:-false}" == true ]]; then
+  [[ $(readlink /proc/self/fd/8) == "$site/deploy.lock" ]] || exit 78
+  flock -n 8 || exit 75
+else exec 9>"$site/deploy.lock"; flock -n 9 || exit 75; fi
+export DEPLOY_ENV="$stage" APP_IMAGE="$image"
 export DEPLOY_UID; DEPLOY_UID=$(id -u)
 export DEPLOY_GID; DEPLOY_GID=$(id -g)
 export GATEWAY_IMAGE='caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d' GATEWAY_CONFIG_DIR="$site/gateway"
@@ -42,7 +44,7 @@ source "$ops/database.sh"
 # shellcheck source=infra/deploy/assets.sh
 source "$ops/assets.sh"
 export APP_PORT; APP_PORT=$(proxy_port "$slot")
-compose=(docker compose --project-name "ceo-$stage-$slot" --file "$ops/compose.yaml")
+compose=(docker compose --env-file "$COMPOSE_ENV_FILE" --project-name "ceo-$stage-$slot" --file "$ops/compose.yaml")
 healthy() { curl --fail --silent --max-time 4 "http://127.0.0.1:$1/api/health" >/dev/null; }
 control() { curl --fail --silent --show-error --max-time 5 --header "@$scratch/header" --request POST "http://127.0.0.1:$1/internal/deployment/$2"; }
 active_count() { control "$1" drain | python3 -c 'import json,sys; v=json.load(sys.stdin)["activeVoiceSessions"]; assert type(v) is int and v>=0; print(v)'; }
@@ -123,8 +125,8 @@ if [[ -n "$old_slot" ]]; then
   if $drained; then
     # No sessions remain: unpin the old slot before graceful process shutdown.
     rm -f "$GATEWAY_CONFIG_DIR/$old_slot.live"
-      docker compose --project-name "ceo-$stage-$old_slot" --file "$ops/compose.yaml" stop --timeout 30 app >/dev/null
-      docker compose --project-name "ceo-$stage-$old_slot" --file "$ops/compose.yaml" rm -f app >/dev/null
+      docker compose --env-file "$COMPOSE_ENV_FILE" --project-name "ceo-$stage-$old_slot" --file "$ops/compose.yaml" stop --timeout 30 app >/dev/null
+      docker compose --env-file "$COMPOSE_ENV_FILE" --project-name "ceo-$stage-$old_slot" --file "$ops/compose.yaml" rm -f app >/dev/null
   else echo 'Versi baru aktif; slot lama dipertahankan sampai sesi selesai. Maksimal dua slot.' >&2; fi
 fi
 echo "Deployment $stage selesai untuk $revision pada slot $slot."

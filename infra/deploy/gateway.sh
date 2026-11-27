@@ -46,7 +46,7 @@ prepare_gateway() {
 switch_gateway() {
   set_gateway_route "$slot" || return $?
   if ! docker inspect "ceo-$stage-gateway" >/dev/null 2>&1; then
-    docker compose --project-name "ceo-$stage-gateway" --file "$ops/gateway.compose.yaml" up -d --no-build gateway
+    docker compose --env-file "$COMPOSE_ENV_FILE" --project-name "ceo-$stage-gateway" --file "$ops/gateway.compose.yaml" up -d --no-build gateway
   fi
 }
 restore_gateway() {

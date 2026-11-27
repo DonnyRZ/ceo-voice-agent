@@ -10,9 +10,10 @@ const previous = `ghcr.io/test/app:stage-sha-${old}-1-1`;
 function fixture(mode = 'success') {
   const root = mkdtempSync(join(tmpdir(), 'ceo-release-test-'));
   const bin = join(root, 'bin'), site = join(root, 'stage');
-  mkdirSync(bin); mkdirSync(site); mkdirSync(join(site, 'gateway'));
-  writeFileSync(join(site, 'runtime.env'), `DEPLOY_CONTROL_TOKEN=${'d'.repeat(64)}\n`);
-  writeFileSync(join(site, 'migrate.env'), 'DATABASE_ADMIN_URL=test\n');
+  mkdirSync(bin); mkdirSync(site); mkdirSync(join(site, 'gateway')); mkdirSync(join(site, 'shared'));
+  writeFileSync(join(site, 'shared/api.env'), `DEPLOY_CONTROL_TOKEN=${'d'.repeat(64)}\n`, { mode: 0o600 });
+  writeFileSync(join(site, 'shared/migrate.env'), 'DATABASE_ADMIN_URL=test\n', { mode: 0o600 });
+  writeFileSync(join(site, 'shared/compose.env'), 'GATEWAY_PORT=4311\nBLUE_PORT=4321\nGREEN_PORT=4331\n', { mode: 0o600 });
   writeFileSync(join(site, 'active-image'), previous + '\n');
   writeFileSync(join(site, 'active-slot'), 'blue\n');
   writeFileSync(join(site, 'active-commit'), old + '\n');
@@ -124,5 +125,28 @@ test('invalid environment or mutable tag is rejected without server mutations', 
     assert.notEqual(run(f, '../prod').status, 0);
     assert.notEqual(run(f, 'stage', 'ghcr.io/test/app:latest').status, 0);
     assert.equal(existsSync(join(f.root, 'trace')), false);
+  } finally { f.close(); }
+});
+test('publisher lock stays held through the real deployment script without deadlock', () => {
+  const f = fixture();
+  try {
+    const result = spawnSync('/bin/bash', ['-c',
+      'exec 8>"$ROOT/stage/deploy.lock"; flock -n 8; export CEO_DEPLOY_LOCK_HELD=true; exec bash infra/deploy/deploy.sh "$@"',
+      'fixture', 'stage', release, id], { encoding: 'utf8', timeout: 10_000,
+      env: { ...process.env, PATH: `${f.bin}:${process.env.PATH}`, CEO_DEPLOY_ROOT: f.root,
+        ROOT: f.root, TRACE: join(f.root, 'trace'), MODE: f.mode } });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(readFileSync(join(f.site, 'active-slot'), 'utf8').trim(), 'green');
+  } finally { f.close(); }
+});
+test('claiming a publisher lock without the correct descriptor is rejected before changing the app', () => {
+  const f = fixture();
+  try {
+    const result = spawnSync('/bin/bash', ['infra/deploy/deploy.sh', 'stage', release, id], {
+      encoding: 'utf8', env: { ...process.env, CEO_DEPLOY_ROOT: f.root, CEO_DEPLOY_LOCK_HELD: 'true' },
+    });
+    assert.notEqual(result.status, 0);
+    assert.equal(existsSync(join(f.root, 'trace')), false);
+    assert.equal(readFileSync(join(f.site, 'active-slot'), 'utf8').trim(), 'blue');
   } finally { f.close(); }
 });

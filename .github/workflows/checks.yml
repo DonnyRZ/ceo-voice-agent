@@ -6,12 +6,18 @@ on:
   pull_request:
     branches: [develop, main]
   workflow_dispatch:
+    inputs:
+      vps_readiness:
+        description: Periksa VPS secara baca-saja; tanpa build, migrasi, atau deploy
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
   checks:
+    if: github.event_name != 'workflow_dispatch' || !inputs.vps_readiness
     concurrency:
       group: checks-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -137,7 +143,7 @@ jobs:
     if: >-
       (needs.package.outputs.environment == 'stage' && vars.STAGE_DEPLOY_ENABLED == 'true') ||
       (needs.package.outputs.environment == 'prod' && vars.PROD_DEPLOY_ENABLED == 'true')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
     timeout-minutes: 20
     environment: ${{ needs.package.outputs.environment }}
     concurrency:
@@ -151,18 +157,35 @@ jobs:
         with:
           ref: ${{ needs.package.outputs.sha }}
           persist-credentials: false
-      - name: Kirim image terverifikasi dan deploy lingkungan
+      - name: Jalankan image terverifikasi pada VPS
         env:
           GH_TOKEN: ${{ github.token }}
-          VPS_HOST: ${{ vars.VPS_HOST }}
-          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
-          VPS_USER: ${{ vars.VPS_USER || 'root' }}
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-          VPS_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
           PUBLIC_APP_URL: ${{ vars.APP_URL }}
           RELEASE_IMAGE: ${{ needs.package.outputs.image }}
-          RELEASE_ID: ${{ needs.package.outputs.image_id }}
-          RELEASE_SHA: ${{ needs.package.outputs.sha }}
+          RELEASE_IMAGE_ID: ${{ needs.package.outputs.image_id }}
+          RELEASE_ID: ${{ needs.package.outputs.sha }}
           RELEASE_BRANCH: ${{ needs.package.outputs.branch }}
           RELEASE_ENV: ${{ needs.package.outputs.environment }}
         run: bash infra/deploy/publish.sh
+
+  vps-readiness:
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.vps_readiness &&
+      github.repository == 'DonnyRZ/ceo-voice-agent' &&
+      (github.ref_name == 'develop' || github.ref_name == 'main')
+    runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
+    timeout-minutes: 3
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'stage' }}
+    concurrency:
+      group: deploy-${{ github.ref_name == 'main' && 'prod' || 'stage' }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Periksa konfigurasi dan koneksi tanpa mengubah layanan
+        env:
+          DEPLOY_ENV: ${{ github.ref_name == 'main' && 'prod' || 'stage' }}
+          STAGE_DEPLOY_ENABLED: ${{ vars.STAGE_DEPLOY_ENABLED }}
+          PROD_DEPLOY_ENABLED: ${{ vars.PROD_DEPLOY_ENABLED }}
+        run: bash infra/deploy/readiness.sh

@@ -4,7 +4,7 @@ set -Eeuo pipefail
 stage=${1:?Lingkungan wajib diisi}
 repository=${2:?Repository image wajib diisi}
 [[ "$stage" =~ ^(stage|prod)$ && "$repository" =~ ^ghcr\.io/[a-z0-9._/-]+$ ]] || exit 64
-site="${CEO_DEPLOY_ROOT:-/opt/ceo-voice-agent}/$stage"
+site="${CEO_DEPLOY_ROOT:-/var/www/ceo-agent}/$stage"
 [[ -d "$site" ]] || exit 0
 active=''
 [[ ! -f "$site/active-image" ]] || active=$(cat "$site/active-image")
