@@ -1,13 +1,13 @@
 # Gabungkan ke proxy yang sudah ada setelah domain dan konfigurasi VPS diperiksa.
 # Ganti domain di bawah, jangan mengganti konfigurasi situs lain.
-stage.example.com {
+ceo-stage.egiresources.com {
     @internal path /internal/*
     respond @internal 404
     reverse_proxy 127.0.0.1:4311 {
         flush_interval -1
     }
 }
-app.example.com {
+ceo.egiresources.com {
     @internal path /internal/*
     respond @internal 404
     reverse_proxy 127.0.0.1:4312 {

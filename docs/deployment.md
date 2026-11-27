@@ -1,5 +1,7 @@
 # Deployment stage dan prod
 
+Domain yang ditetapkan: stage `https://ceo-stage.egiresources.com`, prod `https://ceo.egiresources.com`; keduanya mengarah ke VPS `212.85.24.238`. Sesudah verifikasi DNS, tinjau proxy yang sudah melayani port 80/443 sebelum menambahkan host CEO. Jangan mengganti default site atau konfigurasi aplikasi lain.
+
 | Branch | Lingkungan | Database di PostgreSQL bersama | Gateway lokal | Slot blue / green |
 | --- | --- | --- | --- | --- |
 | `develop` | stage | `ceo_voice_agent_stage` | `127.0.0.1:4311` | `4321` / `4331` |
@@ -100,6 +102,8 @@ Workspace tidak perlu login lewat Cloud Browser atau memperoleh akses TCP ke VPS
 ## Pemeriksaan runner sebelum domain tersedia
 
 Sesudah perubahan workflow mencapai default branch, jalankan `checks.yml` secara manual pada `develop` atau `main` dengan input `vps_readiness=true`. Job hanya memakai runner VPS untuk memeriksa konfigurasi stage/prod sesuai branch. Tidak ada build, install paket, pull image, migrasi, perubahan data, restart, ataupun deployment. Job memerlukan kedua flag deployment `false`; pemeriksaan port kosong ini khusus tahap sebelum instalasi pertama.
+
+Input tambahan `inspect_ingress=true` menampilkan metadata listener, service proxy, container, routing domain, dan lokasi sertifikat yang dapat dibaca akun runner. Tidak mencetak isi file konfigurasi, private key, atau environment container. Pemeriksaan ini tidak memberi akun runner hak root atau mengubah layanan.
 
 Pemeriksaan mencakup akun runner, ownership/permission file privat, akses Docker/Compose, port, koneksi PostgreSQL owner/runtime, ekstensi, dan hak koneksi lintas database. Query memakai transaksi default baca-saja dengan batas waktu. Output hanya metadata aman; URL, password, dan pesan error mentah tidak dicetak. Pengecekan domain/origin serta SMTP tetap tertunda. Ini bukan pengganti smoke test release sesudah domain tersedia.
 
