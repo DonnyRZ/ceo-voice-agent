@@ -9,5 +9,6 @@
 - Aktivasi deployment menunggu runner VPS, konfigurasi server, GitHub Environments, dan domain siap. Jangan menganggap file contoh sebagai konfigurasi server yang telah terpasang.
 - Runner VPS tidak boleh menjalankan kode PR/fork atau pekerjaan pengujian. Build/pengujian berada di runner GitHub; VPS hanya menerima commit merge yang sudah diverifikasi. Batasi branch Environment dan perlindungan branch sebelum aktivasi.
 - Jangan mengubah situs, firewall, akun, database, atau container aplikasi lain tanpa kebutuhan yang terverifikasi.
+- Sebelum memasang dependency pada VPS bersama, periksa rencana perubahan paket. Jangan menjalankan instalasi yang akan memperbarui PostgreSQL atau merestart layanan bersama sebagai bagian setup/deploy aplikasi; pisahkan ke pekerjaan maintenance yang dijadwalkan.
 
 - Akses HTTP/HTTPS unrestricted tidak membuktikan TCP/SSH tersedia. Periksa metadata kebijakan TCP environment sebelum menyimpulkan layanan SSH VPS bermasalah. Jangan mengubah firewall atau service VPS untuk mengatasi pembatasan executor.

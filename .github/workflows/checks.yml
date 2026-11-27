@@ -6,12 +6,18 @@ on:
   pull_request:
     branches: [develop, main]
   workflow_dispatch:
+    inputs:
+      vps_readiness:
+        description: Periksa VPS secara baca-saja; tanpa build, migrasi, atau deploy
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
   checks:
+    if: github.event_name != 'workflow_dispatch' || !inputs.vps_readiness
     concurrency:
       group: checks-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -161,3 +167,25 @@ jobs:
           RELEASE_BRANCH: ${{ needs.package.outputs.branch }}
           RELEASE_ENV: ${{ needs.package.outputs.environment }}
         run: bash infra/deploy/publish.sh
+
+  vps-readiness:
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.vps_readiness &&
+      github.repository == 'DonnyRZ/ceo-voice-agent' &&
+      (github.ref_name == 'develop' || github.ref_name == 'main')
+    runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
+    timeout-minutes: 3
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'stage' }}
+    concurrency:
+      group: deploy-${{ github.ref_name == 'main' && 'prod' || 'stage' }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Periksa konfigurasi dan koneksi tanpa mengubah layanan
+        env:
+          DEPLOY_ENV: ${{ github.ref_name == 'main' && 'prod' || 'stage' }}
+          STAGE_DEPLOY_ENABLED: ${{ vars.STAGE_DEPLOY_ENABLED }}
+          PROD_DEPLOY_ENABLED: ${{ vars.PROD_DEPLOY_ENABLED }}
+        run: bash infra/deploy/readiness.sh

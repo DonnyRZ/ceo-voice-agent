@@ -13,7 +13,7 @@
 
 Dilarang push langsung ke `develop`/`main` atau PR topic branch langsung ke `main`. Workflow Branch policy memeriksa metadata PR tanpa menjalankan kode PR dengan hak istimewa. Job package memeriksa lewat GitHub API bahwa SHA release berasal dari PR yang sudah di-merge dengan asal/tujuan yang sah; commit direct push ditolak.
 
-**Branch protection tetap diperlukan untuk mencegah push di server GitHub.** Pemilik/admin menerapkan `.github/branch-protection.example.json` ke kedua branch dan menjadikan `checks` serta `branch-policy` wajib. Konfigurasi tersebut mewajibkan PR, berlaku pada admin, menolak force push/penghapusan, dan tidak mewajibkan approval orang lain untuk workflow developer tunggal. Workflow tidak dapat menggantikan kontrol server ini. Integrasi saat ini mendapat HTTP 403 ketika memasang protection; pengaturan tersebut belum terpasang.
+**Branch protection tetap diperlukan untuk mencegah push di server GitHub.** Pemilik/admin menerapkan `.github/branch-protection.example.json` ke kedua branch dan menjadikan `checks` serta `branch-policy` wajib. Konfigurasi tersebut mewajibkan PR, berlaku pada admin, menolak force push/penghapusan, dan tidak mewajibkan approval orang lain untuk workflow developer tunggal. Workflow tidak dapat menggantikan kontrol server ini. API integrasi tetap mendapat HTTP 403 untuk administrasi protection; engineer melaporkan perlindungan kedua branch sudah dipasang melalui akses admin pada 27 November 2026.
 
 Semua aturan kerja tersimpan dalam [agents/deployments/](../agents/deployments/README.md).
 
@@ -95,7 +95,15 @@ Repository ini publik. Batasi izin penulisan workflow, wajibkan approval untuk s
 
 Sesudah runner, konfigurasi shared, database, proxy/domain, backup, dan smoke test siap, aktifkan repository variable `STAGE_DEPLOY_ENABLED=true`, uji stage, lalu `PROD_DEPLOY_ENABLED=true`. Tanpa flag tersebut, package tetap tersedia dan job VPS dilewati. Hapus kebutuhan lama `VPS_SSH_KEY`/`VPS_HOST`/`VPS_PORT`/`VPS_USER`/`VPS_KNOWN_HOSTS` dari setup; workflow tidak menggunakannya.
 
-Workspace tidak perlu login lewat Cloud Browser atau memperoleh akses TCP ke VPS. Akses API integrasi untuk mengubah variables, secrets, runner, dan branch protection masih terbatas; definisi repo bukan bukti konfigurasi GitHub/VPS sudah terpasang. Sampai runner dan domain tersedia, auto-deploy tetap belum diaktifkan. Belum ada perubahan layanan, akun, firewall, proxy, atau database VPS oleh pekerjaan ini.
+Workspace tidak perlu login lewat Cloud Browser atau memperoleh akses TCP ke VPS. Akses API integrasi untuk mengubah variables, secrets, runner, dan branch protection masih terbatas. Engineer melaporkan runner `ceo-agent-srv1667462`, service `ceo-deploy`, file shared, database, dan GitHub protections sudah disiapkan; kedua flag deployment false. Domain/origin, APP_URL, dan SMTP masih tertunda. Kesiapan server diverifikasi melalui pemeriksaan manual runner, bukan dengan menganggap file contoh sebagai konfigurasi yang sudah terpasang. Tidak ada deployment publik yang diaktifkan.
+
+## Pemeriksaan runner sebelum domain tersedia
+
+Sesudah perubahan workflow mencapai default branch, jalankan `checks.yml` secara manual pada `develop` atau `main` dengan input `vps_readiness=true`. Job hanya memakai runner VPS untuk memeriksa konfigurasi stage/prod sesuai branch. Tidak ada build, install paket, pull image, migrasi, perubahan data, restart, ataupun deployment. Job memerlukan kedua flag deployment `false`; pemeriksaan port kosong ini khusus tahap sebelum instalasi pertama.
+
+Pemeriksaan mencakup akun runner, ownership/permission file privat, akses Docker/Compose, port, koneksi PostgreSQL owner/runtime, ekstensi, dan hak koneksi lintas database. Query memakai transaksi default baca-saja dengan batas waktu. Output hanya metadata aman; URL, password, dan pesan error mentah tidak dicetak. Pengecekan domain/origin serta SMTP tetap tertunda. Ini bukan pengganti smoke test release sesudah domain tersedia.
+
+Laporan engineer 27 November 2026 menyatakan setup runner/database selesai. Engineer juga melaporkan instalasi pgvector menarik PostgreSQL 16.15 → 16.16 dan restart otomatis sekitar 8 detik. Hal ini melanggar batas tanpa restart; cluster dilaporkan kembali active. Bukti asli berada pada komputer engineer dan belum dibaca dari workspace ini. Pemeriksaan runner berikutnya tidak memasang paket atau merestart layanan. Jangan mengklaim tidak ada dampak pada aplikasi lain hanya dari status cluster active.
 
 ## Verifikasi
 
