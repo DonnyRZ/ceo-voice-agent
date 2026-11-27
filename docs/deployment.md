@@ -90,6 +90,8 @@ Pada executor dengan proxy CA khusus, build lokal memakai Dockerfile sementara d
 
 Hasil verifikasi 27 November 2026: 244 tes backend, 8 tes frontend, 40 tes tool/script, typecheck, build server, build image produksi non-root, actionlint, dan smoke container kedua lingkungan lulus. Setiap database sementara berhasil menjalankan 19 migrasi dengan owner non-superuser, melayani UI/API, membatasi kontrol sesi dengan token, menolak koneksi role aplikasi ke database lingkungan lain, serta menghasilkan arsip backup yang dapat dibaca. Uji ini tidak memakai API OpenAI berbayar dan tidak menyentuh VPS.
 
+CI awal main menemukan timeout pada uji intersepsi browser yang lulus di develop. Harness sekarang membatasi launch/navigasi/fetch, memberi waktu untuk cleanup, dan menutup koneksi server uji. Pemeriksaan kesamaan byte WAV tidak diubah. Kasus Chromium tersebut lulus dalam 12 pengulangan lokal setelah perbaikan.
+
 ## Status koneksi awal
 
 Pada 27 November 2026 koneksi SSH ke VPS yang diberikan pada port 22 ditolak sebelum autentikasi, termasuk percobaan dari sandbox, dengan akses jaringan tambahan, dan di luar sandbox. HTTP VPS memberi respons, tetapi itu tidak membuktikan SSH tersedia. Domain stage/prod ditunda oleh pemilik. Belum ada perubahan layanan, database, akun, firewall, atau proxy pada VPS.

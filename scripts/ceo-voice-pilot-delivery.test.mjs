@@ -126,7 +126,7 @@ test('a body-read timeout still resumes delivery and closes interception', async
 }));
 
 
-test('Chromium intercepts the one-shot response and resumes the page fetch with identical bytes', { timeout: 20_000 },
+test('Chromium intercepts the one-shot response and resumes the page fetch with identical bytes', { timeout: 45_000 },
   async () => withDirectory(async (directory) => {
     let audioRequests = 0;
     const server = createServer((request, response) => {
@@ -147,18 +147,19 @@ test('Chromium intercepts the one-shot response and resumes the page fetch with 
     let browser;
     let capture;
     try {
-      browser = await chromium.launch({ headless: true, args: ['--no-sandbox'],
+      browser = await chromium.launch({ headless: true, timeout: 10_000, args: ['--no-sandbox'],
         executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
           ?? (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined) });
       const page = await browser.newPage();
+      page.setDefaultNavigationTimeout(8_000);
       capture = await observePilotDelivery(page, { ...options, origin: localOrigin });
       await page.goto(localOrigin);
       const missing = `${localOrigin}${sessionsPath}/example/turns/missing/audio?generation=6`;
-      assert.equal(await page.evaluate(async (url) => (await fetch(url)).status, missing), 404);
+      assert.equal(await page.evaluate(async (url) => (await fetch(url, { signal: AbortSignal.timeout(5_000) })).status, missing), 404);
       capture.target();
       const audioUrl = `${localOrigin}${sessionsPath}/example/turns/sample/audio?generation=7`;
       const received = await page.evaluate(async (url) => {
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: AbortSignal.timeout(5_000) });
         return { status: response.status, bytes: Array.from(new Uint8Array(await response.arrayBuffer())) };
       }, audioUrl);
       assert.equal(received.status, 200);
@@ -173,10 +174,11 @@ test('Chromium intercepts the one-shot response and resumes the page fetch with 
       assert.equal(result.recordings[1].error, undefined);
       assert.deepEqual(await readFile(join(directory, result.recordings[1].recording)), wav);
       assert.equal(audioRequests, 1);
-      assert.equal(await page.evaluate(async () => (await fetch('/')).status), 200);
+      assert.equal(await page.evaluate(async () => (await fetch('/', { signal: AbortSignal.timeout(5_000) })).status), 200);
     } finally {
       await capture?.close();
       await browser?.close();
+      server.closeAllConnections();
       await new Promise((resolve) => server.close(resolve));
     }
   }));
