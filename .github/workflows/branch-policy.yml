@@ -1,7 +1,9 @@
 name: Branch policy
 
 on:
-  pull_request_target:
+  # Run from the PR merge ref so the check is available before this workflow
+  # first reaches the default branch. No PR code is checked out or executed.
+  pull_request:
     branches: [develop, main]
     types: [opened, reopened, synchronize, edited, ready_for_review]
 
