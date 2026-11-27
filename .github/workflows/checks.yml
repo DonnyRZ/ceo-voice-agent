@@ -11,6 +11,10 @@ on:
         description: Periksa VPS secara baca-saja; tanpa build, migrasi, atau deploy
         type: boolean
         default: false
+      inspect_ingress:
+        description: Tambahkan inspeksi proxy/HTTPS baca-saja pada pemeriksaan VPS
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -189,3 +193,6 @@ jobs:
           STAGE_DEPLOY_ENABLED: ${{ vars.STAGE_DEPLOY_ENABLED }}
           PROD_DEPLOY_ENABLED: ${{ vars.PROD_DEPLOY_ENABLED }}
         run: bash infra/deploy/readiness.sh
+      - name: Periksa pemetaan domain dan proxy tanpa mengubah layanan
+        if: inputs.inspect_ingress
+        run: python3 infra/deploy/inspect-ingress.py
