@@ -1,12 +1,37 @@
+# Dependencies and build caches
 node_modules/
 dist/
 coverage/
+.vite/
+*.tsbuildinfo
+/.cache/
+/tmp/
+
+# Test reports, browser sessions, and Voice Agent pilot data
 playwright-report/
 test-results/
+blob-report/
+/playwright/.auth/
+.voice-pilot/
+
+# Local configuration and credentials
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
+
+# Database backups and runtime files
+/backups/
+*.dump
+*.pgdump
+*.sql.gz
 *.log
+*.log.*
+*.pid
+
+# OS metadata
 .DS_Store
+Thumbs.db

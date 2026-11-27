@@ -46,12 +46,21 @@ try {
             INSERT, UPDATE ON public.invitations TO ${runtime};
         GRANT SELECT ON public.audit_log TO ${runtime};
         GRANT SELECT, INSERT, UPDATE ON public.projects, public.tasks TO ${runtime};
+        GRANT SELECT (kind, resource_id, division_id, embedding, model)
+            ON public.work_search_embeddings TO ${runtime};
+        GRANT INSERT ON app_private.ceo_voice_test_events TO ${runtime};
         GRANT EXECUTE ON FUNCTION
             app_private.member_division_id(), app_private.active_division_id(),
-            app_private.is_superadmin(), app_private.is_active_member(uuid, text),
+            app_private.is_superadmin(), app_private.is_ceo(), app_private.is_active_member(uuid, text),
             public.task_status_history(uuid), public.invitation_is_open(text),
             public.complete_invitation(text, text, text, text, text),
-            public.fail_invitation_delivery(uuid, text) TO ${runtime};
+            public.fail_invitation_delivery(uuid, text),
+            public.ceo_work_status_as_of(text, uuid, timestamptz),
+            public.ceo_work_status_history(text, uuid, timestamptz, timestamptz, integer),
+            public.ceo_search_work(text, text, uuid, timestamptz, boolean),
+            public.claim_work_search_embeddings(text, integer),
+            public.complete_work_search_embedding(text, uuid, uuid, text, public.vector),
+            public.retry_work_search_embedding(text, uuid, uuid, integer) TO ${runtime};
     `);
 
     console.info(`${migrations.length} migrasi diterapkan. Akses runtime siap.`);

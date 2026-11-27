@@ -10,7 +10,7 @@ const fields = {
 type Field = keyof typeof fields;
 
 const vocabulary: Record<string, string> = {
-  member: 'Anggota Divisi', superadmin: 'Superadmin', active: 'Aktif', archived: 'Diarsipkan',
+  member: 'Anggota Divisi', superadmin: 'Superadmin', ceo: 'CEO', active: 'Aktif', archived: 'Diarsipkan',
   revoked: 'Akses dicabut', pending: 'Menunggu aktivasi', accepted: 'Aktif', expired: 'Kedaluwarsa',
 };
 

@@ -8,7 +8,10 @@ import type { Auth } from './auth.js';
 type Identity = { id: string; name: string; email: string };
 export type Member = Identity & { role: 'member'; divisionId: string; divisionName: string };
 export type Superadmin = Identity & { role: 'superadmin'; divisionId: null; divisionName: null };
-export type SessionUser = Member | Superadmin;
+export type Ceo = Identity & { role: 'ceo'; divisionId: null; divisionName: null };
+export type SessionUser = Member | Superadmin | Ceo;
+
+type SessionScope = { db: PoolClient; actor: SessionUser; sessionId: string };
 
 export async function loadIdentity(
   db: PoolClient,
@@ -28,7 +31,7 @@ export async function loadIdentity(
     JOIN "user" profile ON profile.id = account.user_id
     LEFT JOIN divisions division ON division.id = account.division_id
     WHERE account.user_id = $1 AND account.state = 'active'
-      AND (account.role = 'superadmin' OR division.status = 'active')
+      AND (account.role IN ('superadmin', 'ceo') OR division.status = 'active')
       AND ($2::text IS NULL OR EXISTS (
         SELECT 1 FROM session
         WHERE id = $2 AND "userId" = $1 AND "expiresAt" > now()
@@ -39,12 +42,13 @@ export async function loadIdentity(
 
 export type RequireSession = <T>(
   request: FastifyRequest,
-  run: (scope: { db: PoolClient; actor: SessionUser }) => Promise<T>,
+  run: (scope: SessionScope) => Promise<T>,
   changeAuthority?: boolean,
+  options?: { readOnly?: boolean },
 ) => Promise<T>;
 
 export function sessionAccess(pool: Pool, auth: Auth): RequireSession {
-  return async (request, run, changeAuthority) => {
+  return async (request, run, changeAuthority, options) => {
     const session = await auth.api.getSession({ headers: fromNodeHeaders(request.headers) });
     if (!session) throw new ApiError(401, 'Masuk untuk melanjutkan.');
 
@@ -54,7 +58,7 @@ export function sessionAccess(pool: Pool, auth: Auth): RequireSession {
       if (actor.role === 'member') {
         await db.query("SELECT set_config('app.division_id', $1, true)", [actor.divisionId]);
       }
-      return run({ db, actor });
-    });
+      return run({ db, actor, sessionId: session.session.id });
+    }, options);
   };
 }

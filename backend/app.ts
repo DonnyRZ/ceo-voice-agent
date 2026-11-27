@@ -5,6 +5,8 @@ import { Pool } from 'pg';
 import type { AppConfig } from './config.js';
 import { ApiError, installErrorHandler } from './http/api-error.js';
 import { adminAccess } from './modules/admin/access.js';
+import { registerCeoVoiceRoutes, type VoiceApi } from './modules/ai/routes.js';
+import { createVoiceRuntime, type VoiceAudit } from './modules/ai/voice-runtime.js';
 import { registerAuditAdminRoutes } from './modules/admin/audit/routes.js';
 import { registerDivisionAdminRoutes } from './modules/admin/divisions/routes.js';
 import { registerReportAdminRoutes } from './modules/admin/reports/routes.js';
@@ -12,6 +14,7 @@ import { registerActivationRoute } from './modules/admin/users/activation.js';
 import { createInvitationMailer, type SendInvitation } from './modules/admin/users/invitation-mailer.js';
 import { registerInvitationRoutes, registerUserAdminRoutes } from './modules/admin/users/routes.js';
 import { createAuth, registerAuthRoutes } from './modules/auth/auth.js';
+import { ceoAccess } from './modules/auth/ceo-access.js';
 import { memberAccess } from './modules/auth/member-access.js';
 import { sessionAccess } from './modules/auth/session-access.js';
 import { registerDivisionRoutes } from './modules/divisions/routes.js';
@@ -22,6 +25,8 @@ type Options = {
   log?: boolean;
   serveFrontend?: boolean;
   sendInvitation?: SendInvitation;
+  voice?: VoiceApi;
+  voiceAudit?: VoiceAudit;
 };
 
 export async function createApp(config: AppConfig, options: Options = {}) {
@@ -61,6 +66,8 @@ export async function createApp(config: AppConfig, options: Options = {}) {
   const requireSession = sessionAccess(pool, auth);
   const requireMember = memberAccess(requireSession);
   const requireAdmin = adminAccess(requireSession);
+  const voice = createVoiceRuntime(pool, app.log, options.voice, options.voiceAudit);
+  app.addHook('preClose', voice.close);
   registerAuthRoutes(app, auth, config.APP_ORIGIN);
   app.get('/api/session', (request) => requireSession(request, async ({ actor }) => ({ user: actor })));
   registerDivisionRoutes(app, requireMember);
@@ -76,6 +83,7 @@ export async function createApp(config: AppConfig, options: Options = {}) {
   registerDivisionAdminRoutes(app, requireAdmin);
   registerReportAdminRoutes(app, requireAdmin);
   registerAuditAdminRoutes(app, requireAdmin);
+  registerCeoVoiceRoutes(app, { ...voice, requireAdmin, requireCeo: ceoAccess(requireSession) });
 
   app.get('/api/health', async () => {
     try {

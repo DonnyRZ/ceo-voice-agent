@@ -6,12 +6,13 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(35);
+SELECT plan(68);
 
 INSERT INTO public."user" (id, name, email) VALUES
     ('pgtap-member-it', 'Anggota IT pgTAP', 'pgtap-it@example.test'),
     ('pgtap-member-finance', 'Anggota Finance pgTAP', 'pgtap-finance@example.test'),
-    ('pgtap-admin', 'Superadmin pgTAP', 'pgtap-admin@example.test');
+    ('pgtap-admin', 'Superadmin pgTAP', 'pgtap-admin@example.test'),
+    ('pgtap-ceo', 'CEO pgTAP', 'pgtap-ceo@example.test');
 
 INSERT INTO public.divisions (id, name) VALUES
     ('10000000-0000-4000-8000-000000000001', 'IT pgTAP'),
@@ -21,7 +22,8 @@ INSERT INTO public.divisions (id, name) VALUES
 INSERT INTO public.account_access (user_id, role, division_id) VALUES
     ('pgtap-member-it', 'member', '10000000-0000-4000-8000-000000000001'),
     ('pgtap-member-finance', 'member', '10000000-0000-4000-8000-000000000002'),
-    ('pgtap-admin', 'superadmin', NULL);
+    ('pgtap-admin', 'superadmin', NULL),
+    ('pgtap-ceo', 'ceo', NULL);
 
 INSERT INTO public.members (id, division_id, name) VALUES
     ('pgtap-member-it', '10000000-0000-4000-8000-000000000001', 'Anggota IT pgTAP'),
@@ -38,6 +40,12 @@ INSERT INTO public.tasks (id, division_id, date, title, project_id, pic_id) VALU
         'Tugas Finance pgTAP', '20000000-0000-4000-8000-000000000002', 'pgtap-member-finance');
 
 UPDATE public.tasks SET status = 'done' WHERE id = '30000000-0000-4000-8000-000000000002';
+UPDATE public.projects SET status = 'on_progress' WHERE id = '20000000-0000-4000-8000-000000000002';
+UPDATE public.projects SET name = 'Proyek Finance terbaru pgTAP' WHERE id = '20000000-0000-4000-8000-000000000002';
+UPDATE public.members SET name = 'PIC Finance baru pgTAP' WHERE id = 'pgtap-member-finance';
+
+SELECT changed_at AS finance_task_created_at FROM public.audit_log
+WHERE record_table = 'tasks' AND record_id = '30000000-0000-4000-8000-000000000002' AND action = 'INSERT' \gset
 
 INSERT INTO public.invitations (email, role, division_id, token_hash, expires_at)
 VALUES ('pgtap-invite@example.test', 'member', '10000000-0000-4000-8000-000000000002',
@@ -94,6 +102,12 @@ SELECT is(
     0::bigint,
     'Riwayat status divisi lain tersembunyi'
 );
+SELECT is((SELECT count(*) FROM public.ceo_work_status_as_of(
+    'task', '30000000-0000-4000-8000-000000000002', 'infinity')),
+    0::bigint, 'Anggota tidak dapat menggunakan snapshot lintas divisi CEO');
+SELECT is((SELECT count(*) FROM public.ceo_search_work(
+    'task', 'tugas finance pgtap', NULL, NULL, true)),
+    0::bigint, 'Anggota tidak dapat menggunakan pencarian lintas divisi CEO');
 SELECT is((SELECT count(*) FROM public.audit_log), 0::bigint, 'RLS menyembunyikan audit log dari Anggota Divisi');
 SELECT throws_ok('UPDATE public.audit_log SET action = ''DELETE''', '42501', NULL, 'Runtime tidak dapat mengubah audit log');
 SELECT throws_ok($$
@@ -162,6 +176,85 @@ SELECT set_config('app.user_id', 'pgtap-member-it', true) AS app_user \gset
 SELECT set_config('app.division_id', '10000000-0000-4000-8000-000000000001', true) AS app_division \gset
 SELECT is((SELECT count(*) FROM public.tasks), 0::bigint, 'Akun dicabut kehilangan akses di PostgreSQL');
 
+SELECT set_config('app.user_id', 'pgtap-ceo', true) AS app_user \gset
+SELECT ok(app_private.is_ceo() AND NOT app_private.is_superadmin(), 'CEO memiliki peran baca tersendiri');
+SELECT is((SELECT count(*) FROM public.tasks WHERE id IN (
+    '30000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000002'
+)), 2::bigint, 'CEO dapat membaca tugas lintas divisi');
+SELECT is((SELECT count(*) FROM public.projects WHERE id IN (
+    '20000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000002'
+)), 2::bigint, 'CEO dapat membaca proyek lintas divisi');
+SELECT is((SELECT status FROM public.divisions WHERE id = '10000000-0000-4000-8000-000000000003'),
+    'archived', 'CEO dapat membaca divisi yang diarsipkan');
+SELECT is((SELECT id FROM public.ceo_search_work('task', 'tugas finance pgtap', NULL, NULL, true)),
+    '30000000-0000-4000-8000-000000000002', 'Pencarian CEO menemukan judul tugas lintas divisi');
+SELECT is((SELECT id FROM public.ceo_search_work('task', 'tugas finance pgtp',
+    '10000000-0000-4000-8000-000000000002', NULL, false) LIMIT 1),
+    '30000000-0000-4000-8000-000000000002', 'Pencarian CEO menemukan judul dengan salah ketik dalam divisi');
+SELECT is((SELECT id FROM public.ceo_search_work('project', 'proyek finance pgtap', NULL,
+    :'finance_task_created_at', true)),
+    '20000000-0000-4000-8000-000000000002', 'Pencarian historis CEO memakai nama proyek sebelum penggantian');
+SELECT is((SELECT id FROM public.ceo_search_work('project', 'proyek finance pgtp', NULL,
+    :'finance_task_created_at', false) LIMIT 1),
+    '20000000-0000-4000-8000-000000000002', 'Pencarian historis CEO menemukan nama proyek dengan salah ketik');
+SELECT is((SELECT count(*) FROM public.ceo_search_work('project', 'proyek finance pgtap', NULL,
+    'infinity', true)), 0::bigint, 'Pencarian historis tidak menampilkan nama yang sudah diganti pada waktu itu');
+SELECT results_eq(
+    $$SELECT status::text, title, project_id, pic_name FROM public.ceo_work_status_as_of(
+        'task', '30000000-0000-4000-8000-000000000002', 'infinity')$$,
+    $$VALUES ('done'::text, 'Tugas Finance pgTAP'::text, '20000000-0000-4000-8000-000000000002'::uuid,
+        'PIC Finance baru pgTAP'::text)$$,
+    'Snapshot CEO mengembalikan status, proyek dan PIC dari audit'
+);
+SELECT is((SELECT pic_name FROM public.ceo_work_status_as_of(
+    'task', '30000000-0000-4000-8000-000000000002', :'finance_task_created_at')),
+    'Anggota Finance pgTAP', 'Snapshot CEO memakai nama PIC pada saat diminta');
+SELECT is((SELECT status FROM public.ceo_work_status_as_of(
+    'task', '30000000-0000-4000-8000-000000000002', :'finance_task_created_at')),
+    'pending'::public.work_status, 'Snapshot CEO menyertakan status awal tugas');
+SELECT is((SELECT count(*) FROM public.ceo_work_status_as_of(
+    'task', '30000000-0000-4000-8000-000000000002', '-infinity')),
+    0::bigint, 'Snapshot CEO kosong sebelum rekaman pertama');
+SELECT results_eq(
+    $$SELECT previous_status::text, status::text FROM public.ceo_work_status_history(
+        'task', '30000000-0000-4000-8000-000000000002', NULL, NULL, 20)$$,
+    $$VALUES ('pending'::text, 'done'::text)$$,
+    'CEO membaca perubahan status tugas dengan nilai sebelumnya'
+);
+SELECT results_eq(
+    $$SELECT previous_status::text, status::text FROM public.ceo_work_status_history(
+        'project', '20000000-0000-4000-8000-000000000002', NULL, NULL, 20)$$,
+    $$VALUES ('pending'::text, 'on_progress'::text)$$,
+    'CEO membaca riwayat perubahan status proyek'
+);
+SELECT is((SELECT count(*) FROM public.audit_log), 0::bigint, 'CEO tidak dapat membaca audit mentah');
+SELECT is((SELECT count(*) FROM public.invitations), 0::bigint, 'CEO tidak dapat membaca undangan');
+SELECT is((SELECT count(*) FROM public.account_access), 1::bigint, 'CEO hanya dapat membaca akses akun sendiri');
+WITH changed AS (
+    UPDATE public.tasks SET status = 'done'
+    WHERE id = '30000000-0000-4000-8000-000000000001' RETURNING id
+)
+SELECT is((SELECT count(*) FROM changed), 0::bigint, 'CEO tidak dapat mengubah tugas');
+SELECT throws_ok($$
+    INSERT INTO public.projects (division_id, name)
+    VALUES ('10000000-0000-4000-8000-000000000001', 'Proyek CEO pgTAP')
+$$, '42501', NULL, 'CEO tidak dapat membuat proyek');
+SELECT is((SELECT count(*) FROM public.claim_work_search_embeddings('pgtap-model', 10)),
+    0::bigint, 'Sesi CEO tidak dapat mengambil pekerjaan indeks');
+SELECT is((SELECT count(resource_id) FROM public.work_search_embeddings WHERE resource_id IN (
+    '30000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000002'
+)), 2::bigint, 'CEO membaca indeks tugas lintas divisi');
+SELECT throws_ok('SELECT content_hash FROM public.work_search_embeddings', '42501', NULL,
+    'Metadata internal pekerjaan indeks hanya untuk worker');
+
+SELECT set_config('app.user_id', 'pgtap-admin', true) AS app_user \gset
+UPDATE public.account_access SET state = 'revoked' WHERE user_id = 'pgtap-ceo';
+SELECT set_config('app.user_id', 'pgtap-ceo', true) AS app_user \gset
+SELECT is((SELECT count(*) FROM public.tasks), 0::bigint, 'CEO yang dicabut kehilangan akses kerja');
+SELECT is((SELECT count(*) FROM public.ceo_work_status_history(
+    'task', '30000000-0000-4000-8000-000000000002', NULL, NULL, 20)),
+    0::bigint, 'CEO yang dicabut kehilangan akses riwayat');
+
 RESET ROLE;
 SELECT is(
     (SELECT actor_id FROM public.audit_log
@@ -169,6 +262,33 @@ SELECT is(
     'pgtap-member-it',
     'Audit perubahan menyimpan identitas anggota'
 );
+
+UPDATE public.work_search_embeddings SET next_attempt_at = 'infinity'
+WHERE resource_id <> '20000000-0000-4000-8000-000000000001';
+SET ROLE :"app_role";
+SELECT set_config('app.user_id', '', true) AS app_user \gset
+SELECT lease_id AS project_lease, content_hash AS first_hash
+FROM public.claim_work_search_embeddings('pgtap-model', 1)
+WHERE resource_id = '20000000-0000-4000-8000-000000000001' \gset
+SELECT is((SELECT count(*) FROM public.claim_work_search_embeddings('pgtap-model', 1)),
+    0::bigint, 'Worker kedua tidak mengambil dokumen yang sedang dikerjakan');
+RESET ROLE;
+UPDATE public.projects SET name = 'Proyek IT terbaru pgTAP' WHERE id = '20000000-0000-4000-8000-000000000001';
+SET ROLE :"app_role";
+SELECT ok(NOT public.complete_work_search_embedding('project', '20000000-0000-4000-8000-000000000001',
+    :'project_lease', 'pgtap-model', ('[1' || repeat(',0', 1535) || ']')::public.vector),
+    'Worker tidak dapat menyimpan embedding dari versi lama');
+SELECT lease_id AS current_lease, content_hash AS current_hash
+FROM public.claim_work_search_embeddings('pgtap-model', 1)
+WHERE resource_id = '20000000-0000-4000-8000-000000000001' \gset
+SELECT isnt(:'first_hash'::text, :'current_hash'::text, 'Perubahan teks menghasilkan hash dokumen baru');
+SELECT ok(public.complete_work_search_embedding('project', '20000000-0000-4000-8000-000000000001',
+    :'current_lease', 'pgtap-model', ('[1' || repeat(',0', 1535) || ']')::public.vector),
+    'Worker menyimpan embedding dengan lease dokumen aktif');
+SELECT is((SELECT count(*) FROM public.claim_work_search_embeddings('pgtap-model', 1)),
+    0::bigint, 'Worker tidak mengulang model dan teks yang sudah diindeks');
+SELECT is((SELECT count(*) FROM public.claim_work_search_embeddings('pgtap-model-next', 1)),
+    1::bigint, 'Perubahan model menjadwalkan ulang dokumen');
 
 SELECT * FROM finish(true);
 ROLLBACK;

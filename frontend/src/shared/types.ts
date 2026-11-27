@@ -18,7 +18,13 @@ export interface SuperadminSessionUser extends SessionIdentity {
   divisionName: null;
 }
 
-export type SessionUser = MemberSessionUser | SuperadminSessionUser;
+export interface CeoSessionUser extends SessionIdentity {
+  role: 'ceo';
+  divisionId: null;
+  divisionName: null;
+}
+
+export type SessionUser = MemberSessionUser | SuperadminSessionUser | CeoSessionUser;
 
 export interface Member {
   id: string;

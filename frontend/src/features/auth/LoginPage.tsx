@@ -38,8 +38,9 @@ export function LoginPage() {
     const home = sessionHome(session.data.role);
     const safe = typeof requested === 'string' && requested.startsWith('/') && !requested.startsWith('//')
       && !requested.includes('\\') && requested !== '/login' && requested !== '/activate';
-    const adminPage = safe && (requested === '/admin' || requested.startsWith('/admin/'));
-    const matchesRole = safe && adminPage === (session.data.role === 'superadmin');
+    const area = safe ? requested.split('/')[1] : '';
+    const targetRole = area === 'admin' ? 'superadmin' : area === 'ceo' ? 'ceo' : 'member';
+    const matchesRole = safe && targetRole === session.data.role;
     return <Navigate to={matchesRole ? requested : home} replace />;
   }
 

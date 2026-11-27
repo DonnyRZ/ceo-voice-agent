@@ -1,4 +1,4 @@
-import { createBrowserRouter, Link } from 'react-router-dom';
+import { createBrowserRouter, Link, Navigate } from 'react-router-dom';
 import { AccountPage } from '../features/auth/AccountPage';
 import { ActivationPage } from '../features/auth/ActivationPage';
 import { LoginPage } from '../features/auth/LoginPage';
@@ -22,6 +22,19 @@ function NotFound({ home = '/' }: { home?: string }) {
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/activate', element: <ActivationPage /> },
+  {
+    element: <RequireSession role="ceo" />,
+    children: [{
+      path: 'ceo',
+      lazy: async () => ({ Component: (await import('../features/ceo/voice/CeoVoiceLayout')).CeoVoiceLayout }),
+      children: [
+        { index: true, element: <Navigate to="/ceo/voice" replace /> },
+        { path: 'voice', lazy: async () => ({ Component: (await import('../features/ceo/voice/CeoVoicePage')).CeoVoicePage }) },
+        { path: 'account', element: <AccountPage /> },
+        { path: '*', element: <NotFound home="/ceo/voice" /> },
+      ],
+    }],
+  },
   {
     element: <RequireSession role="superadmin" />,
     children: [{

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { editVersion } from '../../work-status.js';
 
-export const accountRole = z.enum(['member', 'superadmin']);
+export const accountRole = z.enum(['member', 'superadmin', 'ceo']);
 const accountStatus = z.enum(['active', 'pending', 'failed', 'revoked', 'expired']);
 const divisionId = z.uuid({ error: 'Pilih divisi yang tersedia.' });
 const name = z.string({ error: 'Masukkan nama.' }).trim().min(1, 'Masukkan nama.').max(120);

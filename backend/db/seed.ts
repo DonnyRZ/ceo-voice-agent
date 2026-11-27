@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { readConfig } from '../config.js';
 import { createAuth } from '../modules/auth/auth.js';
-import { devAdminEmail, ensureAdminAccount } from './admin-account.js';
+import { devAdminEmail, devCeoEmail, ensureAdminAccount, ensureCeoAccount } from './admin-account.js';
 import { divisions, firstTaskId, it, projects, seededTaskId, tasks, users } from './seed-data.js';
 
 if (process.env.NODE_ENV === 'production') {
@@ -77,7 +77,8 @@ try {
     db.release();
   }
   await ensureAdminAccount(pool, devAdminEmail, password);
-  console.log('Data contoh IT, Finance, dan Superadmin siap.');
+  await ensureCeoAccount(pool, devCeoEmail, password);
+  console.log('Data contoh IT, Finance, Superadmin, dan CEO siap.');
 } finally {
   await pool.end();
 }

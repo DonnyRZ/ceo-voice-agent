@@ -33,5 +33,5 @@ export function useSessionUser(): MemberSessionUser {
 }
 
 export function sessionHome(role: SessionUser['role']) {
-  return role === 'superadmin' ? '/admin' : '/';
+  return { superadmin: '/admin', ceo: '/ceo/voice', member: '/' }[role];
 }

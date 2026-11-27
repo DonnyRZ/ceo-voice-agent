@@ -6,6 +6,7 @@ import './auth.css';
 
 export function AccountPage() {
   const user = useCurrentSessionUser();
+  const role = user.role === 'member' ? `Anggota Divisi ${user.divisionName}` : user.role === 'ceo' ? 'CEO' : 'Superadmin';
   const initials = user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
   const queryClient = useQueryClient();
   const logout = useMutation({
@@ -24,7 +25,7 @@ export function AccountPage() {
         <span className="account-icon" aria-hidden="true">{initials}</span>
         <div>
           <h2>{user.name}</h2>
-          <p>{user.role === 'superadmin' ? 'Superadmin' : `Anggota Divisi ${user.divisionName}`}</p>
+          <p>{role}</p>
           <p className="account-email"><Mail aria-hidden="true" />{user.email}</p>
         </div>
       </div>

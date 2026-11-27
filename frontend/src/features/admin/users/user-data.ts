@@ -1,7 +1,8 @@
 import { queryOptions } from '@tanstack/react-query';
 import { api } from '../../../shared/api';
+import type { SessionUser } from '../../../shared/types';
 
-export type AdminRole = 'member' | 'superadmin';
+export type AdminRole = SessionUser['role'];
 export type AdminUserStatus = 'active' | 'pending' | 'failed' | 'revoked' | 'expired';
 
 export interface AdminUser {
@@ -17,7 +18,7 @@ export interface AdminUser {
   updatedAt: string;
 }
 
-export const roleNames: Record<AdminRole, string> = { member: 'Anggota Divisi', superadmin: 'Superadmin' };
+export const roleNames: Record<AdminRole, string> = { member: 'Anggota Divisi', superadmin: 'Superadmin', ceo: 'CEO' };
 export const accountStatusNames: Record<AdminUserStatus, string> = {
   active: 'Aktif',
   pending: 'Menunggu aktivasi',
