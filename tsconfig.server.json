@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "rootDir": ".",
+    "outDir": "build",
+    "types": ["node"]
+  },
+  "include": ["backend/**/*.ts", "shared/**/*.ts"],
+  "exclude": ["backend/tests", "**/*.test.ts", "**/*-test-fixture.ts"]
+}

@@ -1,6 +1,7 @@
 # Dependencies and build caches
 node_modules/
 dist/
+build/
 coverage/
 .vite/
 *.tsbuildinfo
@@ -16,8 +17,10 @@ blob-report/
 
 # Local configuration and credentials
 .env
+*.env
 .env.*
 !.env.example
+!*.env.example
 *.pem
 *.key
 *.p12

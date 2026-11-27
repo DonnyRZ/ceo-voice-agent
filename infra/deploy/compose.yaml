@@ -1,0 +1,28 @@
+services:
+  app:
+    image: ${APP_IMAGE:?Image release wajib ditentukan}
+    env_file:
+      - ${RUNTIME_ENV_FILE:?Lokasi env server wajib ditentukan}
+    environment:
+      NODE_ENV: production
+      HOST: 127.0.0.1
+      API_PORT: ${APP_PORT:?Port lingkungan wajib ditentukan}
+    network_mode: host
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 30s
+    volumes:
+      - voice-budget:/app/.voice-pilot
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '5'
+
+volumes:
+  voice-budget:

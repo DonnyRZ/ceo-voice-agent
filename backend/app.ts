@@ -20,6 +20,7 @@ import { memberAccess } from './modules/auth/member-access.js';
 import { sessionAccess } from './modules/auth/session-access.js';
 import { registerCeoRoutes } from './modules/ceo/routes.js';
 import { registerDivisionRoutes } from './modules/divisions/routes.js';
+import { registerDeploymentRoutes } from './modules/deployment/routes.js';
 import { registerProjectRoutes } from './modules/projects/routes.js';
 import { registerTaskRoutes } from './modules/timesheets/routes.js';
 
@@ -36,7 +37,7 @@ type Options = {
 export async function createApp(config: AppConfig, options: Options = {}) {
   const app = Fastify({
     logger: options.log ? {
-      redact: ['req.headers.cookie', 'req.headers.authorization'],
+      redact: ['req.headers.cookie', 'req.headers.authorization', 'req.headers["x-deploy-token"]'],
       serializers: {
         err: (error: Error & { code?: string }) => ({
           type: error.name,
@@ -82,6 +83,7 @@ export async function createApp(config: AppConfig, options: Options = {}) {
   const requireCeo = ceoAccess(requireSession);
   const voice = createVoiceRuntime(pool, app.log, options.voice, options.voiceAudit);
   app.addHook('preClose', voice.close);
+  registerDeploymentRoutes(app, voice.service);
   registerAuthRoutes(app, auth, config.APP_ORIGIN);
   app.get('/api/session', (request) => requireSession(request, async ({ actor }) => ({ user: actor })));
   registerAccountRoutes(app, requireSession, auth);

@@ -45,6 +45,8 @@ docker compose exec -T db psql -X -U ruang_kerja_admin -d ruang_kerja \
 
 ## Produksi
 
+Otomasi `develop → stage` dan `main → prod`, memakai PostgreSQL bersama pada VPS, tersedia dalam [panduan deployment](docs/deployment.md).
+
 Atur `APP_ORIGIN` ke URL HTTPS aplikasi dan `SMTP_*` ke server SMTP perusahaan. Siapkan database dan role runtime terpisah, lalu jalankan migrasi. Isi `SUPERADMIN_EMAIL` dan `SUPERADMIN_PASSWORD` untuk akun pertama dan jalankan `npm run db:admin` dari lingkungan administrasi database. Jalankan `npm run build` dan `NODE_ENV=production npm start`. Fastify menyajikan UI dan API dari satu proses.
 
 Rujukan pengembangan tersedia di [aturan codebase](agents/codebase.md), [mockup Anggota Divisi](mockup/Anggota-Divisi/), [mockup Superadmin](mockup/Superadmin/), dan [mockup CEO](mockup/CEO/).

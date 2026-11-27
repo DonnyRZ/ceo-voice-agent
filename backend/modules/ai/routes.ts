@@ -22,6 +22,8 @@ export interface VoiceApi {
   takeAudio?(owner: OwnedVoiceSession, turn: VoiceTurnKey): Promise<Buffer | undefined>;
   recordBrowserPlayback?(owner: OwnedVoiceSession, elapsedMs: number, turn?: VoiceTurnKey): boolean;
   closeAll(): Promise<void>;
+  beginDrain?(): number;
+  resume?(): void;
 }
 
 async function voiceCall<T>(run: () => T | Promise<T>) {

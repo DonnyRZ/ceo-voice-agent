@@ -48,3 +48,80 @@ jobs:
       - run: npm run test:tools
       - name: Uji desktop dan mobile
         run: npm run test:e2e
+
+  package:
+    needs: checks
+    if: github.event_name == 'push' && (github.ref_name == 'main' || github.ref_name == 'develop')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.release.outputs.image }}
+      image_id: ${{ steps.release.outputs.image_id }}
+      sha: ${{ steps.release.outputs.sha }}
+      branch: ${{ steps.release.outputs.branch }}
+      environment: ${{ steps.release.outputs.environment }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verifikasi commit yang sudah lulus CI
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$BRANCH" == main || "$BRANCH" == develop ]]
+          [[ "$SHA" =~ ^[a-f0-9]{40}$ ]]
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH" --jq '.object.sha')
+          [[ "$latest" == "$SHA" ]] || { echo 'Commit sudah digantikan versi baru; release dilewati.'; exit 0; }
+          target=stage
+          [[ "$BRANCH" == main ]] && target=prod
+          image="ghcr.io/${GITHUB_REPOSITORY,,}:$target-sha-$SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          printf 'image=%s\nsha=%s\nbranch=%s\nenvironment=%s\n' "$image" "$SHA" "$BRANCH" "$target" >> "$GITHUB_OUTPUT"
+          docker build --label "org.opencontainers.image.revision=$SHA" --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" -t "$image" .
+          bash infra/deploy/smoke.sh "$image"
+          echo "image_id=$(docker image inspect "$image" --format '{{.Id}}')" >> "$GITHUB_OUTPUT"
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          trap 'docker logout ghcr.io >/dev/null' EXIT
+          docker push "$image"
+
+  deploy:
+    needs: package
+    if: >-
+      (needs.package.outputs.environment == 'stage' && vars.STAGE_DEPLOY_ENABLED == 'true') ||
+      (needs.package.outputs.environment == 'prod' && vars.PROD_DEPLOY_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ needs.package.outputs.environment }}
+    concurrency:
+      group: deploy-${{ needs.package.outputs.environment }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.package.outputs.sha }}
+          persist-credentials: false
+      - name: Kirim image terverifikasi dan deploy lingkungan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VPS_HOST: ${{ vars.VPS_HOST }}
+          VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+          VPS_USER: ${{ vars.VPS_USER || 'root' }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ vars.VPS_KNOWN_HOSTS }}
+          PUBLIC_APP_URL: ${{ vars.APP_URL }}
+          RELEASE_IMAGE: ${{ needs.package.outputs.image }}
+          RELEASE_ID: ${{ needs.package.outputs.image_id }}
+          RELEASE_SHA: ${{ needs.package.outputs.sha }}
+          RELEASE_BRANCH: ${{ needs.package.outputs.branch }}
+          RELEASE_ENV: ${{ needs.package.outputs.environment }}
+        run: bash infra/deploy/publish.sh

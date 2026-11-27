@@ -10,6 +10,7 @@ export function createVoiceService<Context, Facts, Prepared = unknown>(options: 
   const activeUsers = new Set<string>();
   const closing = new Set<Promise<void>>();
   let stopped = false;
+  let draining = false;
 
   function onEnd(session: VoiceSession<Context, Facts, Prepared>, cleanup: Promise<void>) {
     sessions.delete(session.id);
@@ -30,7 +31,7 @@ export function createVoiceService<Context, Facts, Prepared = unknown>(options: 
 
   return {
     async start({ userId, sessionKey, sdp }: VoiceOwner & { sdp: string }) {
-      if (stopped) throw new VoiceServiceError('provider_unavailable');
+      if (stopped || draining) throw new VoiceServiceError('provider_unavailable');
       if (activeUsers.has(userId) || activeUsers.size >= (options.maxSessions ?? 16)) {
         throw new VoiceServiceError('session_limit');
       }
@@ -54,6 +55,15 @@ export function createVoiceService<Context, Facts, Prepared = unknown>(options: 
 
     recordBrowserPlayback(input: OwnedVoiceSession, elapsedMs: number, turn?: VoiceTurnKey) {
       return ownedSession(input).recordBrowserPlayback(elapsedMs, turn);
+    },
+
+    beginDrain() {
+      draining = true;
+      return activeUsers.size;
+    },
+
+    resume() {
+      draining = false;
     },
 
     async closeAll() {
