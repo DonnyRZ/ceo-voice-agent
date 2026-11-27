@@ -1,6 +1,6 @@
 import { VoiceServiceError } from './lifecycle.js';
 import { VoiceSession } from './session.js';
-import type { OwnedVoiceSession, VoiceEvent, VoiceOwner, VoiceServiceOptions } from './types.js';
+import type { OwnedVoiceSession, VoiceEvent, VoiceOwner, VoiceServiceOptions, VoiceTurnKey } from './types.js';
 
 export { VoiceServiceError } from './lifecycle.js';
 export type { VoiceAdapter, VoiceEvent, VoiceMetric, VoiceServiceOptions } from './types.js';
@@ -48,8 +48,12 @@ export function createVoiceService<Context, Facts, Prepared = unknown>(options: 
       return ownedSession(input).end('ended');
     },
 
-    recordBrowserPlayback(input: OwnedVoiceSession, elapsedMs: number) {
-      ownedSession(input).recordBrowserPlayback(elapsedMs);
+    takeAudio(input: OwnedVoiceSession, turn: VoiceTurnKey) {
+      return ownedSession(input).takeAudio(turn);
+    },
+
+    recordBrowserPlayback(input: OwnedVoiceSession, elapsedMs: number, turn?: VoiceTurnKey) {
+      return ownedSession(input).recordBrowserPlayback(elapsedMs, turn);
     },
 
     async closeAll() {

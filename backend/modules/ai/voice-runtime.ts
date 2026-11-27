@@ -1,92 +1,38 @@
 import type { FastifyBaseLogger } from 'fastify';
 import type { Pool } from 'pg';
-import { inTransaction } from '../../db/transaction.js';
-import { loadCeoIdentity } from '../auth/ceo-access.js';
-import { activeVoiceMicros, openBudget, type OpenAiBudget } from './budget.js';
+import { openBudget } from './budget.js';
 import { readVoiceConfig } from './config.js';
 import { createEmbedder, startEmbeddingWorker } from './embeddings.js';
 import { createVoiceMetrics } from './metrics.js';
-import { prepareCeoCandidates, retrieveCeoAnswer, type CeoCandidatePreparation, type CeoRetrievalContext } from './retrieval/index.js';
-import type { CeoFacts, RetrievalDatabase } from './retrieval/schema.js';
+import { retrieveCeoAnswer, type CeoRetrievalContext } from './retrieval/index.js';
+import type { InterpretCeoTurn } from './retrieval/interpretation.js';
+import { createOpenAiIntentInterpreter } from './retrieval/openai-intent.js';
+import type { CeoFacts } from './retrieval/schema.js';
 import type { VoiceApi } from './routes.js';
 import { createVoiceHistory } from './voice/history/store.js';
-import { createLiveAdapter, LiveCreateHttpError } from './voice/live-adapter.js';
+import { createLiveAdapter } from './voice/live-adapter.js';
+import { budgetVoice } from './voice/runtime-budget.js';
+import { authorizeVoice, retrievalDatabase } from './voice/runtime-database.js';
 import { createVoiceService } from './voice/service.js';
-import type { VoiceAdapter, VoiceMetric, VoiceOwner } from './voice/types.js';
-
-function budgetVoice(
-  adapter: VoiceAdapter, budget: OpenAiBudget, maxDurationMs: number, log: FastifyBaseLogger,
-): VoiceAdapter {
-  const reservations = new Map<string, (micros: number) => void>();
-  const settleFinal = (id: string, seconds: number | undefined) => {
-    if (seconds === undefined) return;
-    try {
-      reservations.get(id)?.(activeVoiceMicros(seconds));
-    } catch {
-      log.warn('Penggunaan OpenAI belum dapat disimpan. Cadangan anggaran tetap ditahan.');
-    } finally {
-      reservations.delete(id);
-    }
-  };
-  return {
-    async createSession(sdp, signal) {
-      // Keep the remaining allowance reserved until Live confirms final usage.
-      const settle = budget.reserve(activeVoiceMicros(Math.max(15, maxDurationMs / 1000)), true);
-      try {
-        const started = await adapter.createSession(sdp, signal);
-        reservations.set(started.id, settle);
-        return started;
-      } catch (error) {
-        if (error instanceof LiveCreateHttpError) {
-          log.warn({ status: error.status }, 'Pembukaan sesi GPT Live ditolak.');
-          if (error.status < 500) settle(0);
-        }
-        throw error;
-      }
-    },
-    attach(id, handlers, signal) {
-      return adapter.attach(id, {
-        ...handlers,
-        onEvent(event) {
-          if (event.type === 'closed') settleFinal(id, event.seconds);
-          handlers.onEvent(event);
-        },
-      }, signal);
-    },
-    async closeSession(id, sideband, onEvent) {
-      await adapter.closeSession(id, sideband, (event) => {
-        if (event.type === 'closed') settleFinal(id, event.seconds);
-        onEvent?.(event);
-      });
-      reservations.delete(id);
-    },
-  };
-}
-
-function authorize(pool: Pool, { userId, sessionKey }: VoiceOwner) {
-  return inTransaction(pool, async (db) => {
-    await db.query("SET LOCAL statement_timeout = '250ms'");
-    return !!await loadCeoIdentity(db, userId, sessionKey);
-  }, { readOnly: true });
-}
-
-function retrievalDatabase(pool: Pool, owner: VoiceOwner, signal: AbortSignal): RetrievalDatabase {
-  return {
-    query: (sql, parameters) => inTransaction(pool, async (db) => {
-      signal.throwIfAborted();
-      await db.query("SET LOCAL statement_timeout = '250ms'");
-      const actor = await loadCeoIdentity(db, owner.userId, owner.sessionKey);
-      if (!actor) throw new Error('Akses CEO berakhir.');
-      signal.throwIfAborted();
-      return db.query(sql, parameters);
-    }, { readOnly: true }),
-  };
-}
+import type { LiveEvent, VoiceAdapter, VoiceMetric } from './voice/types.js';
+import { readVoiceVocabulary } from './voice/vocabulary.js';
 
 export type VoiceAudit = {
-  adapter: VoiceAdapter;
-  observe?(metric: VoiceMetric): void;
+  adapter?: VoiceAdapter;
+  interpret?: InterpretCeoTurn;
+  observe?(metric: VoiceMetric, turnId?: string): void;
+  providerEvent?(event: LiveEvent): void;
+  commentarySent?(eventId: string, delegationId: string, text: string): void;
 };
+
+export function contextWithoutUnplayedChoices(context: CeoRetrievalContext): CeoRetrievalContext {
+  if (!context.choices) return context;
+  return {
+    request: context.request,
+    pendingRequest: context.pendingRequest,
+    needsConfirmation: context.needsConfirmation || context.choices.length > 0 || undefined,
+  };
+}
 
 export function createVoiceRuntime(pool: Pool, log: FastifyBaseLogger, override?: VoiceApi, audit?: VoiceAudit) {
   const metrics = createVoiceMetrics();
@@ -94,23 +40,29 @@ export function createVoiceRuntime(pool: Pool, log: FastifyBaseLogger, override?
   if (!config) return { service: override, metrics, close: async () => override?.closeAll() };
 
   const { apiKey, voiceModel, testHistoryEnabled, embeddingModel, standbySeconds, maxDurationMs, budgetUsd } = config;
-  // Keep the same split across restarts even when indexing is disabled.
-  const embeddingBudget = budgetUsd * 0.1;
-  const permittedVoice = openBudget(budgetUsd - embeddingBudget);
+  // Keep the existing non-voice ledger so previously spent embedding budget is still counted.
+  const textBudget = budgetUsd * 0.1;
+  const permittedVoice = openBudget(budgetUsd - textBudget);
+  const permittedText = openBudget(textBudget, '.voice-pilot/embeddings-budget.json');
+  const interpret = audit?.interpret ?? createOpenAiIntentInterpreter({
+    apiKey, model: config.intentModel, budget: permittedText,
+    timeoutMs: config.retrievalTimeoutMs,
+    inputMicrosPerToken: config.intentInputMicrosPerToken,
+    outputMicrosPerToken: config.intentOutputMicrosPerToken,
+  });
   const adapter = budgetVoice(audit?.adapter ?? createLiveAdapter({
     apiKey, model: voiceModel, idleTimeoutSeconds: standbySeconds,
     proxyUrl: process.env.HTTPS_PROXY || process.env.https_proxy,
-  }), permittedVoice, maxDurationMs, log);
+  }), permittedVoice, maxDurationMs, log, audit);
   const embedding = embeddingModel ? {
     model: embeddingModel,
-    embed: createEmbedder(apiKey, embeddingModel,
-      openBudget(embeddingBudget, '.voice-pilot/embeddings-budget.json')),
+    embed: createEmbedder(apiKey, embeddingModel, permittedText),
   } : undefined;
   const stopEmbeddings = embedding && startEmbeddingWorker(pool, embedding.model, embedding.embed, log);
   const history = testHistoryEnabled ? createVoiceHistory<CeoFacts>(pool, log, voiceModel) : undefined;
 
-  function observe(metric: VoiceMetric) {
-    audit?.observe?.(metric);
+  function observe(metric: VoiceMetric, turnId?: string) {
+    audit?.observe?.(metric, turnId);
     switch (metric.type) {
       case 'session':
         metrics.observe('session', metric.reason ?? metric.action);
@@ -132,25 +84,30 @@ export function createVoiceRuntime(pool: Pool, log: FastifyBaseLogger, override?
     }
   }
 
-  const service = createVoiceService<CeoRetrievalContext, CeoFacts, CeoCandidatePreparation>({
+  const service = createVoiceService<CeoRetrievalContext, CeoFacts>({
     adapter,
     maxDurationMs,
     maxSessions: 1,
-    retrievalTimeoutMs: 900,
-    authorize: (owner) => authorize(pool, owner),
-    prepare: ({ userId, sessionKey, text, context, signal }) => prepareCeoCandidates({
+    retrievalTimeoutMs: config.retrievalTimeoutMs,
+    authorize: (owner) => authorizeVoice(pool, owner),
+    loadVocabulary: async (owner, signal) => {
+      try {
+        return await readVoiceVocabulary(retrievalDatabase(pool, owner, signal));
+      } catch {
+        signal.throwIfAborted();
+        log.debug('Daftar ejaan timesheet tidak tersedia untuk sesi baru.');
+      }
+    },
+    contextWithoutAudio: contextWithoutUnplayedChoices,
+    retrieve: ({ userId, sessionKey, text, history, context, signal, observePhase }) => retrieveCeoAnswer({
       db: retrievalDatabase(pool, { userId, sessionKey }, signal),
       transcript: text,
+      history,
+      interpret,
       context,
       signal,
-    }),
-    retrieve: ({ userId, sessionKey, text, context, signal, prepared }) => retrieveCeoAnswer({
-      db: retrievalDatabase(pool, { userId, sessionKey }, signal),
-      transcript: text,
-      context,
-      signal,
-      prepared,
-      embeddingDeadlineMs: 250,
+      observePhase,
+      embeddingDeadlineMs: Math.min(2_000, config.retrievalTimeoutMs),
       embed: embedding && (async (query, abort) => ({
         model: embedding.model, vector: await embedding.embed(query, abort),
       })),

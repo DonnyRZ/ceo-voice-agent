@@ -1,0 +1,30 @@
+.ceo-shell { display: grid; grid-template-columns: clamp(200px, 18.7vw, 285px) minmax(0, 1fr); min-height: 100svh; background: linear-gradient(120deg, #f0f5f5, #f4f8f7); }
+.ceo-sidebar { position: sticky; top: 0; align-self: start; height: 100svh; padding: 25px 10px; border-right: 1px solid #deebe8; background: #fbfcfc; }
+.ceo-sidebar .brand { width: 100%; max-width: 250px; }
+.ceo-side-nav { display: grid; gap: 8px; margin-top: 38px; }
+.ceo-nav-item { display: flex; align-items: center; gap: 17px; min-height: 53px; padding: 10px 18px; color: #213c3f; font-size: 17px; font-weight: 550; text-decoration: none; border-radius: 12px; }
+.ceo-nav-item svg { width: 25px; height: 25px; flex: none; }
+.ceo-nav-item--active { color: #00594f; background: #d9efea; font-weight: 700; }
+.ceo-nav-item:hover { background: #e7f3ef; }
+.ceo-main { position: relative; min-width: 0; padding: 35px clamp(24px, 2.5vw, 44px) 48px; }
+.ceo-main:focus { outline: none; }
+.ceo-desktop-account { position: absolute; top: 25px; right: 30px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: #12665c; background: #e0f0eb; }
+.ceo-desktop-account svg { width: 23px; height: 23px; }
+.ceo-bottom-nav, .ceo-mobile-header { display: none; }
+
+@media (min-width: 1600px) {
+  .ceo-main { padding-top: 42px; }
+  .ceo-nav-item { min-height: 60px; font-size: 20px; }
+}
+
+@media (max-width: 767px) {
+  .ceo-shell { display: block; }
+  .ceo-sidebar, .ceo-desktop-account { display: none; }
+  .ceo-mobile-header { display: flex; align-items: center; height: 78px; padding: 12px 18px; }
+  .ceo-mobile-header .brand { width: 226px; max-width: 72vw; }
+  .ceo-main { padding: 14px 16px calc(106px + env(safe-area-inset-bottom)); }
+  .ceo-bottom-nav { position: fixed; z-index: 20; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; padding: 7px 5px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #deebe8; border-radius: 17px 17px 0 0; background: #f8fcfbf5; backdrop-filter: blur(12px); }
+  .ceo-bottom-nav .ceo-nav-item { flex-direction: column; gap: 3px; min-height: 63px; padding: 5px 0; font-size: 12px; line-height: 1.3; border-radius: 13px; }
+  .ceo-bottom-nav .ceo-nav-item svg { width: 27px; height: 27px; }
+  .ceo-bottom-nav .ceo-nav-item--active { background: #dff2ed; }
+}

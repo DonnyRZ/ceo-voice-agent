@@ -45,15 +45,19 @@ export async function readVoiceTest(db: HistoryDatabase, sessionId: string) {
   if (!rows.length) return;
 
   const fragments: VoiceTranscriptFragment[] = [];
+  const transcriptEvents: Array<Omit<HistoryRow, 'entry'> & { fragment: VoiceTranscriptFragment }> = [];
   const events: HistoryRow[] = [];
   for (const row of rows) {
-    if (row.entry.type === 'transcript') fragments.push(row.entry.fragment);
-    else events.push(row);
+    if (row.entry.type === 'transcript') {
+      fragments.push(row.entry.fragment);
+      transcriptEvents.push({ sequence: row.sequence, recordedAt: row.recordedAt, fragment: row.entry.fragment });
+    } else events.push(row);
   }
   return {
     sessionId,
     hasSequenceGaps: rows.some((row, index) => row.sequence !== index + 1),
     transcript: groupTranscript(fragments),
+    transcriptEvents,
     events,
   };
 }

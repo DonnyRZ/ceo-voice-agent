@@ -1,5 +1,6 @@
 import type { WorkStatus } from '../../work-status.js';
 import { spokenDay, spokenTime } from './calendar.js';
+import type { SummaryDetail } from './request-types.js';
 import type { CeoEntity, CeoFacts, CeoPeriod, CountFact } from './schema.js';
 
 const statuses: Record<WorkStatus, string> = { pending: 'pending', on_progress: 'sedang dikerjakan', done: 'selesai' };
@@ -23,23 +24,25 @@ function periodText(period?: CeoPeriod) {
   return '';
 }
 
-function countText(counts: CountFact, selected?: WorkStatus[]) {
+function countText(counts: CountFact, selected?: WorkStatus[], detail?: SummaryDetail) {
   if (selected?.length) {
     if (selected.length === 1) return `${counts.total} tugas tercatat dengan status ${statuses[selected[0]]}.`;
+    if (detail === 'total') return `${counts.total} tugas tercatat dengan status ${selected.map((status) => statuses[status]).join(' atau ')}.`;
     return `${counts.total} tugas cocok. ${selected.map((status) => `${counts[status]} ${statuses[status]}`).join(' dan ')}.`;
   }
+  if (detail === 'total') return `${counts.total} tugas tercatat.`;
   return `${counts.total} tugas tercatat. ${counts.pending} pending, ${counts.on_progress} sedang dikerjakan, dan ${counts.done} selesai.`;
 }
 
-export function spokenFacts(facts: CeoFacts) {
+export function spokenFacts(facts: CeoFacts, summaryDetail?: SummaryDetail) {
   const name = target(facts.entity);
   const at = facts.asOf ? ` per ${spokenDay(facts.asOf)}` : '';
   const period = periodText(facts.period);
   if (facts.focusUpdatedAt && facts.updatedAt) {
-    return `Pembaruan terakhir ${name}${at} tercatat pada ${spokenTime(facts.updatedAt)} di timesheet.`;
+    return `Terakhir diperbarui ${spokenTime(facts.updatedAt)}, untuk ${name}${at}.`;
   }
   if (facts.intent === 'summary' && facts.counts) {
-    return `Menurut ${name}${period}${at}, ${countText(facts.counts, facts.statusFilter)}`;
+    return `Menurut ${name}${period}${at}, ${countText(facts.counts, facts.statusFilter, summaryDetail)}`;
   }
   if (facts.intent === 'history') {
     const lines = facts.history.map((event) => {
@@ -53,8 +56,8 @@ export function spokenFacts(facts: CeoFacts) {
   if (facts.intent === 'pic') {
     if (facts.entity?.kind === 'task') {
       return facts.picName
-        ? `PIC ${name} yang tercatat di timesheet${at} adalah ${cleanLabel(facts.picName)}.`
-        : `PIC ${name}${at} belum tercatat di timesheet.`;
+        ? `${cleanLabel(facts.picName)} adalah PIC ${name}${at}.`
+        : `PIC ${name}${at} belum tercatat.`;
     }
     if (!facts.tasks.length) return `Belum ada tugas dengan PIC tercatat untuk ${name}${period}${at}.`;
     const lines = facts.tasks.map((task) => `${cleanLabel(task.title)} ditangani ${task.picName ? cleanLabel(task.picName) : 'PIC yang belum tercatat'}.`);
@@ -62,10 +65,7 @@ export function spokenFacts(facts: CeoFacts) {
     return `Timesheet mencatat PIC per tugas untuk ${name}${period}${at}.${sample} ${lines.join(' ')}`;
   }
   if (facts.status) {
-    const status = `Status ${name}${at} tercatat ${statuses[facts.status]} di timesheet.`;
-    const changed = facts.updatedAt ? ` Pembaruan tercatat pada ${spokenDay(facts.updatedAt)}.` : '';
-    const related = facts.counts ? ` Untuk tugas terkait${period}, ${countText(facts.counts)}` : '';
-    return `${status}${changed}${related}`;
+    return `Status ${name}${at} ${statuses[facts.status]}.`;
   }
   return `Belum ada status tercatat untuk ${name}${period}${at}.`;
 }

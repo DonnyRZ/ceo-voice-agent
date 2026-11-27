@@ -1,3 +1,6 @@
+import {
+  maximumVoiceWavBytes, voicePcmBytesPerSample, voicePcmSampleRate, voiceWavHeaderBytes,
+} from '../../../../../shared/voice-pcm';
 import { api } from '../../../shared/api';
 
 const sessionsPath = '/api/ceo/voice/sessions';
@@ -17,10 +20,53 @@ export function closeVoiceSession(id: string) {
   void fetch(sessionPath(id), { method: 'DELETE', credentials: 'same-origin', keepalive: true }).catch(() => undefined);
 }
 
-export function reportBrowserPlayback(id: string, elapsedMs: number) {
+export function reportBrowserPlayback(id: string, turnId: string, generation: number, elapsedMs: number) {
   void api<void>(sessionPath(id) + '/telemetry', {
-    method: 'POST', body: JSON.stringify({ elapsedMs }),
+    method: 'POST', body: JSON.stringify({ turnId, generation, elapsedMs }),
   }).catch(() => undefined);
+}
+
+function pcmWave(bytes: Uint8Array<ArrayBuffer>) {
+  if (bytes.length <= voiceWavHeaderBytes || bytes.length % voicePcmBytesPerSample !== 0) return false;
+  const data = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return data.getUint32(0) === 0x52494646 && data.getUint32(4, true) === bytes.length - 8
+    && data.getUint32(8) === 0x57415645 && data.getUint32(12) === 0x666d7420 && data.getUint32(16, true) === 16
+    && data.getUint16(20, true) === 1 && data.getUint16(22, true) === 1 && data.getUint32(24, true) === voicePcmSampleRate
+    && data.getUint32(28, true) === voicePcmSampleRate * voicePcmBytesPerSample
+    && data.getUint16(32, true) === voicePcmBytesPerSample && data.getUint16(34, true) === voicePcmBytesPerSample * 8
+    && data.getUint32(36) === 0x64617461 && data.getUint32(40, true) === bytes.length - voiceWavHeaderBytes;
+}
+
+export async function fetchVoiceAudio(id: string, turnId: string, generation: number, signal: AbortSignal) {
+  const path = `${sessionPath(id)}/turns/${encodeURIComponent(turnId)}/audio?generation=${generation}`;
+  const response = await fetch(path, {
+    credentials: 'same-origin', cache: 'no-store', redirect: 'error', headers: { Accept: 'audio/wav' }, signal,
+  });
+  if (!response.ok || !response.body || response.headers.get('Content-Type')?.split(';')[0].trim() !== 'audio/wav') {
+    void response.body?.cancel().catch(() => undefined);
+    throw new Error('Invalid verified audio response');
+  }
+  const reader = response.body.getReader();
+  const bytes = new Uint8Array(maximumVoiceWavBytes);
+  let length = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (length + value.byteLength > maximumVoiceWavBytes) {
+        void reader.cancel().catch(() => undefined);
+        throw new Error('Verified audio exceeds playback limit');
+      }
+      bytes.set(value, length);
+      length += value.byteLength;
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  signal.throwIfAborted();
+  const wav = bytes.subarray(0, length);
+  if (!pcmWave(wav)) throw new Error('Invalid verified PCM audio');
+  return new Blob([wav], { type: 'audio/wav' });
 }
 
 function waitForIce(peer: RTCPeerConnection, signal: AbortSignal) {

@@ -6,7 +6,9 @@ import { inTransaction } from '../../db/transaction.js';
 import { ApiError } from '../../http/api-error.js';
 import { loadIdentity } from './session-access.js';
 
-export function createAuth(pool: Pool, origin: string, secret: string, allowRegistration = false) {
+export function createAuth(
+  pool: Pool, origin: string, secret: string, allowRegistration = false, authorizationPool = pool,
+) {
   return betterAuth({
     database: pool,
     baseURL: origin,
@@ -16,7 +18,9 @@ export function createAuth(pool: Pool, origin: string, secret: string, allowRegi
       session: {
         create: {
           before: async ({ userId }) => {
-            const identity = await inTransaction(pool, (db) => loadIdentity(db, userId));
+            // Session creation can already hold an adapter transaction. Its admission
+            // check must never acquire another connection from that same runtime pool.
+            const identity = await inTransaction(authorizationPool, (db) => loadIdentity(db, userId), { readOnly: true });
             if (!identity) return false;
           },
         },

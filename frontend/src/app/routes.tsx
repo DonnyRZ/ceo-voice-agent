@@ -1,4 +1,4 @@
-import { createBrowserRouter, Link, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Link } from 'react-router-dom';
 import { AccountPage } from '../features/auth/AccountPage';
 import { ActivationPage } from '../features/auth/ActivationPage';
 import { LoginPage } from '../features/auth/LoginPage';
@@ -26,12 +26,18 @@ export const router = createBrowserRouter([
     element: <RequireSession role="ceo" />,
     children: [{
       path: 'ceo',
-      lazy: async () => ({ Component: (await import('../features/ceo/voice/CeoVoiceLayout')).CeoVoiceLayout }),
+      lazy: async () => ({ Component: (await import('../features/ceo/shell/CeoLayout')).CeoLayout }),
       children: [
-        { index: true, element: <Navigate to="/ceo/voice" replace /> },
+        { index: true, lazy: async () => ({ Component: (await import('../features/ceo/dashboard/CeoDashboardPage')).CeoDashboardPage }) },
         { path: 'voice', lazy: async () => ({ Component: (await import('../features/ceo/voice/CeoVoicePage')).CeoVoicePage }) },
-        { path: 'account', element: <AccountPage /> },
-        { path: '*', element: <NotFound home="/ceo/voice" /> },
+        { path: 'divisions', lazy: async () => ({ Component: (await import('../features/ceo/divisions/CeoDivisionsPage')).CeoDivisionsPage }) },
+        { path: 'divisions/:id', lazy: async () => ({ Component: (await import('../features/ceo/divisions/CeoDivisionPage')).CeoDivisionPage }) },
+        { path: 'projects/:id', lazy: async () => ({ Component: (await import('../features/ceo/projects/CeoProjectPage')).CeoProjectPage }) },
+        { path: 'tasks/:id', lazy: async () => ({ Component: (await import('../features/ceo/tasks/CeoTaskPage')).CeoTaskPage }) },
+        { path: 'account', lazy: async () => ({ Component: (await import('../features/ceo/account/CeoAccountPage')).CeoAccountPage }) },
+        { path: 'account/security', lazy: async () => ({ Component: (await import('../features/ceo/account/CeoSecurityPage')).CeoSecurityPage }) },
+        { path: 'settings', lazy: async () => ({ Component: (await import('../features/ceo/settings/CeoSettingsPage')).CeoSettingsPage }) },
+        { path: '*', element: <NotFound home="/ceo" /> },
       ],
     }],
   },

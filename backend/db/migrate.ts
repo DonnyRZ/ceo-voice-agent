@@ -52,12 +52,14 @@ try {
         GRANT EXECUTE ON FUNCTION
             app_private.member_division_id(), app_private.active_division_id(),
             app_private.is_superadmin(), app_private.is_ceo(), app_private.is_active_member(uuid, text),
+            app_private.work_title_key(text),
             public.task_status_history(uuid), public.invitation_is_open(text),
             public.complete_invitation(text, text, text, text, text),
             public.fail_invitation_delivery(uuid, text),
             public.ceo_work_status_as_of(text, uuid, timestamptz),
             public.ceo_work_status_history(text, uuid, timestamptz, timestamptz, integer),
             public.ceo_search_work(text, text, uuid, timestamptz, boolean),
+            public.ceo_exact_work_labels(text[], text, uuid, timestamptz),
             public.claim_work_search_embeddings(text, integer),
             public.complete_work_search_embedding(text, uuid, uuid, text, public.vector),
             public.retry_work_search_embedding(text, uuid, uuid, integer) TO ${runtime};

@@ -42,7 +42,9 @@ jobs:
             -v ON_ERROR_STOP=1 -v app_role=ruang_kerja_app < backend/db/pgtap.sql
       - run: npm run db:seed
       - run: npm run test:backend
+      - run: npm run test:frontend
       - run: npm run build
       - run: npx playwright install --with-deps chromium
+      - run: npm run test:tools
       - name: Uji desktop dan mobile
         run: npm run test:e2e

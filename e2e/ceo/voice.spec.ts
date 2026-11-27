@@ -5,25 +5,26 @@ import { emitVoice, readTransport, syntheticAnswer, syntheticOffer } from "./voi
 test("membuka mikrofon dari tombol, mengizinkan suara untuk giliran aktif, lalu menutup sesi", async ({ page }) => {
   const server = await mockVoiceApp(page);
   await openVoice(page);
-  await expect(page.getByText("Siap memulai", { exact: true })).toBeVisible();
+  await expect(page.getByText("Siap untuk ngobrol", { exact: true })).toBeVisible();
   expect((await readTransport(page)).microphoneRequests).toBe(0);
   expect(server.requests).toEqual([]);
   await expect(page.getByRole("textbox")).toHaveCount(0);
-  const reference = page.getByRole("region", { name: "Rujukan Timesheet" });
+  const reference = page.getByRole("region", { name: "Menurut timesheet" });
   await expect(reference).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Mulai sesi", exact: true }).click();
+  await page.getByRole("button", { name: /^Mulai (ngobrol|lagi)$/ }).click();
   await expect(page.getByText("Menghubungkan", { exact: true })).toBeVisible();
   await expect.poll(async () => (await readTransport(page)).streams.length).toBe(1);
   expect((await readTransport(page)).tracks[0].enabled).toBe(false);
   await emitVoice(page, { type: "state", state: "active" });
-  await expect(page.getByText("Sesi aktif", { exact: true })).toBeVisible();
+  await expect(page.getByText("Mendengarkan", { exact: true })).toBeVisible();
   const id = server.sessions[0];
   expect(server.requests[0]).toEqual({ method: "POST", path: sessionsPath, data: { sdp: syntheticOffer } });
   const connected = await readTransport(page);
   expect(connected.peers).toEqual([{ state: "connected", answer: syntheticAnswer }]);
   expect(connected.streams.map(({ url }) => new URL(url).pathname)).toEqual([`${sessionsPath}/${id}/events`]);
   expect(connected.tracks).toEqual([{ enabled: true, readyState: "live" }]);
+  expect(connected.remoteTrackEnabled).toEqual([false]);
 
   await microphoneButton(page).click();
   await expect(microphoneButton(page, true)).toBeVisible();
@@ -33,15 +34,17 @@ test("membuka mikrofon dari tombol, mengizinkan suara untuk giliran aktif, lalu 
 
   const audio = page.locator("audio");
   await expect(audio).toHaveJSProperty("muted", true);
-  await emitVoice(page, { type: "turn", turnId: "turn-denied" });
-  await emitVoice(page, { type: "playback", turnId: "turn-denied", allowed: false });
-  await emitVoice(page, { type: "turn", turnId: "turn-current" });
-  await emitVoice(page, { type: "playback", turnId: "turn-denied", allowed: true });
+  await expect(audio).toHaveJSProperty("srcObject", null);
+  await emitVoice(page, { type: "turn", turnId: "turn-denied", generation: 1 });
+  await emitVoice(page, { type: "playback", turnId: "turn-denied", generation: 1, allowed: false });
+  await emitVoice(page, { type: "turn", turnId: "turn-current", generation: 2 });
+  await emitVoice(page, { type: "playback", turnId: "turn-denied", generation: 1, allowed: true });
+  await emitVoice(page, { type: "playback", turnId: "turn-current", generation: 1, allowed: true });
   await expect(audio).toHaveJSProperty("muted", true);
   expect((await readTransport(page)).audiblePlays).toBe(0);
 
   await emitVoice(page, {
-    type: "result", turnId: "turn-current", result: {
+    type: "result", turnId: "turn-current", generation: 2, result: {
       kind: "facts", text: "Aplikasi A Mobile sedang dikerjakan.", facts: {
         intent: "status", entity: { kind: "project", id: "demo-project", name: "Aplikasi A Mobile", divisionName: "IT" },
         status: "on_progress", updatedAt: "2026-11-26T02:15:00Z",
@@ -51,23 +54,35 @@ test("membuka mikrofon dari tombol, mengizinkan suara untuk giliran aktif, lalu 
   await expect(reference.getByText("Aplikasi A Mobile", { exact: true })).toBeVisible();
   await expect(reference.getByText("On Progress", { exact: true })).toBeVisible();
   await expect(audio).toHaveJSProperty("muted", true);
-  await emitVoice(page, { type: "playback", turnId: "turn-current", allowed: true });
+  await emitVoice(page, { type: "playback", turnId: "turn-current", generation: 2, allowed: true });
   await expect(audio).toHaveJSProperty("muted", false);
-  await expect(page.getByText(/^Giliran ke pemutaran browser \d+ ms$/)).toBeVisible();
-  await expect.poll(() => server.requests.some((request) =>
-    request.method === "POST" && request.path.endsWith("/telemetry"))).toBe(true);
+  await expect(audio).toHaveAttribute("src", /^blob:/);
+  await expect(audio).toHaveJSProperty("srcObject", null);
+  await expect(page.getByText(/^Giliran ke pemutaran browser/)).toHaveCount(0);
+  await expect(page.getByText("Menjawab", { exact: true })).toBeVisible();
+  await expect.poll(() => server.requests.find((request) => request.method === "POST" && request.path.endsWith("/telemetry"))?.data)
+    .toMatchObject({ turnId: "turn-current", generation: 2, elapsedMs: expect.any(Number) });
+  expect(server.requests.filter(({ path }) => path.endsWith("/audio"))).toMatchObject([
+    { method: "GET", path: `${sessionsPath}/${id}/turns/turn-current/audio`, generation: "2" },
+  ]);
   expect((await readTransport(page)).audiblePlays).toBe(1);
 
-  await emitVoice(page, { type: "turn", turnId: "turn-next" });
-  await emitVoice(page, { type: "playback", turnId: "turn-current", allowed: true });
+  await page.evaluate(() => window.rkVoiceTest.localSpeech());
   await expect(audio).toHaveJSProperty("muted", true);
+  await expect(audio).not.toHaveAttribute("src", /^blob:/);
+
+  await emitVoice(page, { type: "turn", turnId: "turn-next", generation: 3 });
+  await emitVoice(page, { type: "turn", turnId: "turn-current", generation: 2 });
+  await emitVoice(page, { type: "playback", turnId: "turn-current", generation: 2, allowed: true });
+  await expect(audio).toHaveJSProperty("muted", true);
+  await expect(audio).not.toHaveAttribute("src", /^blob:/);
   await expect(reference).toHaveCount(0);
   await emitVoice(page, { type: "state", state: "standby" });
-  await expect(page.getByText("Siaga", { exact: true })).toBeVisible();
+  await expect(page.getByText("Mikrofon aktif", { exact: true })).toBeVisible();
   expect((await readTransport(page)).tracks[0].readyState).toBe("live");
 
   await page.getByRole("button", { name: "Akhiri sesi", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Mulai sesi", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Mulai (ngobrol|lagi)$/ })).toBeVisible();
   await expect.poll(() => server.closed.slice()).toEqual([id]);
   const ended = await readTransport(page);
   expect(ended.tracks[0].readyState).toBe("ended");
@@ -77,10 +92,51 @@ test("membuka mikrofon dari tombol, mengizinkan suara untuk giliran aktif, lalu 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
+test("ucapan lokal membatalkan unduhan dan menolak izin ulang untuk generasi yang sama", async ({ page }) => {
+  const server = await mockVoiceApp(page, { holdAudio: true });
+  await openVoice(page);
+  await startVoice(page);
+  await emitVoice(page, { type: "turn", turnId: "turn-cut", generation: 1 });
+  await emitVoice(page, { type: "playback", turnId: "turn-cut", generation: 1, allowed: true });
+  await expect.poll(() => server.requests.some(({ path }) => path.endsWith("/audio"))).toBe(true);
+  const failedAudio = page.waitForEvent("requestfailed", {
+    predicate: (request) => new URL(request.url()).pathname.endsWith("/audio"),
+  });
+  await page.evaluate(() => window.rkVoiceTest.localSpeech());
+  try {
+    await failedAudio;
+  } finally {
+    server.releaseAudio();
+  }
+  await emitVoice(page, { type: "playback", turnId: "turn-cut", generation: 1, allowed: true });
+  await expect(page.locator("audio")).not.toHaveAttribute("src", /^blob:/);
+  expect((await readTransport(page)).audiblePlays).toBe(0);
+  expect(server.requests.filter(({ path }) => path.endsWith("/audio"))).toHaveLength(1);
+  await expect(page.getByText("Mendengarkan", { exact: true })).toBeVisible();
+});
+
+test("penolakan verifikasi atau WAV rusak menampilkan kegagalan dan mempertahankan mikrofon", async ({ page }) => {
+  const server = await mockVoiceApp(page, { invalidAudio: true });
+  await openVoice(page);
+  await startVoice(page);
+  await emitVoice(page, { type: "turn", turnId: "turn-withheld", generation: 1 });
+  await emitVoice(page, { type: "playback", turnId: "turn-withheld", generation: 1, allowed: false, reason: "unverified" });
+  await expect(page.getByRole("alert")).toHaveText("Audio jawaban tidak dapat diverifikasi.");
+  expect(server.requests.filter(({ path }) => path.endsWith("/audio"))).toHaveLength(0);
+
+  await emitVoice(page, { type: "turn", turnId: "turn-invalid-audio", generation: 2 });
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await emitVoice(page, { type: "playback", turnId: "turn-invalid-audio", generation: 2, allowed: true });
+  await expect(page.getByRole("alert")).toHaveText("Audio jawaban tidak dapat diverifikasi.");
+  await expect(page.getByText("Mendengarkan", { exact: true })).toBeVisible();
+  expect((await readTransport(page)).audiblePlays).toBe(0);
+  expect((await readTransport(page)).tracks[0].enabled).toBe(true);
+});
+
 test("izin mikrofon ditolak dan percobaan ulang dimulai dari tombol", async ({ page }) => {
   const server = await mockVoiceApp(page, { denyMicrophone: true });
   await openVoice(page);
-  const start = page.getByRole("button", { name: "Mulai sesi", exact: true });
+  const start = page.getByRole("button", { name: /^Mulai (ngobrol|lagi)$/ });
   await start.click();
   await expect(page.getByText("Izin mikrofon ditolak.", { exact: true })).toBeVisible();
   expect(server.requests).toEqual([]);
@@ -100,7 +156,7 @@ test("koneksi putus menutup media dan percobaan ulang mengabaikan event sesi seb
   await startVoice(page);
   await page.evaluate(() => window.rkVoiceTest.disconnect());
   await expect(page.getByRole("alert")).toHaveText("Sesi suara terputus. Coba mulai lagi.");
-  await expect(page.getByRole("button", { name: "Mulai sesi", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Mulai (ngobrol|lagi)$/ })).toBeVisible();
   await expect.poll(() => server.closed.slice()).toEqual([server.sessions[0]]);
   expect(await readTransport(page)).toMatchObject({
     tracks: [{ readyState: "ended" }], peers: [{ state: "closed" }], streams: [{ closed: true }],
@@ -121,7 +177,7 @@ test("koneksi putus menutup media dan percobaan ulang mengabaikan event sesi seb
 test("penolakan server menutup mikrofon tanpa membuka aliran event", async ({ page }) => {
   const server = await mockVoiceApp(page, { startStatus: 503 });
   await openVoice(page);
-  const start = page.getByRole("button", { name: "Mulai sesi", exact: true });
+  const start = page.getByRole("button", { name: /^Mulai (ngobrol|lagi)$/ });
   await start.click();
   await expect.poll(async () => (await readTransport(page)).tracks.map(({ readyState }) => readyState)).toEqual(["ended"]);
   await expect(start).toBeVisible();

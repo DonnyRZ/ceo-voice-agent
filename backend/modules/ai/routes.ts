@@ -6,17 +6,21 @@ import type { RequireCeo } from '../auth/ceo-access.js';
 import type { createVoiceMetrics } from './metrics.js';
 import type { CeoFacts } from './retrieval/schema.js';
 import { VoiceServiceError } from './voice/service.js';
-import type { OwnedVoiceSession, VoiceEvent, VoiceOwner } from './voice/types.js';
+import type { OwnedVoiceSession, VoiceEvent, VoiceOwner, VoiceTurnKey } from './voice/types.js';
 
 const base = '/api/ceo/voice';
 const offer = z.object({ sdp: z.string().min(16).max(55_000).startsWith('v=0') }).strict();
-const playbackSample = z.object({ elapsedMs: z.number().finite().nonnegative().max(30_000) }).strict();
+const turnId = z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/u);
+const generation = z.number().int().positive();
+const playbackSample = z.strictObject({ elapsedMs: z.number().finite().nonnegative().max(30_000), turnId, generation });
+const audioQuery = z.strictObject({ generation: z.coerce.number().pipe(generation) });
 
 export interface VoiceApi {
   start(owner: VoiceOwner & { sdp: string }): Promise<{ id: string; sdp: string }>;
   stop(owner: OwnedVoiceSession): Promise<void>;
   subscribe(owner: OwnedVoiceSession, listener: (event: VoiceEvent<CeoFacts>) => void): () => void;
-  recordBrowserPlayback?(owner: OwnedVoiceSession, elapsedMs: number): void;
+  takeAudio?(owner: OwnedVoiceSession, turn: VoiceTurnKey): Promise<Buffer | undefined>;
+  recordBrowserPlayback?(owner: OwnedVoiceSession, elapsedMs: number, turn?: VoiceTurnKey): boolean;
   closeAll(): Promise<void>;
 }
 
@@ -113,14 +117,21 @@ export function registerCeoVoiceRoutes(app: FastifyInstance, options: {
     await voiceCall(() => api.stop(owner));
     return reply.code(204).send();
   });
+  app.get<{ Params: { id: string; turnId: string } }>(base + '/sessions/:id/turns/:turnId/audio', async (request, reply) => {
+    reply.header('Cache-Control', 'no-store');
+    const owner = await owned(request);
+    const turn = { turnId: parseInput(turnId, request.params.turnId), ...parseInput(audioQuery, request.query) };
+    const api = available();
+    const audio = await voiceCall(() => api.takeAudio?.(owner, turn));
+    if (!audio) throw new ApiError(404, 'Audio terverifikasi tidak tersedia.');
+    return reply.type('audio/wav').send(audio);
+  });
   app.post<{ Params: { id: string } }>(base + '/sessions/:id/telemetry', async (request, reply) => {
     const owner = await owned(request);
     const api = available();
-    const { elapsedMs } = parseInput(playbackSample, request.body);
-    await voiceCall(() => api.recordBrowserPlayback
-      ? api.recordBrowserPlayback(owner, elapsedMs)
-      : api.subscribe(owner, () => {})());
-    metrics.observe('delegation_to_browser_playback_proxy', 'sample', elapsedMs);
+    const { elapsedMs, ...turn } = parseInput(playbackSample, request.body);
+    const recorded = await voiceCall(() => api.recordBrowserPlayback?.(owner, elapsedMs, turn));
+    if (recorded) metrics.observe('delegation_to_browser_playback_proxy', 'sample', elapsedMs);
     return reply.code(204).send();
   });
   app.get(base + '/metrics', (request, reply) => requireAdmin(request, async () =>

@@ -8,6 +8,7 @@ type TransportStatus = {
   tracks: { enabled: boolean; readyState: string }[];
   peers: { state: string; answer: string | undefined }[];
   streams: { url: string; closed: boolean }[];
+  remoteTrackEnabled: boolean[];
   audiblePlays: number;
 };
 
@@ -15,6 +16,7 @@ interface TransportControl {
   allowMicrophone(): void;
   disconnect(peer?: number): void;
   emit(event: Record<string, unknown>, stream?: number): void;
+  localSpeech(): Promise<void>;
   status(): TransportStatus;
 }
 
@@ -22,8 +24,8 @@ declare global {
   interface Window { rkVoiceTest: TransportControl }
 }
 
-export async function installVoiceTransport(page: Page, denyMicrophone = false) {
-  await page.addInitScript(({ offer, denied }) => {
+export async function installVoiceTransport(page: Page, denyMicrophone = false, nativePlayback = false) {
+  await page.addInitScript(({ offer, denied, nativePlayback }) => {
     let permissionDenied = denied;
     let microphoneRequests = 0;
     let audiblePlays = 0;
@@ -31,6 +33,7 @@ export async function installVoiceTransport(page: Page, denyMicrophone = false) 
     const peers: SyntheticPeer[] = [];
     const streams: SyntheticEventSource[] = [];
     const audioContexts: AudioContext[] = [];
+    const microphones: { context: AudioContext; destination: MediaStreamAudioDestinationNode }[] = [];
 
     function audioStream() {
       const context = new AudioContext();
@@ -96,6 +99,8 @@ export async function installVoiceTransport(page: Page, denyMicrophone = false) 
         this.iceConnectionState = "closed";
         this.remoteAudio?.getTracks().forEach((track) => track.stop());
       }
+
+      remoteTrackEnabled() { return this.remoteAudio?.getAudioTracks()[0]?.enabled; }
     }
 
     class SyntheticEventSource extends EventTarget {
@@ -134,14 +139,18 @@ export async function installVoiceTransport(page: Page, denyMicrophone = false) 
       value: async () => {
         microphoneRequests++;
         if (permissionDenied) throw new DOMException("Microphone denied by fixture", "NotAllowedError");
-        const stream = audioStream();
+        const context = new AudioContext();
+        audioContexts.push(context);
+        const destination = context.createMediaStreamDestination();
+        microphones.push({ context, destination });
+        const { stream } = destination;
         tracks.push(...stream.getAudioTracks());
         return stream;
       },
     });
     Object.defineProperty(window, "RTCPeerConnection", { configurable: true, value: SyntheticPeer });
     Object.defineProperty(window, "EventSource", { configurable: true, value: SyntheticEventSource });
-    Object.defineProperty(HTMLMediaElement.prototype, "play", {
+    if (!nativePlayback) Object.defineProperty(HTMLMediaElement.prototype, "play", {
       configurable: true,
       value: async function (this: HTMLMediaElement) {
         if (!this.muted) {
@@ -155,14 +164,27 @@ export async function installVoiceTransport(page: Page, denyMicrophone = false) 
       allowMicrophone: () => { permissionDenied = false; },
       disconnect: (peer = peers.length - 1) => peers[peer]?.changeState("disconnected"),
       emit: (event, stream = streams.length - 1) => streams[stream]?.emit(event),
+      async localSpeech() {
+        const microphone = microphones.at(-1);
+        if (!microphone) throw new Error("No synthetic microphone");
+        const { context, destination } = microphone;
+        await context.resume();
+        const tone = context.createOscillator();
+        const volume = context.createGain();
+        volume.gain.value = 0.2;
+        tone.connect(volume).connect(destination);
+        tone.start();
+        tone.stop(context.currentTime + 0.3);
+      },
       status: () => ({
         microphoneRequests, audiblePlays,
         tracks: tracks.map(({ enabled, readyState }) => ({ enabled, readyState })),
         peers: peers.map(({ connectionState, remoteDescription }) => ({ state: connectionState, answer: remoteDescription?.sdp })),
         streams: streams.map(({ url, readyState }) => ({ url, closed: readyState === SyntheticEventSource.CLOSED })),
+        remoteTrackEnabled: peers.flatMap((peer) => peer.remoteTrackEnabled() ?? []),
       }),
     };
-  }, { offer: syntheticOffer, denied: denyMicrophone });
+  }, { offer: syntheticOffer, denied: denyMicrophone, nativePlayback });
 }
 
 export function readTransport(page: Page) {

@@ -1,43 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createVoiceService } from '../modules/ai/voice/service.js';
-import type { LiveEvent, LiveHandlers, VoiceAdapter, VoiceEvent, VoiceServiceOptions } from '../modules/ai/voice/types.js';
-
-const owner = { userId: 'ceo', sessionKey: 'login-1' };
-const answer = { kind: 'facts' as const, text: 'Dua tugas selesai.', facts: { count: 2 } };
-type Facts = typeof answer.facts;
-type Options = VoiceServiceOptions<string, Facts, string>;
-
-function harness(options: Partial<Options> = {}) {
-  let handlers: LiveHandlers | undefined;
-  const onUsage = vi.fn<NonNullable<Options['onUsage']>>();
-  const retrieve = vi.fn<Options['retrieve']>().mockResolvedValue(answer);
-  const sendCommentary = vi.fn<(eventId: string, delegationId: string, text: string) => void>();
-  const closeSession = vi.fn<VoiceAdapter['closeSession']>().mockImplementation(async () => {
-    handlers?.onEvent({ type: 'closed', seconds: 16 });
-  });
-  const adapter = {
-    createSession: vi.fn<VoiceAdapter['createSession']>().mockResolvedValue({ id: 'live_provider', sdp: 'answer' }),
-    attach: vi.fn<VoiceAdapter['attach']>().mockImplementation(async (_id, nextHandlers) => {
-      handlers = nextHandlers;
-      return { sendCommentary, finish: async () => true };
-    }),
-    closeSession,
-  };
-  const service = createVoiceService<string, Facts, string>({ adapter, settleMs: 2, retrieve, onUsage, ...options });
-  const receive = (event: LiveEvent) => handlers?.onEvent(event);
-  function userSpeech(fragmentId: string, text: string, startMs: number, endMs: number) {
-    receive({ type: 'transcript', fragment: { eventId: fragmentId, role: 'user', text, startMs, endMs } });
-  }
-  async function open() {
-    const { id } = await service.start({ ...owner, sdp: 'offer' });
-    const events: VoiceEvent<Facts>[] = [];
-    const input = { ...owner, id };
-    service.subscribe(input, (event) => events.push(event));
-    return { input, events };
-  }
-  return { adapter, service, receive, userSpeech, open, retrieve, sendCommentary, onUsage,
-    disconnect: () => handlers?.onDisconnect() };
-}
+import { deliverVerifiedAudio, emitVoiceSegment } from './voice-output-fixture.js';
+import { answer, harness, owner, type Options } from './voice-service-fixture.js';
 
 describe('CEO Live voice authority', () => {
   it('uses a correction delivered after delegation but within its audio window', async () => {
@@ -54,40 +17,51 @@ describe('CEO Live voice authority', () => {
       mock.receive({ type: 'delegation', id: 'corrected', offsetMs: 1_600 });
       await vi.advanceTimersByTimeAsync(180);
       mock.userSpeech('suffix', ', bukan itu, melainkan proyek Integrasi Sistem SSO di divisi IT?', 850, 1_550);
-      await vi.advanceTimersByTimeAsync(90);
+      await vi.advanceTimersByTimeAsync(1_020);
       const [eventId] = mock.sendCommentary.mock.calls[0];
-      mock.receive({ type: 'commentary_accepted', eventId });
-      await vi.advanceTimersByTimeAsync(0);
+      deliverVerifiedAudio(mock.receive, eventId, corrected, 1_850);
+      await vi.advanceTimersByTimeAsync(260);
       const result = events.find((event) => event.type === 'result');
       expect(result).toMatchObject({ result: { text: corrected } });
-      expect(events).toContainEqual({ type: 'playback', turnId: 'corrected', allowed: true });
+      expect(events).toContainEqual({ type: 'playback', turnId: 'corrected', generation: 1, allowed: true });
     } finally {
       await mock.service.closeAll();
       vi.useRealTimers();
     }
   });
 
-  it('waits for late transcript fragments and the corresponding provider acknowledgment', async () => {
+  it('uses late input and complete audio only after the matching ACK, even without an ACK offset', async () => {
+    vi.useFakeTimers();
     const mock = harness();
-    const { events } = await mock.open();
-    mock.receive({ type: 'active' });
-    mock.receive({ type: 'delegation', id: 'turn-1', offsetMs: 1_000 });
-    mock.userSpeech('fragment-1', 'Tugas', 250, 500);
-    mock.userSpeech('fragment-2', ' yang selesai?', 500, 900);
-    await vi.waitFor(() => expect(mock.sendCommentary).toHaveBeenCalledOnce());
-    expect(mock.retrieve).toHaveBeenCalledWith(expect.objectContaining({ text: 'Tugas yang selesai?' }));
-    expect(mock.sendCommentary.mock.calls[0].slice(1)).toEqual(['turn-1', answer.text]);
-    expect(events).not.toContainEqual(expect.objectContaining({ type: 'result' }));
-    mock.receive({ type: 'commentary_accepted', eventId: 'other-command' });
-    expect(events).not.toContainEqual({ type: 'playback', turnId: 'turn-1', allowed: true });
-    mock.receive({ type: 'commentary_accepted', eventId: mock.sendCommentary.mock.calls[0][0] });
-    await vi.waitFor(() => expect(events.slice(-2)).toEqual([
-      { type: 'result', turnId: 'turn-1', result: answer },
-      { type: 'playback', turnId: 'turn-1', allowed: true },
-    ]));
-    mock.receive({ type: 'delegation', id: 'turn-1', offsetMs: 1_000 });
-    expect(mock.retrieve).toHaveBeenCalledOnce();
-    await mock.service.closeAll();
+    try {
+      const { events } = await mock.open();
+      expect(events[0]).toMatchObject({ type: 'state', state: 'standby' });
+      mock.receive({ type: 'delegation', id: 'turn-1', offsetMs: 1_000 });
+      mock.userSpeech('fragment-1', 'Tugas', 250, 500);
+      mock.userSpeech('fragment-2', ' yang selesai?', 500, 900);
+      expect(events).toContainEqual({ type: 'state', state: 'active' });
+      await vi.advanceTimersByTimeAsync(560);
+      expect(mock.sendCommentary).toHaveBeenCalledOnce();
+      expect(mock.retrieve).toHaveBeenCalledWith(expect.objectContaining({ text: 'Tugas yang selesai?' }));
+      expect(mock.sendCommentary.mock.calls[0].slice(1)).toEqual(['turn-1', answer.text]);
+      const [eventId] = mock.sendCommentary.mock.calls[0];
+      emitVoiceSegment(mock.receive, eventId, answer.text);
+      mock.receive({ type: 'commentary_accepted', eventId: 'other-command' });
+      await vi.advanceTimersByTimeAsync(260);
+      expect(events).not.toContainEqual(expect.objectContaining({ type: 'result' }));
+      expect(events).not.toContainEqual({ type: 'playback', turnId: 'turn-1', generation: 1, allowed: true });
+      mock.receive({ type: 'commentary_accepted', eventId });
+      await vi.advanceTimersByTimeAsync(260);
+      expect(events.slice(-2)).toEqual([
+        { type: 'result', turnId: 'turn-1', generation: 1, result: answer },
+        { type: 'playback', turnId: 'turn-1', generation: 1, allowed: true },
+      ]);
+      mock.receive({ type: 'delegation', id: 'turn-1', offsetMs: 1_000 });
+      expect(mock.retrieve).toHaveBeenCalledOnce();
+    } finally {
+      await mock.service.closeAll();
+      vi.useRealTimers();
+    }
   });
 
   it('drops an already submitted response when newer user speech arrives', async () => {
@@ -102,9 +76,9 @@ describe('CEO Live voice authority', () => {
     await vi.waitFor(() => expect(mock.sendCommentary).toHaveBeenCalledTimes(2));
     expect(mock.retrieve.mock.calls[0][0].signal.aborted).toBe(true);
     expect(mock.retrieve.mock.calls[1][0]).toMatchObject({ text: 'Maksud saya proyek B.' });
-    expect(events).not.toContainEqual({ type: 'playback', turnId: 'before', allowed: true });
-    mock.receive({ type: 'commentary_accepted', eventId: mock.sendCommentary.mock.calls[1][0] });
-    await vi.waitFor(() => expect(events.at(-1)).toEqual({ type: 'playback', turnId: 'after', allowed: true }));
+    expect(events).not.toContainEqual(expect.objectContaining({ type: 'playback', turnId: 'before', allowed: true }));
+    deliverVerifiedAudio(mock.receive, mock.sendCommentary.mock.calls[1][0], answer.text, 2_300);
+    await vi.waitFor(() => expect(events.at(-1)).toEqual({ type: 'playback', turnId: 'after', generation: 2, allowed: true }));
     await mock.service.closeAll();
   });
 
@@ -149,7 +123,27 @@ describe('CEO Live voice authority', () => {
     expect(mock.adapter.createSession).toHaveBeenCalledOnce();
   });
 
-  it('sends a safe fallback when retrieval times out and closes if Live rejects it', async () => {
+  it('loads vocabulary only for the authorized login and passes it to that Live session', async () => {
+    const vocabulary = { projects: ['Pintu Utara'], tasks: ['Periksa Panel'] };
+    const authorize = vi.fn<NonNullable<Options['authorize']>>().mockImplementation(async ({ sessionKey }) => sessionKey === owner.sessionKey);
+    const loadVocabulary = vi.fn<NonNullable<Options['loadVocabulary']>>().mockResolvedValue(vocabulary);
+    const mock = harness({ authorize, loadVocabulary });
+    try {
+      await expect(mock.service.start({ ...owner, sessionKey: 'revoked-login', sdp: 'denied' }))
+        .rejects.toMatchObject({ code: 'unauthorized' });
+      expect(loadVocabulary).not.toHaveBeenCalled();
+      expect(mock.adapter.createSession).not.toHaveBeenCalled();
+      await mock.open();
+      const signal = loadVocabulary.mock.calls[0][1];
+      expect(loadVocabulary).toHaveBeenCalledExactlyOnceWith(owner, signal);
+      expect(mock.adapter.createSession).toHaveBeenCalledExactlyOnceWith('offer', signal, vocabulary);
+      expect(loadVocabulary.mock.invocationCallOrder[0]).toBeGreaterThan(authorize.mock.invocationCallOrder[1]);
+    } finally {
+      await mock.service.closeAll();
+    }
+  });
+
+  it('reports unavailability when retrieval times out and closes if Live rejects the message', async () => {
     const retrieve = vi.fn<Options['retrieve']>().mockImplementation(() => new Promise(() => {}));
     const mock = harness({ retrieve, retrievalTimeoutMs: 15 });
     const { events } = await mock.open();
@@ -162,8 +156,67 @@ describe('CEO Live voice authority', () => {
     ]);
     mock.receive({ type: 'commentary_rejected', eventId: mock.sendCommentary.mock.calls[0][0] });
     await vi.waitFor(() => expect(events.at(-1)).toMatchObject({ type: 'state', state: 'unavailable' }));
-    expect(events).not.toContainEqual({ type: 'playback', turnId: 'turn-1', allowed: true });
+    expect(events).not.toContainEqual(expect.objectContaining({ type: 'playback', turnId: 'turn-1', allowed: true }));
     await mock.service.closeAll();
+  });
+
+  it('keeps audio sealed for incomplete media coverage or a different readout', async () => {
+    const retrieve = vi.fn<Options['retrieve']>()
+      .mockResolvedValueOnce({ ...answer, context: 'verified by the timesheet' })
+      .mockResolvedValue(answer);
+    const onMetric = vi.fn<NonNullable<Options['onMetric']>>();
+    const mock = harness({ retrieve, onMetric, outputTimeoutMs: 600 });
+    const { input, events } = await mock.open();
+    try {
+      mock.userSpeech('first', 'Status proyek Atlas?', 0, 800);
+      mock.receive({ type: 'delegation', id: 'without-timing', offsetMs: 1_000 });
+      await vi.waitFor(() => expect(mock.sendCommentary).toHaveBeenCalledOnce());
+      const [firstId] = mock.sendCommentary.mock.calls[0];
+      mock.receive({ type: 'commentary_accepted', eventId: firstId });
+      emitVoiceSegment(mock.receive, firstId, answer.text, 1_600, 400);
+      await vi.waitFor(() => expect(events.at(-1)).toMatchObject({ type: 'playback', reason: 'unverified' }));
+      await expect(mock.service.takeAudio(input, { turnId: 'without-timing', generation: 1 })).resolves.toBeUndefined();
+      expect(onMetric).toHaveBeenCalledWith(expect.objectContaining({
+        stage: 'output_verify', outcome: 'timeout', missingAckOffset: true,
+      }), 'without-timing');
+
+      mock.userSpeech('second', 'Siapa PIC proyek B?', 2_500, 3_100);
+      mock.receive({ type: 'delegation', id: 'wrong-fact', offsetMs: 3_300 });
+      await vi.waitFor(() => expect(mock.sendCommentary).toHaveBeenCalledTimes(2));
+      expect(retrieve.mock.calls[1][0].context).toBe('verified by the timesheet');
+      deliverVerifiedAudio(mock.receive, mock.sendCommentary.mock.calls[1][0], 'Tiga tugas selesai.', 3_500);
+      await vi.waitFor(() => expect(events.at(-1)).toMatchObject({ type: 'playback', turnId: 'wrong-fact', reason: 'unverified' }));
+      await expect(mock.service.takeAudio(input, { turnId: 'wrong-fact', generation: 2 })).resolves.toBeUndefined();
+      expect(onMetric).toHaveBeenCalledWith(expect.objectContaining({
+        stage: 'output_verify', outcome: 'mismatch',
+      }), 'wrong-fact');
+    } finally {
+      await mock.service.closeAll();
+    }
+  });
+
+  it('waits for the first wake transcript, gives the current clip once, and clears the last turn after pausing', async () => {
+    const mock = harness();
+    const { input, events } = await mock.open();
+    try {
+      mock.receive({ type: 'delegation', id: 'woken', offsetMs: 1_000 });
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      expect(mock.retrieve).not.toHaveBeenCalled();
+      mock.userSpeech('first', 'Status proyek Atlas?', 0, 800);
+      await vi.waitFor(() => expect(mock.sendCommentary).toHaveBeenCalledOnce());
+      deliverVerifiedAudio(mock.receive, mock.sendCommentary.mock.calls[0][0], answer.text);
+      await vi.waitFor(() => expect(events.at(-1)).toMatchObject({ type: 'playback', allowed: true }));
+      await expect(mock.service.takeAudio(input, { turnId: 'woken', generation: 2 })).resolves.toBeUndefined();
+      const audio = await mock.service.takeAudio(input, { turnId: 'woken', generation: 1 });
+      expect(audio?.subarray(0, 4).toString('ascii')).toBe('RIFF');
+      await expect(mock.service.takeAudio(input, { turnId: 'woken', generation: 1 })).resolves.toBeUndefined();
+      mock.receive({ type: 'standby' });
+      mock.receive({ type: 'delegation', id: 'stale', offsetMs: 3_500 });
+      await vi.waitFor(() => expect(events.at(-1)).toMatchObject({ type: 'playback', turnId: 'stale', reason: 'unverified' }));
+      expect(mock.retrieve).toHaveBeenCalledOnce();
+    } finally {
+      await mock.service.closeAll();
+    }
   });
 
   it('prepares candidates without publishing data and discards them when the transcript changes', async () => {

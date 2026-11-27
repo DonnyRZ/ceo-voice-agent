@@ -17,6 +17,7 @@ const facts = z.object({
   evidenceId: z.optional(z.string()),
   picName: z.optional(z.nullable(z.string())),
   counts: z.optional(z.object({ pending: z.number(), on_progress: z.number(), done: z.number(), total: z.number() })),
+  statusFilter: z.optional(z.array(status)),
   tasks: z._default(z.array(z.object({
     id: z.string(), title: z.string(), projectId: z.string(), projectName: z.string(),
     divisionId: z.string(), divisionName: z.string(), date: z.string(), status,
@@ -36,11 +37,12 @@ const result = z.discriminatedUnion('kind', [
 const stages = z.enum(['connecting', 'active', 'standby', 'closed', 'unavailable']);
 const reasons = z.enum(['revoked', 'ended', 'timeout', 'unavailable']);
 const turnId = z.string().check(z.minLength(1));
+const turn = { turnId, generation: z.int().check(z.minimum(1)) };
 const event = z.discriminatedUnion('type', [
   z.object({ type: z.literal('state'), state: stages, reason: z.optional(reasons) }),
-  z.object({ type: z.literal('turn'), turnId }),
-  z.object({ type: z.literal('result'), turnId, result }),
-  z.object({ type: z.literal('playback'), turnId, allowed: z.boolean() }),
+  z.object({ type: z.literal('turn'), ...turn }),
+  z.object({ type: z.literal('result'), ...turn, result }),
+  z.object({ type: z.literal('playback'), ...turn, allowed: z.boolean(), reason: z.optional(z.literal('unverified')) }),
 ]);
 
 export type VoiceFacts = z.infer<typeof facts>;

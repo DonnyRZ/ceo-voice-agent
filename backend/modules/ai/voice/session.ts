@@ -3,7 +3,8 @@ import type { VoiceHistoryEntry } from './history/entry.js';
 import { createVoiceInput } from './input.js';
 import { untilAborted, VoiceServiceError, voiceTerminalState } from './lifecycle.js';
 import { VoiceTurns } from './turn.js';
-import type { LiveEvent, LiveSideband, VoiceCloseReason, VoiceEvent, VoiceMetric, VoiceOwner, VoiceServiceOptions, VoiceState } from './types.js';
+import { createSessionEvents } from './session-events.js';
+import type { LiveEvent, LiveSideband, VoiceCloseReason, VoiceEvent, VoiceMetric, VoiceOwner, VoiceServiceOptions, VoiceState, VoiceTurnKey } from './types.js';
 
 type Listener<Facts> = (event: VoiceEvent<Facts>) => void;
 
@@ -18,13 +19,14 @@ export class VoiceSession<Context, Facts, Prepared> {
   private reason?: VoiceCloseReason;
   private providerId?: string;
   private providerClosed = false;
+  private opening?: Promise<unknown>;
   private providerClosing?: Promise<void>;
-  private sentFinalUsage = false;
   private sideband?: LiveSideband;
   private duration?: ReturnType<typeof setTimeout>;
   private access?: ReturnType<typeof setTimeout>;
   private historySequence = 0;
-  private pendingPlaybackSamples = 0;
+  private playbackSample?: VoiceTurnKey;
+  private readonly onLiveEvent: (event: LiveEvent) => void;
 
   constructor(
     readonly owner: VoiceOwner,
@@ -43,28 +45,48 @@ export class VoiceSession<Context, Facts, Prepared> {
     this.input = createVoiceInput(this.turns, {
       settleMs: options.settleMs, prepareCandidates: !!options.prepare, metric, record,
     });
+    this.onLiveEvent = createSessionEvents(this.turns, this.input, {
+      closed: () => !!this.reason, state: () => this.state,
+      record: (entry) => this.record(entry), changeState: (state) => this.changeState(state),
+      usage: (seconds, final) => this.options.onUsage?.({
+        id: this.id, providerId: this.providerId, userId: this.owner.userId, seconds, final,
+      }),
+      providerClosed: (reason) => { this.providerClosed = true; void this.end(reason); },
+    });
   }
 
   async start(sdp: string) {
     this.record({ type: 'session_attempt', userId: this.owner.userId });
-    this.duration = setTimeout(() => { void this.end('timeout'); }, this.options.maxDurationMs ?? 120_000);
-    this.duration.unref();
+    this.duration = setTimeout(() => { void this.end('timeout'); }, this.options.maxDurationMs ?? 120_000).unref();
     const timeout = AbortSignal.timeout(this.options.startupTimeoutMs ?? 10_000);
     const signal = AbortSignal.any([timeout, this.lifetime.signal]);
     try {
       const canCreate = await this.authorize(signal);
       signal.throwIfAborted();
       if (!canCreate) throw new VoiceServiceError('unauthorized');
-      const creation = this.options.adapter.createSession(sdp, signal).then((connection) => {
+      // Track the adapter work separately from the caller's abortable wait.
+      const creation = Promise.resolve().then(async () => {
+        const vocabulary = await this.options.loadVocabulary?.(this.owner, signal);
+        signal.throwIfAborted();
+        return vocabulary ? this.options.adapter.createSession(sdp, signal, vocabulary) : this.options.adapter.createSession(sdp, signal);
+      }).then((connection) => {
         this.providerId = connection.id;
-        if (this.reason) void this.closeProvider();
         return connection;
       });
+      this.opening = creation;
       const connection = await untilAborted(creation, signal);
-      this.sideband = await untilAborted(this.options.adapter.attach(connection.id, {
-        onEvent: (event) => this.onLiveEvent(event),
-        onDisconnect: () => { void this.end('unavailable'); },
-      }, signal), signal);
+      signal.throwIfAborted();
+      const attaching = Promise.resolve().then(() => {
+        signal.throwIfAborted();
+        return this.options.adapter.attach(connection.id, {
+          onEvent: (event) => this.onLiveEvent(event),
+          onDisconnect: () => { void this.end('unavailable'); },
+        }, signal);
+      }).then((sideband) => {
+        this.sideband = sideband;
+      });
+      this.opening = attaching;
+      await untilAborted(attaching, signal);
       signal.throwIfAborted();
       const canAttach = await this.authorize(signal);
       signal.throwIfAborted();
@@ -87,11 +109,16 @@ export class VoiceSession<Context, Facts, Prepared> {
     return () => this.listeners.delete(listener);
   }
 
-  recordBrowserPlayback(elapsedMs: number) {
-    // The browser reports at session scope. Allow one sample per playback release.
-    if (!this.options.onHistory || this.pendingPlaybackSamples === 0) return;
-    this.pendingPlaybackSamples -= 1;
-    this.record({ type: 'browser_playback', elapsedMs });
+  recordBrowserPlayback(elapsedMs: number, turn?: VoiceTurnKey) {
+    if (!turn || this.playbackSample?.turnId !== turn.turnId || this.playbackSample.generation !== turn.generation) return false;
+    this.playbackSample = undefined;
+    this.record({ type: 'browser_playback', elapsedMs, ...turn });
+    return true;
+  }
+
+  async takeAudio(turn: VoiceTurnKey) {
+    if (!await this.authorize() || this.reason || this.state !== 'active') throw new VoiceServiceError('session_not_found');
+    return this.turns.takeAudio(turn);
   }
 
   end(reason: VoiceCloseReason) {
@@ -105,18 +132,21 @@ export class VoiceSession<Context, Facts, Prepared> {
     this.turns.cancelPreparation();
     this.emit({ type: 'state', state: voiceTerminalState(reason), reason });
     this.listeners.clear();
-    const cleanup = this.closeProvider();
+    const cleanup = this.providerClosing ??= this.finishProvider();
     this.onEnd(this, cleanup);
     this.metric({ type: 'session', action: 'closed', reason, durationMs: performance.now() - this.startedAt });
     return cleanup;
   }
 
-  private closeProvider() {
-    if (this.providerId && !this.providerClosed && !this.providerClosing) {
-      this.providerClosing = this.options.adapter.closeSession(this.providerId, this.sideband,
-        (event) => this.onLiveEvent(event)).catch(() => undefined);
+  private async finishProvider() {
+    // Late create/attach cleanup holds the per-user session limit until the adapter settles.
+    await this.opening?.catch(() => undefined);
+    if (!this.providerId || this.providerClosed) return;
+    try {
+      await this.options.adapter.closeSession(this.providerId, this.sideband, (event) => this.onLiveEvent(event));
+    } catch {
+      // A provider whose connection is already gone may reject close.
     }
-    return this.providerClosing ?? Promise.resolve();
   }
 
   private async authorize(deadline = this.lifetime.signal) {
@@ -134,49 +164,7 @@ export class VoiceSession<Context, Facts, Prepared> {
   private scheduleAccessCheck() {
     this.access = setTimeout(() => {
       void this.authorize().then((allowed) => { if (allowed) this.scheduleAccessCheck(); });
-    }, this.options.accessCheckMs ?? 5_000);
-    this.access.unref();
-  }
-
-  private onLiveEvent(event: LiveEvent) {
-    if (event.type === 'usage' || event.type === 'closed') {
-      const final = event.type === 'closed';
-      if (event.seconds !== undefined && !this.sentFinalUsage) {
-        this.record({ type: 'usage', seconds: event.seconds, final });
-        this.options.onUsage?.({ id: this.id, providerId: this.providerId, userId: this.owner.userId, seconds: event.seconds, final });
-        this.sentFinalUsage = final;
-      }
-      if (event.type === 'closed') {
-        this.providerClosed = true;
-        void this.end(event.reason ?? 'ended');
-      }
-      return;
-    }
-    if (this.reason) return;
-
-    switch (event.type) {
-      case 'active':
-      case 'standby':
-        if (event.type === 'standby') {
-          this.turns.invalidate('standby');
-          this.turns.cancelPreparation();
-        }
-        this.changeState(event.type);
-        break;
-      case 'transcript':
-        this.input.append(event.fragment);
-        break;
-      case 'provider_error':
-        this.record(event);
-        break;
-      case 'delegation':
-        this.input.delegate(event.id, event.offsetMs);
-        break;
-      case 'commentary_accepted':
-      case 'commentary_rejected':
-        this.turns.observeCommentary(event.eventId, event.type === 'commentary_accepted');
-        break;
-    }
+    }, this.options.accessCheckMs ?? 5_000).unref();
   }
 
   private changeState(state: 'active' | 'standby') {
@@ -187,7 +175,7 @@ export class VoiceSession<Context, Facts, Prepared> {
   }
 
   private metric(metric: VoiceMetric, turnId?: string) {
-    this.options.onMetric?.(metric);
+    this.options.onMetric?.(metric, turnId);
     this.record({ type: 'metric', turnId, metric });
   }
 
@@ -196,8 +184,9 @@ export class VoiceSession<Context, Facts, Prepared> {
   }
 
   private emit(event: VoiceEvent<Facts>) {
-    if (event.type === 'playback' && event.allowed && this.options.onHistory) {
-      this.pendingPlaybackSamples += 1;
+    if (event.type === 'turn' || event.type === 'state' && event.state !== 'active') this.playbackSample = undefined;
+    if (event.type === 'playback') {
+      this.playbackSample = event.allowed ? { turnId: event.turnId, generation: event.generation } : undefined;
       this.record(event);
     }
     for (const listener of this.listeners) {

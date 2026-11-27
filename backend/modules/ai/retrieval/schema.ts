@@ -4,6 +4,7 @@ import { workStatus } from '../../work-status.js';
 
 export interface RetrievalDatabase {
   query<Row extends QueryResultRow>(sql: string, parameters?: unknown[]): Promise<{ rows: Row[] }>;
+  withSnapshot?<T>(run: (db: RetrievalDatabase) => Promise<T>): Promise<T>;
 }
 
 export const ceoIntent = z.enum(['status', 'pic', 'summary', 'history']);

@@ -29,9 +29,11 @@ try {
   browser = await engine.launch({
     executablePath: engine === chromium ? process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE : undefined,
     proxy: browserProxy ? { server: browserProxy, bypass: '127.0.0.1,localhost' } : undefined,
-    args: engine === firefox ? undefined : browserProxy
-      ? ['--disable-dev-shm-usage', '--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
-      : ['--disable-dev-shm-usage'],
+    ignoreDefaultArgs: engine === chromium ? ['--mute-audio'] : undefined,
+    args: engine === firefox ? undefined : [
+      '--disable-dev-shm-usage', '--auto-accept-this-tab-capture',
+      ...(browserProxy ? ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp'] : []),
+    ],
   });
   page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await page.addInitScript(installPilotAudio);
@@ -44,20 +46,20 @@ try {
   await page.getByLabel('Email perusahaan').fill('ceo@ruangkerja.test');
   await page.getByLabel('Kata sandi', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Masuk', exact: true }).click();
-  await page.getByRole('button', { name: 'Mulai sesi' }).click();
-  const ready = page.getByText('Siaga', { exact: true }).or(page.getByText('Sesi aktif', { exact: true }));
+  await page.getByRole('button', { name: /^Mulai (ngobrol|lagi)$/ }).click();
+  const ready = page.getByText('Standby', { exact: true }).or(page.getByText('Mendengarkan', { exact: true }));
   await ready.or(page.getByRole('alert')).first().waitFor({ timeout: 18_000 });
   if (!await ready.first().isVisible()) throw new Error(await page.getByRole('alert').first().innerText());
 
   const scenarios = process.env.PILOT_ONE_TURN === 'true' ? ['awal'] : ['awal', 'aktif', 'bangun'];
   for (const scenario of scenarios) {
-    if (scenario === 'bangun') await page.getByText('Siaga', { exact: true }).waitFor({ timeout: 22_000 });
+    if (scenario === 'bangun') await page.getByText('Standby', { exact: true }).waitFor({ timeout: 22_000 });
     const { recording, ...result } = await page.evaluate(
       ({ input, wait }) => window.voicePilot.speak(input, wait),
       { input: wav.toString('base64'), wait: 5_000 },
     );
     const card = await page.getByRole('main').innerText();
-    const file = recording ? scenario + '.webm' : undefined;
+    const file = recording ? scenario + '.wav' : undefined;
     if (file) await writeFile(join(directory, file), Buffer.from(recording, 'base64'), { mode: 0o600 });
     report.samples.push({ scenario, ...result, file, card, factsAudited: false });
     if (result.connection === 'failed' || result.connection === 'closed') break;

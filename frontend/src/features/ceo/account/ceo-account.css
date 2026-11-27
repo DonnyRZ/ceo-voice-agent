@@ -1,0 +1,112 @@
+.ceo-account-description {
+  display: none;
+  margin: 10px 0 24px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.ceo-account-identity {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2vw, 34px);
+  margin-top: 32px;
+  padding: clamp(24px, 2.4vw, 40px);
+  border-radius: 20px;
+  background: #e0f0ec;
+}
+.ceo-account-identity > div { min-width: 0; }
+.ceo-account-avatar {
+  display: grid;
+  flex: none;
+  width: clamp(76px, 7.3vw, 122px);
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 23%;
+  background: #087b6d;
+  color: #fff;
+  font-size: clamp(30px, 3vw, 48px);
+  font-weight: 700;
+}
+.ceo-account-identity h2 { margin: 0; font-size: clamp(24px, 2.2vw, 36px); font-weight: 720; line-height: 1.25; }
+.ceo-account-identity p { margin: 8px 0 0; color: var(--muted); font-size: clamp(17px, 1.5vw, 25px); }
+.ceo-account-email { display: flex; align-items: center; gap: 12px; overflow-wrap: anywhere; }
+.ceo-account-email svg { flex: none; width: 1.15em; height: 1.15em; }
+.ceo-account-menu {
+  margin-top: 30px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: #fff;
+}
+.ceo-account-action {
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 2.4vw, 40px);
+  width: 100%;
+  min-height: clamp(80px, 7.7vw, 130px);
+  padding: 18px 14px;
+  color: var(--ink);
+  text-align: left;
+  text-decoration: none;
+  font-size: clamp(20px, 1.8vw, 30px);
+  font-weight: 660;
+}
+.ceo-account-action + .ceo-account-action { border-top: 1px solid var(--border); }
+.ceo-account-action:hover { color: var(--teal); }
+.ceo-account-action:disabled { opacity: .6; }
+.ceo-account-action svg { flex: none; width: 1.35em; height: 1.35em; stroke-width: 1.6; }
+.ceo-account-action svg:last-child { margin-left: auto; width: 1em; height: 1em; color: var(--muted); }
+.ceo-account-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0;
+  color: var(--teal);
+  font-size: 19px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.ceo-account-back svg { width: 24px; height: 24px; }
+.ceo-security-form {
+  display: grid;
+  gap: 10px;
+  max-width: 760px;
+  padding: clamp(20px, 2.4vw, 36px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: #fff;
+}
+.ceo-security-form header { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 12px; }
+.ceo-security-form header > svg { width: 34px; height: 34px; flex: none; color: var(--teal); }
+.ceo-security-form h2 { margin: 0; font-size: 24px; font-weight: 700; }
+.ceo-security-form header p { margin: 8px 0 0; color: var(--muted); line-height: 1.5; }
+.ceo-security-form label { font-size: 17px; font-weight: 600; }
+.ceo-security-form input {
+  min-width: 0;
+  min-height: 48px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid #aebfc3;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 17px;
+}
+.ceo-security-form .ui-button { margin-top: 10px; font-size: 17px; }
+.ceo-account-hint { margin: -8px 0 10px; font-size: 14px; color: var(--muted); }
+.ceo-account-error { margin-top: 16px; color: #a72331; line-height: 1.5; }
+.ceo-account-feedback { margin-top: 16px; color: #00675c; line-height: 1.5; }
+@media (max-width: 767px) {
+  .ceo-account-description { display: block; margin-bottom: 26px; line-height: 1.5; }
+  .ceo-account-identity { gap: 16px; margin-top: 0; padding: 24px 16px; border-radius: 20px; }
+  .ceo-account-avatar { width: 82px; background: #b9e7dc; color: #00584f; font-size: 34px; }
+  .ceo-account-identity h2 { font-size: 21px; }
+  .ceo-account-identity p { margin-top: 6px; font-size: 15px; }
+  .ceo-account-email svg { display: none; }
+  .ceo-account-menu { margin-top: 22px; padding-inline: 12px; border: 0; }
+  .ceo-account-action { gap: 20px; min-height: 72px; padding-inline: 8px; font-size: 19px; }
+  .ceo-account-action svg { width: 26px; height: 26px; }
+  .ceo-account-back { margin-block: 22px; font-size: 17px; }
+  .ceo-security-form { padding: 18px; border-radius: 16px; }
+  .ceo-security-form h2 { font-size: 21px; }
+  .ceo-security-form header p { font-size: 15px; }
+  .ceo-security-form .ui-button { width: 100%; min-height: 48px; }
+}

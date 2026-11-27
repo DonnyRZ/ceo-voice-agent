@@ -14,8 +14,8 @@ export function createEmbedder(apiKey: string, model: string, budget: OpenAiBudg
     const response = await client.embeddings.create({ model, input, dimensions }, { signal });
     settle(embeddingMicros(response.usage.total_tokens));
     const result = response.data[0]?.embedding;
-    if (result?.length !== dimensions || !result.every(Number.isFinite)) {
-      throw new Error('Dimensi embedding dari OpenAI tidak sesuai.');
+    if (result?.length !== dimensions || !result.every(Number.isFinite) || !result.some((value) => value !== 0)) {
+      throw new Error('Embedding dari OpenAI tidak valid.');
     }
     return result;
   };
@@ -31,34 +31,47 @@ type Job = {
 };
 
 export function startEmbeddingWorker(
-  pool: Pool,
+  pool: Pick<Pool, 'query'>,
   model: string,
   embed: ReturnType<typeof createEmbedder>,
-  logger: FastifyBaseLogger,
+  logger: Pick<FastifyBaseLogger, 'debug' | 'warn'>,
 ) {
   const controller = new AbortController();
   let running: Promise<void> | undefined;
   let budgetSpent = false;
 
+  async function retry(job: Job, delaySeconds: number) {
+    try {
+      await pool.query('SELECT retry_work_search_embedding($1, $2, $3, $4)', [
+        job.kind, job.resource_id, job.lease_id, delaySeconds,
+      ]);
+    } catch {
+      logger.warn('Lease embedding belum dapat dilepas. Antrean akan mencoba lagi setelah lease kedaluwarsa.');
+    }
+  }
+
   async function run() {
     const { rows } = await pool.query<Job>('SELECT * FROM claim_work_search_embeddings($1, $2)', [model, 4]);
     for (const job of rows) {
-      if (controller.signal.aborted) break;
+      if (controller.signal.aborted || budgetSpent) {
+        await retry(job, 1);
+        continue;
+      }
       try {
         const text = [job.title, job.description].filter(Boolean).join('\n');
         const result = await embed(text, controller.signal);
-        await pool.query('SELECT complete_work_search_embedding($1, $2, $3, $4, $5::vector)', [
-          job.kind, job.resource_id, job.lease_id, model, JSON.stringify(result),
-        ]);
+        controller.signal.throwIfAborted();
+        const { rows: [completion] } = await pool.query<{ completed: boolean }>(
+          'SELECT complete_work_search_embedding($1, $2, $3, $4, $5::vector) AS completed', [
+            job.kind, job.resource_id, job.lease_id, model, JSON.stringify(result),
+          ]);
+        if (!completion?.completed) logger.debug('Lease embedding sudah berubah sebelum penyimpanan.');
       } catch (error) {
         if (error instanceof BudgetExceeded) budgetSpent = true;
-        const delaySeconds = Math.min(3600, 15 * 2 ** Math.min(job.attempts, 8));
-        await pool.query('SELECT retry_work_search_embedding($1, $2, $3, $4)', [
-          job.kind, job.resource_id, job.lease_id, delaySeconds,
-        ]);
-        if (!controller.signal.aborted) {
-          logger.warn({ budgetSpent }, 'Pembaruan embedding dijadwalkan ulang.');
-        }
+        const interrupted = controller.signal.aborted;
+        const delaySeconds = interrupted || budgetSpent ? 1 : Math.min(3600, 15 * 2 ** Math.min(job.attempts, 8));
+        await retry(job, delaySeconds);
+        if (!interrupted) logger.warn({ budgetSpent }, 'Pembaruan embedding belum selesai.');
       }
     }
   }

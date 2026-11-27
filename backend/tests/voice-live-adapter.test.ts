@@ -89,10 +89,12 @@ describe('Adapter OpenAI Live', () => {
     socket.message({ type: 'session.resumed' });
     socket.message({ type: 'session.input_audio.append', audio: 'AAAA' });
     const sideband = await pending;
+    sideband.silenceAcknowledgment?.('delegation-1');
     sideband.sendCommentary('event-1', 'delegation-1', 'Atlas memiliki 2 tugas.');
     const stopping = provider.closeSession(sessionId, sideband);
 
     expect(socket.sent).toEqual([
+      { type: 'session.thinking.append', event_id: expect.any(String), delegation_id: 'delegation-1', content: expect.stringContaining('Belum ada hasil') },
       { type: 'session.commentary.append', event_id: 'event-1', delegation_id: 'delegation-1', content: 'Atlas memiliki 2 tugas.' },
       { type: 'session.close' },
     ]);

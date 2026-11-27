@@ -1,141 +1,99 @@
-import type { QueryResultRow } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
-import { prepareCeoCandidates, retrieveCeoAnswer } from './index.js';
-import { parseCeoIntent } from './intent.js';
-import type { RetrievalDatabase } from './schema.js';
+import { retrieveCeoAnswer } from './index.js';
+import { titleText } from './label-evidence.js';
+import { now, itDivision, divisions, mobile, web, noLookup, lookup, interpreter, exactRead, interpretationRead, database } from './retrieval-test-fixture.js';
 
-const now = new Date('2026-11-26T01:30:00.000Z');
-const itDivision = { id: 'ea0e00b0-101c-4000-8000-000000000001', name: 'IT', code: 'IT' };
-const finance = { id: 'ea0e00b0-101c-4000-8000-000000000002', name: 'Finance', code: 'FIN' };
-const divisions = [itDivision, finance];
-const mobile = { kind: 'project', id: 'ea0e00b0-301c-4000-8000-000000000001', name: 'Aplikasi A Mobile', divisionName: 'IT', divisionId: itDivision.id, score: 1 };
-const web = { ...mobile, id: 'ea0e00b0-301c-4000-8000-000000000002', name: 'Aplikasi A Web', score: 0.82 };
-const empty = { pending: 0, on_progress: 0, done: 0, total: 0 };
-
-function database(candidates = [mobile]) {
-  const calls: { sql: string; parameters: unknown[] }[] = [];
-  const db: RetrievalDatabase = {
-    async query<Row extends QueryResultRow>(sql: string, parameters: unknown[] = []) {
-      calls.push({ sql, parameters });
-      let rows: unknown[];
-      if (sql.includes('SELECT id, name, code')) rows = divisions;
-      else if (sql.includes('ceo_search_work')) rows = parameters[0] === 'project'
-        ? candidates.filter(({ name }) => !parameters[4] || name.toLowerCase() === parameters[1]) : [];
-      else if (sql.includes('work_search_embeddings')) rows = [{ ...mobile, score: 0.82 }];
-      else if (sql.includes('WITH selected AS MATERIALIZED')) rows = [{ tasks: [], counts: empty }];
-      else if (sql.includes('work.status')) rows = [{ status: 'on_progress', name: mobile.name, divisionName: 'IT', updatedAt: now }];
-      else throw new Error('Unexpected SQL in fake DB.');
-      return { rows: rows as Row[] };
-    },
-  };
-  return { db, calls };
-}
-
-describe('deterministic CEO retrieval', () => {
-  it('parses exact names, division scope, and Indonesian rolling dates', () => {
-    expect(parseCeoIntent('Bagaimana progres Aplikasi A Mobile dari divisi IT?', divisions, now)).toMatchObject({
-      kind: 'request', request: { intent: 'status', subject: 'aplikasi a mobile', division: itDivision },
-    });
-    expect(parseCeoIntent('Rekap tugas IT dua bulan terakhir', divisions, now)).toMatchObject({
-      kind: 'request', request: { intent: 'summary', entityKind: 'task', division: itDivision, period: { from: '2026-09-27', to: '2026-11-26' } },
-    });
+describe('CEO structured interpretation and read boundaries', () => {
+  it.each(['Status Oktober', 'Migrasi C++'])('passes the natural utterance through and preserves the title %s', async (name) => {
+    const { db, calls } = database([{ ...mobile, name, score: 1 }]);
+    const interpret = interpreter(lookup({ subject: name, divisionId: itDivision.id }));
+    const transcript = `Proyek ${name} di divisi IT itu sudah tuntas belum?`;
+    const answer = await retrieveCeoAnswer({ db, interpret, now, transcript });
+    expect(interpret).toHaveBeenCalledWith(expect.objectContaining({ transcript, divisions, today: '2026-11-26', currentTitleHints: [name] }));
+    const probes = calls.find(({ sql }) => exactRead(sql))?.parameters as unknown[][];
+    expect(probes.map((values) => values[0])).toEqual([titleText(name), 'project', itDivision.id, null, true]);
+    expect(answer).toMatchObject({ kind: 'facts', facts: { entity: { id: mobile.id, name }, status: 'on_progress' } });
   });
 
-  it('keeps a historical cutoff distinct from task-date filters', () => {
-    const result = parseCeoIntent('Status tugas Uji notifikasi per akhir Oktober 2026', divisions, now);
-    expect(result).toMatchObject({ kind: 'request', request: {
-      intent: 'status', entityKind: 'task', subject: 'uji notifikasi', period: undefined,
-      asOf: '2026-10-31T23:59:59.999999+07:00',
-    } });
-    expect(parseCeoIntent('Rekap divisi IT dari Oktober sampai November per 24 November 2026', divisions, now)).toMatchObject({
-      kind: 'request', request: { period: { from: '2026-10-01', to: '2026-11-30' }, asOf: '2026-11-24T23:59:59.999999+07:00' },
-    });
-    expect(parseCeoIntent('Status Uji notifikasi per 33 Oktober', divisions, now).kind).toBe('clarify');
-  });
-
-  it('chooses a cutoff for an explicit past status but task dates for listings', () => {
-    const entity = { kind: 'task' as const, id: 'ea0e00b0-401c-4000-8000-000000000002', name: 'Uji notifikasi' };
-    const context = { request: { intent: 'status' as const, latest: false, entity, entityKind: 'task' as const } };
-    expect(parseCeoIntent('Apa status tugas itu pada akhir bulan lalu?', divisions, now, context)).toMatchObject({
-      kind: 'request', request: { entity, asOf: '2026-10-31T23:59:59.999999+07:00', period: undefined },
-    });
-    expect(parseCeoIntent('Siapa PIC tugas Uji notifikasi pada tanggal 25 Oktober?', divisions, now)).toMatchObject({
-      kind: 'request', request: { intent: 'pic', subject: 'uji notifikasi', asOf: '2026-10-25T23:59:59.999999+07:00', period: undefined },
-    });
-    expect(parseCeoIntent('Tugas apa saja bulan lalu?', divisions, now)).toMatchObject({
-      kind: 'request', request: { intent: 'summary', period: { from: '2026-10-01', to: '2026-10-31' }, asOf: undefined },
-    });
-  });
-
-  it('carries an identified entity and changes scope on a correction', async () => {
-    const { db } = database();
-    const initial = await retrieveCeoAnswer({ db, now, transcript: 'Bagaimana progres Aplikasi A Mobile dari divisi IT?' });
-    expect(initial).toMatchObject({ kind: 'facts', facts: { status: 'on_progress', entity: { id: mobile.id } } });
-    expect(parseCeoIntent('Siapa PIC-nya?', divisions, now, initial.context)).toMatchObject({
-      kind: 'request', request: { intent: 'pic', entity: { id: mobile.id }, division: itDivision },
-    });
-    expect(parseCeoIntent('Bukan IT, Finance', divisions, now, initial.context)).toMatchObject({
-      kind: 'request', request: { intent: 'status', subject: 'aplikasi a mobile', entity: undefined, division: finance },
-    });
-  });
-
-  it('answers a direct update-time follow-up with the recorded Jakarta timestamp', async () => {
+  it('preserves both the task-date filter and historical cutoff from interpretation', async () => {
     const { db, calls } = database();
-    const initial = await retrieveCeoAnswer({ db, now, transcript: 'Progres proyek Aplikasi A Mobile' });
+    const result = await retrieveCeoAnswer({
+      db, now, transcript: 'Sampai 24 November, berapa yang tuntas dalam rentang Oktober sampai November di IT?',
+      interpret: interpreter(lookup({
+        operation: 'summary', target: 'division_or_company', subject: null, workKind: null, divisionId: itDivision.id,
+        from: '2026-10-01', to: '2026-11-30', asOf: '2026-11-24', statuses: ['done'],
+      })),
+    });
+    expect(result).toMatchObject({
+      kind: 'facts',
+      facts: {
+        period: { from: '2026-10-01', to: '2026-11-30' }, asOf: '2026-11-24T23:59:59.999999+07:00', statusFilter: ['done'],
+      },
+    });
+    expect(calls.find(({ sql }) => sql.includes('WITH selected AS MATERIALIZED'))?.parameters.slice(0, 7))
+      .toEqual([itDivision.id, null, null, '2026-10-01', '2026-11-30', ['done'], '2026-11-24T23:59:59.999999+07:00']);
+  });
+
+  it('uses the named project as the summary scope even when the utterance counts tasks', async () => {
+    const sameNamedTask = { ...web, kind: 'task', name: mobile.name };
+    const { db, calls } = database([mobile, sameNamedTask]);
+    const interpret = interpreter(lookup({ operation: 'summary', from: '2026-10-01', to: '2026-10-31' }));
+    const answer = await retrieveCeoAnswer({ db, now, interpret,
+      transcript: `Rekap tugas proyek “${mobile.name}” untuk bulan 10.` });
+    expect(answer).toMatchObject({ kind: 'facts', facts: { intent: 'summary', entity: { kind: 'project', id: mobile.id },
+      period: { from: '2026-10-01', to: '2026-10-31' } } });
+    expect(calls.find(({ sql }) => sql.includes('WITH selected AS MATERIALIZED'))?.parameters.slice(1, 5))
+      .toEqual([mobile.id, null, '2026-10-01', '2026-10-31']);
+    const ambiguous = await retrieveCeoAnswer({ db, now, interpret, transcript: `Rekap tugas untuk ${mobile.name} bulan 10.` });
+    expect(ambiguous.kind).toBe('clarify');
+    expect(ambiguous.context.choices?.map(({ kind }) => kind).sort()).toEqual(['project', 'task']);
+  });
+
+  it('checks the interpreted scope against exact task and project titles', async () => {
+    const task = { ...web, kind: 'task', name: 'Uji Gerbang' };
+    const { db, calls } = database([mobile, task]);
+    const summary = { operation: 'summary', from: '2026-11-01', to: '2026-11-30' } as const;
+    const project = await retrieveCeoAnswer({ db, now, transcript: `Rekap pekerjaan untuk ${mobile.name} bulan November.`,
+      interpret: interpreter(lookup(summary)) });
+    expect(project).toMatchObject({ kind: 'facts', facts: { entity: { kind: 'project', id: mobile.id } } });
+    const measuredTasks = await retrieveCeoAnswer({ db, now, transcript: `Rekap tugas ${mobile.name} bulan November.`,
+      interpret: interpreter(lookup(summary)) });
+    expect(measuredTasks).toMatchObject({ kind: 'facts', facts: { entity: { kind: 'project', id: mobile.id } } });
+    const selectedTask = await retrieveCeoAnswer({ db, now, transcript: `Rekap untuk tugas ${task.name} bulan November.`,
+      interpret: interpreter(lookup({ ...summary, subject: task.name, workKind: 'task' })) });
+    expect(selectedTask).toMatchObject({ kind: 'facts', facts: { entity: { kind: 'task', id: task.id } } });
     calls.length = 0;
-    const updated = await retrieveCeoAnswer({ db, now, transcript: 'Kapan terakhir diperbarui?', context: initial.context });
-    expect(updated).toMatchObject({ kind: 'facts', facts: { entity: { id: mobile.id }, updatedAt: now.toISOString() } });
-    expect(updated.text).toMatch(/^Pembaruan terakhir proyek Aplikasi A Mobile/);
-    expect(updated.text).toContain('26 November 2026');
-    expect(updated.text).toContain('08.30 WIB');
-    expect(calls.some(({ sql }) => sql.includes('ceo_search_work'))).toBe(false);
+    for (const transcript of [`Rekap tugas ${task.name} bulan November.`, `Rekap untuk ${task.name} bulan November.`]) {
+      const mismatch = await retrieveCeoAnswer({ db, now, transcript, interpret: interpreter(lookup({ ...summary, subject: task.name })) });
+      expect(mismatch.kind).toBe('clarify');
+      expect(mismatch.facts).toBeUndefined();
+    }
+    expect(calls.some(({ sql }) => sql.includes('WITH selected AS MATERIALIZED'))).toBe(false);
   });
 
-  it('requires confirmation before turning fuzzy candidates into facts', async () => {
-    const { db, calls } = database([{ ...mobile, score: 0.82 }, web]);
-    const clarify = await retrieveCeoAnswer({ db, now, transcript: 'Progres proyek Aplikasi A?' });
-    expect(clarify.kind).toBe('clarify');
-    expect(clarify.facts).toBeUndefined();
-    expect(clarify.context.choices?.map(({ name }) => name)).toEqual([mobile.name, web.name]);
-    expect(calls.some(({ sql }) => sql.includes('work.status'))).toBe(false);
-    const confirmed = await retrieveCeoAnswer({ db, now, transcript: 'Yang mobile', context: clarify.context });
-    expect(confirmed).toMatchObject({ kind: 'facts', facts: { entity: { id: mobile.id } } });
-    const rejected = await retrieveCeoAnswer({ db, now, transcript: 'Bukan yang mobile', context: clarify.context });
-    expect(rejected.kind).toBe('clarify');
-    expect(rejected.facts).toBeUndefined();
-    const action = await retrieveCeoAnswer({ db, now, transcript: 'Hapus yang kedua', context: clarify.context });
-    expect(action.kind).toBe('unsupported');
-  });
-
-  it('keeps vector candidates non-factual and times out a slow provider', async () => {
-    const { db } = database([]);
-    const embed = vi.fn(async () => ({ model: 'embedding-test', vector: Array<number>(1536).fill(1) }));
-    const first = await retrieveCeoAnswer({ db, now, transcript: 'Progres proyek tambang', embed });
-    expect(first.kind).toBe('clarify');
-    expect(first.facts).toBeUndefined();
-    const slow: typeof embed = vi.fn(() => new Promise(() => {}));
-    const second = await retrieveCeoAnswer({ db, now, transcript: 'Progres proyek tambang', embed: slow, embeddingDeadlineMs: 20 });
-    expect(second.kind).toBe('no_match');
-    expect(slow).toHaveBeenCalledOnce();
-  });
-
-  it('prepares candidates without running factual or embedding requests', async () => {
+  it('interprets a completed turn once and resolves an exact title without embeddings', async () => {
     const { db, calls } = database();
-    const transcript = 'Progres Aplikasi A Mobile';
+    const transcript = 'Aplikasi A Mobile itu sudah sampai mana?';
+    const interpret = interpreter(lookup());
     const embed = vi.fn();
-    const prepared = await prepareCeoCandidates({ db, transcript, now, embed });
-    expect(embed).not.toHaveBeenCalled();
-    expect(calls.some(({ sql }) => sql.includes('work.status'))).toBe(false);
-    calls.length = 0;
-    const resolved = await retrieveCeoAnswer({ db, transcript, now, prepared, embed });
+    const resolved = await retrieveCeoAnswer({ db, interpret, transcript, now, embed });
     expect(resolved.kind).toBe('facts');
-    expect(calls.some(({ sql }) => sql.includes('ceo_search_work'))).toBe(false);
+    expect(interpret).toHaveBeenCalledOnce();
+    expect(calls.filter(({ sql }) => exactRead(sql))).toHaveLength(1);
+    expect(embed).not.toHaveBeenCalled();
   });
 
-  it('rejects requests to mutate company records', async () => {
-    const { db } = database();
-    const outcome = await retrieveCeoAnswer({ db, now, transcript: 'Tolong ubah status proyek Aplikasi A Mobile' });
-    expect(outcome.kind).toBe('unsupported');
-    expect(outcome.facts).toBeUndefined();
+  it.each([
+    ['a mutation mixed into a read', 'Tolong cek PIC Aplikasi A Mobile dan pindahkan tugasnya ke Irma.', noLookup],
+    ['an unknown division', 'Aplikasi A Mobile yang di divisi lain.', lookup({ divisionId: web.id })],
+    ['an invented target', 'Aplikasi A Web itu sudah sampai mana?', lookup()],
+    ['a reversed range', 'Cek jumlah tugas dari akhir ke awal bulan.', lookup({
+      operation: 'summary', target: 'division_or_company', subject: null, workKind: null, from: '2026-11-30', to: '2026-11-01',
+    })],
+  ] as const)('keeps %s from reaching candidate or fact SQL', async (_scenario, transcript, decision) => {
+    const { db, calls } = database();
+    const result = await retrieveCeoAnswer({ db, now, transcript, interpret: interpreter(decision) });
+    expect(result.facts).toBeUndefined();
+    expect(calls.every(interpretationRead)).toBe(true);
   });
 });

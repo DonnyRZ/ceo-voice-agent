@@ -1,6 +1,19 @@
 import { ApiError } from '../../../shared/api';
 import type { VoiceCloseReason, VoiceStage } from './voice-protocol';
 import { closeVoiceSession, holdAudio, stopStream } from './voice-transport';
+import type { monitorVoiceActivity } from './voice-activity';
+
+export interface VoiceTurn {
+  id: string;
+  generation: number;
+  startedAt: number;
+  measured: boolean;
+  approved: boolean;
+  sealed: boolean;
+  playRequested: boolean;
+  fetch: AbortController | null;
+  objectUrl: string | null;
+}
 
 export interface VoiceAttempt {
   signal: AbortController;
@@ -12,15 +25,15 @@ export interface VoiceAttempt {
   stream: MediaStream | null;
   timer: number | null;
   micMuted: boolean;
-  turn: { id: string; startedAt: number; measured: boolean } | null;
-  allowed: boolean;
-  gateVersion: number;
+  activity: ReturnType<typeof monitorVoiceActivity> | null;
+  turn: VoiceTurn | null;
+  playbackEnabled?: () => boolean;
 }
 
-export function newAttempt(audio: HTMLAudioElement | null): VoiceAttempt {
+export function newAttempt(audio: HTMLAudioElement | null, playbackEnabled = () => true): VoiceAttempt {
   return {
     signal: new AbortController(), stage: 'connecting', id: null, peer: null, audio,
-    source: null, stream: null, timer: null, micMuted: false, turn: null, allowed: false, gateVersion: 0,
+    source: null, stream: null, timer: null, micMuted: false, activity: null, turn: null, playbackEnabled,
   };
 }
 
@@ -33,10 +46,31 @@ export function applyMicGate(attempt: VoiceAttempt) {
   for (const track of attempt.stream?.getAudioTracks() ?? []) track.enabled = enabled;
 }
 
-export function sealPlayback(attempt: VoiceAttempt, audio: HTMLAudioElement | null) {
-  attempt.allowed = false;
-  attempt.gateVersion += 1;
+export function sealPlayback(attempt: VoiceAttempt) {
+  if (attempt.turn) attempt.turn.sealed = true;
+  stopAttemptAudio(attempt);
+}
+
+/** Mutes this answer permanently without rejecting its pending verified facts. */
+export function suppressPlayback(attempt: VoiceAttempt) {
+  if (attempt.turn) attempt.turn.playRequested = true;
+  stopAttemptAudio(attempt);
+}
+
+function stopAttemptAudio(attempt: VoiceAttempt) {
+  const { audio, turn } = attempt;
   holdAudio(audio);
+  if (!turn) return;
+  turn.fetch?.abort();
+  turn.fetch = null;
+  if (turn.objectUrl) {
+    if (audio) {
+      audio.removeAttribute('src');
+      audio.load();
+    }
+    URL.revokeObjectURL(turn.objectUrl);
+    turn.objectUrl = null;
+  }
 }
 
 export function clearHandshakeTimer(attempt: VoiceAttempt) {
@@ -45,14 +79,13 @@ export function clearHandshakeTimer(attempt: VoiceAttempt) {
 }
 
 export function endAttempt(attempt: VoiceAttempt) {
-  const { audio } = attempt;
-  sealPlayback(attempt, audio);
+  sealPlayback(attempt);
   attempt.signal.abort();
   clearHandshakeTimer(attempt);
   attempt.source?.close();
   attempt.peer?.close();
+  attempt.activity?.close();
   stopStream(attempt.stream);
-  if (audio) audio.srcObject = null;
   if (attempt.id) closeVoiceSession(attempt.id);
 }
 

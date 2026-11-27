@@ -27,7 +27,11 @@ const taskSelect = `
   JOIN members m ON m.id = t.pic_id AND m.division_id = t.division_id
 `;
 
-export async function listAdminTasks(db: PoolClient, filters: ReportTaskFilters) {
+export async function listAdminTasks(
+  db: PoolClient,
+  filters: ReportTaskFilters,
+  options: { recent?: boolean; limit?: number } = {},
+) {
   const { rows } = await db.query<AdminTask>(`
     ${taskSelect}
     WHERE ($1::uuid IS NULL OR d.id = $1)
@@ -37,8 +41,10 @@ export async function listAdminTasks(db: PoolClient, filters: ReportTaskFilters)
       AND ($5::text IS NULL OR t.pic_id = $5)
       AND ($6::work_status IS NULL OR t.status = $6)
       AND ($7::text IS NULL OR strpos(lower(t.title), lower($7)) > 0 OR strpos(lower(t.description), lower($7)) > 0)
-    ORDER BY t.date DESC, t.updated_at DESC, t.id
-  `, [filters.divisionId, filters.from, filters.to, filters.projectId, filters.picId, filters.status, filters.search]);
+    ORDER BY ${options.recent ? 't.updated_at DESC, t.id' : 't.date DESC, t.updated_at DESC, t.id'}
+    LIMIT $8
+  `, [filters.divisionId, filters.from, filters.to, filters.projectId, filters.picId,
+    filters.status, filters.search, options.limit ?? null]);
   return rows;
 }
 

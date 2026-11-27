@@ -1,0 +1,28 @@
+.ceo-divisions-search-panel { display: grid; gap: 24px; }
+.ceo-search { display: flex; align-items: center; gap: 11px; padding: 0 16px; min-height: 51px; color: #587071; background: #fff; border: 1px solid #ccdcdb; border-radius: 11px; }
+.ceo-search svg { width: 23px; height: 23px; flex: none; }
+.ceo-search input { width: 100%; min-width: 0; height: 48px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 17px; }
+.ceo-search input:focus { outline: none; }
+.ceo-search:focus-within { outline: 3px solid #087765; outline-offset: 3px; }
+.ceo-search input::placeholder { color: #6e8080; }
+.ceo-division-filter { display: flex; align-items: center; gap: 11px; color: var(--muted); font-size: 14px; margin-top: -10px; }
+.ceo-division-filter select { min-height: 42px; padding: 7px 11px; color: var(--ink); border: 1px solid #cfdfd9; border-radius: 9px; background: #fff; font: inherit; }
+.ceo-division-list { background: #fff; padding: 0 20px; border: 1px solid #dce7e3; border-radius: 15px; }
+.ceo-division-list .ceo-record-link { padding: 15px 0; }
+.ceo-division-list .ceo-record-copy > strong { font-size: 20px; }
+.ceo-division-list .ceo-record-copy > p { font-size: 15px; }
+.ceo-division-detail .ceo-status-summary { padding: 20px 24px; }
+
+@media (max-width: 767px) {
+  .ceo-divisions-search-panel { margin: -4px -7px 0; padding: 20px 17px; gap: 19px; border-radius: 18px; background: #e0f0eb; }
+  .ceo-search { min-height: 48px; padding: 0 14px; border: 0; border-radius: 15px; }
+  .ceo-search input { height: 48px; font-size: 18px; }
+  .ceo-division-list { display: grid; gap: 14px; background: none; border: 0; padding: 0; }
+  .ceo-division-list > li, .ceo-division-list > li + li { border: 0; border-radius: 17px; background: #fff; }
+  .ceo-division-list .ceo-record-link { padding: 18px 16px; gap: 17px; }
+  .ceo-division-list .ceo-icon-tile { width: 63px; height: 63px; }
+  .ceo-division-list .ceo-icon-tile svg { width: 34px; height: 34px; }
+  .ceo-division-list .ceo-record-copy > strong { font-size: 21px; }
+  .ceo-division-detail .ceo-status-summary { padding: 18px 13px; }
+  .ceo-division-detail .ceo-banner-copy > h2 { font-size: 25px; }
+}

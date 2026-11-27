@@ -6,7 +6,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(68);
+SELECT plan(74);
 
 INSERT INTO public."user" (id, name, email) VALUES
     ('pgtap-member-it', 'Anggota IT pgTAP', 'pgtap-it@example.test'),
@@ -108,6 +108,8 @@ SELECT is((SELECT count(*) FROM public.ceo_work_status_as_of(
 SELECT is((SELECT count(*) FROM public.ceo_search_work(
     'task', 'tugas finance pgtap', NULL, NULL, true)),
     0::bigint, 'Anggota tidak dapat menggunakan pencarian lintas divisi CEO');
+SELECT is((SELECT count(*) FROM public.ceo_exact_work_labels(ARRAY['Tugas IT pgTAP'], 'task', NULL, NULL)),
+    0::bigint, 'Anggota tidak dapat memakai pencarian nama resmi CEO');
 SELECT is((SELECT count(*) FROM public.audit_log), 0::bigint, 'RLS menyembunyikan audit log dari Anggota Divisi');
 SELECT throws_ok('UPDATE public.audit_log SET action = ''DELETE''', '42501', NULL, 'Runtime tidak dapat mengubah audit log');
 SELECT throws_ok($$
@@ -176,6 +178,13 @@ SELECT set_config('app.user_id', 'pgtap-member-it', true) AS app_user \gset
 SELECT set_config('app.division_id', '10000000-0000-4000-8000-000000000001', true) AS app_division \gset
 SELECT is((SELECT count(*) FROM public.tasks), 0::bigint, 'Akun dicabut kehilangan akses di PostgreSQL');
 
+RESET ROLE;
+INSERT INTO public.projects (division_id, name) VALUES
+    ('10000000-0000-4000-8000-000000000001', 'Kalibrasi—Aset pgTAP'),
+    ('10000000-0000-4000-8000-000000000002', 'Kalibrasi Aset pgTAP'),
+    ('10000000-0000-4000-8000-000000000001', 'Kalibrasi Aset C# pgTAP'),
+    ('10000000-0000-4000-8000-000000000001', 'Kalibrasi Aset C pgTAP');
+SET ROLE :"app_role";
 SELECT set_config('app.user_id', 'pgtap-ceo', true) AS app_user \gset
 SELECT ok(app_private.is_ceo() AND NOT app_private.is_superadmin(), 'CEO memiliki peran baca tersendiri');
 SELECT is((SELECT count(*) FROM public.tasks WHERE id IN (
@@ -199,6 +208,16 @@ SELECT is((SELECT id FROM public.ceo_search_work('project', 'proyek finance pgtp
     '20000000-0000-4000-8000-000000000002', 'Pencarian historis CEO menemukan nama proyek dengan salah ketik');
 SELECT is((SELECT count(*) FROM public.ceo_search_work('project', 'proyek finance pgtap', NULL,
     'infinity', true)), 0::bigint, 'Pencarian historis tidak menampilkan nama yang sudah diganti pada waktu itu');
+SELECT is((SELECT count(*) FROM public.ceo_exact_work_labels(ARRAY['Ｋalibrasi   Aset pgTAP'], 'project', NULL, NULL)),
+    2::bigint, 'Nama resmi yang terdengar sama tetap mencakup semua pilihan');
+SELECT is((SELECT name FROM public.ceo_exact_work_labels(ARRAY['Ｋalibrasi   Aset pgTAP'], 'project',
+    '10000000-0000-4000-8000-000000000001', NULL)), 'Kalibrasi—Aset pgTAP', 'Lingkup divisi memilih nama resmi yang sesuai');
+SELECT is((SELECT name FROM public.ceo_exact_work_labels(ARRAY['Kalibrasi Aset C＃ pgTAP'], 'project', NULL, NULL)),
+    'Kalibrasi Aset C# pgTAP', 'Pencarian nama resmi mempertahankan simbol bermakna');
+SELECT is((SELECT id FROM public.ceo_exact_work_labels(ARRAY['Proyek Finance pgTAP'], 'project', NULL,
+    :'finance_task_created_at')), '20000000-0000-4000-8000-000000000002'::uuid, 'Nama resmi historis mengikuti catatan pada tanggal acuan');
+SELECT is((SELECT count(*) FROM public.ceo_exact_work_labels(ARRAY['Proyek Finance pgTAP'], 'project', NULL,
+    'infinity')), 0::bigint, 'Nama historis lama tidak muncul sesudah diubah');
 SELECT results_eq(
     $$SELECT status::text, title, project_id, pic_name FROM public.ceo_work_status_as_of(
         'task', '30000000-0000-4000-8000-000000000002', 'infinity')$$,

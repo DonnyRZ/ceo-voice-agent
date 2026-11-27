@@ -6,16 +6,20 @@ test("sesi dicabut server menghentikan mikrofon dan membatalkan pemutaran jawaba
   const server = await mockVoiceApp(page);
   await openVoice(page);
   await startVoice(page);
-  await emitVoice(page, { type: "turn", turnId: "turn-revoked" });
+  await emitVoice(page, { type: "turn", turnId: "turn-revoked", generation: 1 });
+  await emitVoice(page, { type: "playback", turnId: "turn-revoked", generation: 1, allowed: true });
+  await expect(page.locator("audio")).toHaveAttribute("src", /^blob:/);
+  await expect(page.locator("audio")).toHaveJSProperty("muted", false);
   await emitVoice(page, { type: "state", state: "closed", reason: "revoked" });
   await expect(page.getByRole("alert")).toHaveText("Akses Voice Agent CEO dicabut.");
-  await expect(page.getByRole("button", { name: "Mulai sesi", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Mulai (ngobrol|lagi)$/ })).toBeVisible();
   await expect.poll(async () => (await readTransport(page)).tracks.map(({ readyState }) => readyState)).toEqual(["ended"]);
   expect(await readTransport(page)).toMatchObject({ peers: [{ state: "closed" }], streams: [{ closed: true }] });
 
-  await emitVoice(page, { type: "playback", turnId: "turn-revoked", allowed: true });
+  await emitVoice(page, { type: "playback", turnId: "turn-revoked", generation: 1, allowed: true });
   await expect(page.locator("audio")).toHaveJSProperty("muted", true);
-  expect((await readTransport(page)).audiblePlays).toBe(0);
+  await expect(page.locator("audio")).not.toHaveAttribute("src", /^blob:/);
+  expect((await readTransport(page)).audiblePlays).toBe(1);
   expect(server.sessions).toHaveLength(1);
 });
 
@@ -59,7 +63,7 @@ test("akun Anggota Divisi diarahkan keluar dari halaman CEO", async ({ page }) =
   await page.goto(voicePath);
   await expect.poll(() => new URL(page.url()).pathname).toBe("/");
   await expect(page.getByRole("heading", { name: "Dashboard Divisi", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Mulai sesi", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Mulai (ngobrol|lagi)$/ })).toHaveCount(0);
   expect((await readTransport(page)).microphoneRequests).toBe(0);
   expect(server.requests).toEqual([]);
 });

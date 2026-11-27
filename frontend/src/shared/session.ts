@@ -16,7 +16,8 @@ export const sessionQuery = queryOptions({
       throw error;
     }
   },
-  refetchOnWindowFocus: true,
+  staleTime: 0,
+  refetchOnWindowFocus: 'always',
   retry: false,
 });
 
@@ -33,5 +34,5 @@ export function useSessionUser(): MemberSessionUser {
 }
 
 export function sessionHome(role: SessionUser['role']) {
-  return { superadmin: '/admin', ceo: '/ceo/voice', member: '/' }[role];
+  return { superadmin: '/admin', ceo: '/ceo', member: '/' }[role];
 }

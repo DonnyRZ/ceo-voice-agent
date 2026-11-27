@@ -3,8 +3,9 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 import OpenAI, { APIError } from 'openai';
 import WebSocket from 'ws';
 import { parseLiveEvent } from './live-events.js';
-import { ceoVoiceInstructions } from './prompt.js';
+import { ceoPendingReadout, ceoVoiceInstructions } from './prompt.js';
 import type { LiveHandlers, LiveSideband, VoiceAdapter } from './types.js';
+import { voiceVocabularyMessage, type VoiceVocabulary } from './vocabulary.js';
 
 const openTimeoutMs = 5_000;
 const cleanupOpenTimeoutMs = 1_500;
@@ -28,11 +29,13 @@ export function createLiveAdapter(options: {
   const client = new OpenAI({ apiKey, baseURL: 'https://api.openai.com/v1', maxRetries: 0, logLevel: 'off' });
   const agent = proxyUrl ? new HttpsProxyAgent(proxyUrl) : undefined;
 
-  async function createSession(sdp: string, signal: AbortSignal) {
+  async function createSession(sdp: string, signal: AbortSignal, vocabulary?: VoiceVocabulary) {
+    const names = voiceVocabularyMessage(vocabulary);
     const result = await client.live.create({
       session: {
         model,
         instructions: ceoVoiceInstructions,
+        input: names ? [{ role: 'developer', content: [{ type: 'input_text', text: names }] }] : undefined,
         store: false,
         audio: { output: { voice: 'marin' } },
         wake_policy: { type: 'speech' },
@@ -185,7 +188,7 @@ async function connectSideband(socket: WebSocket, handlers: LiveHandlers, signal
     if (socket.readyState !== WebSocket.OPEN || finishing || serverClosed) return;
     try {
       socket.send(JSON.stringify({
-        type: 'session.thinking.append', event_id: randomUUID(), delegation_id: delegationId, content: '',
+        type: 'session.thinking.append', event_id: randomUUID(), delegation_id: delegationId, content: ceoPendingReadout,
       }), (error) => { if (error) socket.terminate(); });
     } catch {
       socket.terminate();

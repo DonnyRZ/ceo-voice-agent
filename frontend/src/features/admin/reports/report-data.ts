@@ -23,10 +23,13 @@ interface AdminDashboard {
   recentActivity: AdminAudit[];
 }
 
+const freshness = { staleTime: 0, refetchOnWindowFocus: 'always', refetchInterval: 30_000 } as const;
+
 export function adminDashboardQuery(month: string) {
   const query = new URLSearchParams(monthRange(month));
   return queryOptions({
     queryKey: ['admin', 'dashboard', month],
+    ...freshness,
     queryFn: ({ signal }) => api<AdminDashboard>(`/api/admin/dashboard?${query}`, { signal }),
   });
 }
@@ -35,6 +38,7 @@ export function adminTasksQuery(filters = new URLSearchParams()) {
   const query = filters.toString();
   return queryOptions({
     queryKey: ['admin', 'tasks', query],
+    ...freshness,
     queryFn: ({ signal }) => api<AdminTask[]>(`/api/admin/tasks?${query}`, { signal }),
   });
 }
@@ -42,6 +46,7 @@ export function adminTasksQuery(filters = new URLSearchParams()) {
 export function adminTaskQuery(id: string) {
   return queryOptions({
     queryKey: ['admin', 'tasks', 'detail', id],
+    ...freshness,
     queryFn: ({ signal }) => api<AdminTask>(`/api/admin/tasks/${encodeURIComponent(id)}`, { signal }),
   });
 }
@@ -49,6 +54,7 @@ export function adminTaskQuery(id: string) {
 export function adminTaskHistoryQuery(id: string) {
   return queryOptions({
     queryKey: ['admin', 'tasks', 'history', id],
+    ...freshness,
     queryFn: ({ signal }) => api<AdminTaskHistory[]>(`/api/admin/tasks/${encodeURIComponent(id)}/history`, { signal }),
   });
 }

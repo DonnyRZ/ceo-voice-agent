@@ -1,4 +1,5 @@
 import type { LiveEvent } from './types.js';
+import { decodeReflectedPcm } from './output-audio.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -45,6 +46,13 @@ export function parseLiveEvent(message: string): LiveEvent | undefined {
       }
       return;
     }
+    case 'session.output_audio.delta': {
+      const { delta, start_ms: startMs, end_ms: endMs } = event;
+      if (!validOffset(startMs) || !validOffset(endMs)) return;
+      const pcm = decodeReflectedPcm(delta, startMs, endMs);
+      if (pcm) return { type: 'output_audio', frame: { pcm, startMs, endMs } };
+      return;
+    }
     case 'session.delegation.created': {
       const { delegation, offset_ms: offsetMs } = event;
       if (isRecord(delegation) && delegation.target === 'client' && typeof delegation.id === 'string' && validOffset(offsetMs)) {
@@ -54,7 +62,8 @@ export function parseLiveEvent(message: string): LiveEvent | undefined {
     }
     case 'session.commentary.appended':
       if (typeof event.client_event_id === 'string') {
-        return { type: 'commentary_accepted', eventId: event.client_event_id };
+        const accepted = { type: 'commentary_accepted' as const, eventId: event.client_event_id };
+        return validOffset(event.end_ms) ? { ...accepted, endMs: event.end_ms } : accepted;
       }
       return;
     case 'error': {
