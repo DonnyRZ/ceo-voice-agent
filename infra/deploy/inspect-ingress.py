@@ -34,6 +34,8 @@ for root in (Path('/etc/nginx'), Path('/etc/caddy')):
         try:
             if not path.is_file() or not path.resolve().is_relative_to(root) or path.stat().st_size > 262144:
                 continue
+            if path.suffix != '.conf' and path.name != 'Caddyfile' and path.parent.name not in ('sites-enabled', 'sites-available'):
+                continue
             text = path.read_text()
         except (OSError, UnicodeError):
             continue
@@ -43,5 +45,9 @@ for root in (Path('/etc/nginx'), Path('/etc/caddy')):
             values = re.findall(r'^\s*' + name + r'\s+([^;\n]+);', text, re.MULTILINE)
             if values:
                 fields[name] = values
+        if path.name == 'Caddyfile':
+            hosts = re.findall(r'^([a-z0-9.*:-]+(?:\s*,\s*[a-z0-9.*:-]+)*)\s*\{', text, re.MULTILINE)
+            if hosts:
+                fields['hosts'] = hosts
         if fields:
             print(json.dumps({'config': str(path), **fields}, sort_keys=True))
