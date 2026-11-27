@@ -1,0 +1,28 @@
+name: Branch policy
+
+on:
+  # Run from the PR merge ref so the check is available before this workflow
+  # first reaches the default branch. No PR code is checked out or executed.
+  pull_request:
+    branches: [develop, main]
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  branch-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Validasi sumber dan tujuan PR
+        env:
+          BASE: ${{ github.event.pull_request.base.ref }}
+          HEAD: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [[ "$BASE" == main ]]; then
+            [[ "$HEAD" == develop && "$HEAD_REPOSITORY" == "$GITHUB_REPOSITORY" ]]
+          else
+            [[ "$BASE" == develop && ${#HEAD} -le 100 && "$HEAD" =~ ^(feat|fix|refactor|perf|test|docs|chore|build|ci|security)/[a-z0-9]+(-[a-z0-9]+)*$ ]]
+          fi

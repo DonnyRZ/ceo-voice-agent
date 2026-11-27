@@ -13,10 +13,9 @@ try {
   if (!/^ceo_voice_agent_(stage|prod)$/.test(row.database) || row.extensions !== 2) {
     throw new Error('Database lingkungan dan ekstensi vector/pg_trgm harus disiapkan terlebih dahulu.');
   }
-  if (process.argv[2] === 'version') console.log(Math.floor(row.version / 10_000));
-  else if (process.argv[2] === 'pg-env') {
+  if (process.argv[2] === 'pg-env') {
     const values = {
-      PGHOST: url.hostname, PGPORT: url.port || '5432', PGUSER: decodeURIComponent(url.username),
+      PGVERSION: String(Math.floor(row.version / 10_000)), PGHOST: url.hostname, PGPORT: url.port || '5432', PGUSER: decodeURIComponent(url.username),
       PGPASSWORD: decodeURIComponent(url.password), PGDATABASE: row.database,
       PGSSLMODE: url.searchParams.get('sslmode') || 'prefer',
     };

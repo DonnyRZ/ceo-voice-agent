@@ -12,4 +12,4 @@
 - **Audit dan backup** — Tabel audit PostgreSQL dengan trigger, serta `pgBackRest` untuk backup dan pemulihan.
 - **Monitoring prioritas 1** — Pino dan Prometheus untuk error, penggunaan API, serta latensi p95 dari CEO selesai bicara sampai fakta pertama terdengar.
 - **Pengujian** — Vitest untuk logika, pgTAP untuk kueri dan hak akses, serta Playwright untuk alur mobile dan desktop. Periksa ketepatan jawaban suara terhadap timesheet dalam pengujian end-to-end.
-- **Deployment dan CI** — Docker Compose dan Caddy untuk aplikasi self-hosted via HTTPS, serta GitHub Actions untuk build dan pengujian. OpenAI adalah satu-satunya penyedia AI dan layanan aplikasi berlangganan.
+- **Deployment dan CI** — Docker Compose, gateway Caddy blue-green, dan proxy HTTPS, serta GitHub Actions. Topic branch → PR develop → PR main; deploy sesudah merge. Chromium/Playwright berada pada workflow regresi terpisah, bukan jalur deploy. Ikuti seluruh [aturan deployment](deployments/README.md). OpenAI adalah satu-satunya penyedia AI dan layanan aplikasi berlangganan.

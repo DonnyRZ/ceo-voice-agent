@@ -1,18 +1,11 @@
-FROM node:24-bookworm-slim AS build
-WORKDIR /app
-COPY --chown=node:node package.json package-lock.json ./
-RUN npm ci
-COPY . .
-RUN npm run build && npm run build:server
-
-FROM node:24-bookworm-slim AS runtime
+FROM node:24-bookworm-slim
 ENV NODE_ENV=production HOST=127.0.0.1 API_PORT=3000
 WORKDIR /app
 COPY --chown=node:node package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
-COPY --from=build --chown=node:node /app/build ./build
-COPY --from=build --chown=node:node /app/backend/db/migrations ./build/backend/db/migrations
-COPY --from=build --chown=node:node /app/frontend/dist ./build/frontend/dist
+RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+COPY --chown=node:node build ./build
+COPY --chown=node:node backend/db/migrations ./build/backend/db/migrations
+COPY --chown=node:node frontend/dist ./build/frontend/dist
 COPY --chown=node:node infra/deploy/database.mjs ./ops/database.mjs
 RUN mkdir .voice-pilot && chown node:node .voice-pilot
 USER node

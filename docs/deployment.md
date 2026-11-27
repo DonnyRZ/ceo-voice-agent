@@ -1,101 +1,151 @@
 # Deployment stage dan prod
 
-| Branch | GitHub Environment | Database pada PostgreSQL bersama | Port lokal VPS |
-| --- | --- | --- | --- |
-| `develop` | `stage` | `ceo_voice_agent_stage` | `127.0.0.1:4311` |
-| `main` | `prod` | `ceo_voice_agent_prod` | `127.0.0.1:4312` |
+| Branch | Lingkungan | Database di PostgreSQL bersama | Gateway lokal | Slot blue / green |
+| --- | --- | --- | --- | --- |
+| `develop` | stage | `ceo_voice_agent_stage` | `127.0.0.1:4311` | `4321` / `4331` |
+| `main` | prod | `ceo_voice_agent_prod` | `127.0.0.1:4312` | `4322` / `4332` |
 
-Kedua lingkungan memakai cluster PostgreSQL yang sudah ada. Compose deployment hanya menjalankan aplikasi, tanpa membuat, mengganti, memulai ulang, atau menghapus layanan PostgreSQL bersama. Setiap database mempunyai owner migrasi dan role aplikasi sendiri. Role aplikasi tidak mempunyai hak superuser atau bypass RLS. Data stage tidak disalin dari prod.
+## Alur branch dan auto-deploy
 
-## Alur otomatis
+1. Buat topic branch: `feat/nama-fitur`, `fix/nama-perbaikan`, `refactor/nama-perubahan`, `perf/...`, `test/...`, `docs/...`, `chore/...`, `build/...`, `ci/...`, atau `security/...`.
+2. Buat PR topic branch → `develop`. Sesudah merge, CI membangun dan menguji image stage lalu auto-deploy jika stage sudah diaktifkan.
+3. Promosi produksi melalui PR `develop` → `main` dari repository yang sama. Gunakan merge commit, bukan squash/rebase untuk promosi ini. Sesudah merge dan CI lulus, prod auto-deploy jika sudah diaktifkan.
 
-Workflow `.github/workflows/checks.yml` menjalankan seluruh pengujian. Push pada `develop` atau `main` yang lulus membangun image Node.js 24, menjalankan uji container dengan database sementara stage/prod, lalu menerbitkan image `ghcr.io/donnyrz/ceo-voice-agent:stage-sha-COMMIT-RUN-ATTEMPT` atau `prod-sha-COMMIT-RUN-ATTEMPT`.
+Dilarang push langsung ke `develop`/`main` atau PR topic branch langsung ke `main`. Workflow Branch policy memeriksa metadata PR tanpa menjalankan kode PR dengan hak istimewa. Job package memeriksa lewat GitHub API bahwa SHA release berasal dari PR yang sudah di-merge dengan asal/tujuan yang sah; commit direct push ditolak.
 
-Job deploy baru berjalan setelah variabel repository `STAGE_DEPLOY_ENABLED=true` atau `PROD_DEPLOY_ENABLED=true` diaktifkan. Selama belum dikonfigurasi, pengujian dan publikasi image tetap berjalan, sedangkan deployment VPS dilewati. Tidak ada password VPS/PostgreSQL di workflow.
+**Branch protection tetap diperlukan untuk mencegah push di server GitHub.** Pemilik/admin menerapkan `.github/branch-protection.example.json` ke kedua branch dan menjadikan `checks` serta `branch-policy` wajib. Konfigurasi tersebut mewajibkan PR, berlaku pada admin, menolak force push/penghapusan, dan tidak mewajibkan approval orang lain untuk workflow developer tunggal. Workflow tidak dapat menggantikan kontrol server ini. API integrasi tetap mendapat HTTP 403 untuk administrasi protection; engineer melaporkan perlindungan kedua branch sudah dipasang melalui akses admin pada 27 November 2026.
 
-Runner mengunduh image dan mengirimkannya melalui SSH. VPS tidak menyimpan token registry. Tag unik setiap run menghindari benturan stage/prod dan rerun. ID image dan label commit diperiksa sebelum deployment. Commit yang sudah digantikan branch terbaru tidak di-deploy. Job dan lock VPS mencegah deployment lingkungan yang sama berjalan serentak.
+Semua aturan kerja tersimpan dalam [agents/deployments/](../agents/deployments/README.md).
 
-Deployment melakukan pemeriksaan database dan ekstensi, membuat backup `pg_dump` dengan versi client sesuai server, menolak sesi suara baru sementara sesi aktif diselesaikan, menjalankan migrasi forward, lalu mengganti container. Kegagalan migrasi mengaktifkan kembali penerimaan sesi pada versi lama. Kegagalan kesehatan container mengembalikan image sebelumnya. Ledger biaya suara berada dalam volume permanen yang berbeda untuk setiap lingkungan.
+## Pipeline ringan
 
-Rollback otomatis hanya mengganti aplikasi. Database tidak diturunkan atau dipulihkan secara otomatis karena dapat menghapus perubahan pengguna. Migrasi berikutnya harus kompatibel dengan image sebelumnya. Untuk perubahan skema yang tidak kompatibel, gunakan tahap expand/contract dan rencana pemulihan tersendiri.
+`.github/workflows/checks.yml` menjalankan validasi branch, unit/backend/frontend, kebijakan PostgreSQL, typecheck/build, dan tes script deployment. Tidak menginstal atau menjalankan Chromium. Frontend dan backend dikompilasi sekali di runner. Hasil build diteruskan sebagai artifact commit yang sama ke job package; Docker hanya memasang dependency produksi dan mengemas hasil yang sudah diperiksa. Setelah merge ke develop/main, image menjalankan smoke test UI/API/database pada container sementara. Ini tidak memakai browser atau OpenAI berbayar.
 
-## Prasyarat VPS
+`.github/workflows/ui-regression.yml` menjalankan Playwright, pengujian alat evaluasi AI, stress test gateway, dan audit dependency secara terpisah pada PR atau manual. pgTAP hanya dijalankan pada checks utama; setup database pada regresi terpisah cukup migrasi dan seed. Job ini bernama `ui-regression`, bukan `checks`, dan bukan dependensi atau required check jalur deployment. Pengujian browser tetap tersedia untuk pengembangan tanpa memperlambat setiap deployment.
 
-- Linux dengan Docker Engine, Compose v2, Bash, Python 3, curl, flock, dan OpenSSL.
-- SSH yang dapat dijangkau runner GitHub, kunci deployment tersendiri, dan fingerprint host yang diverifikasi.
-- PostgreSQL bersama versi 15 atau lebih baru dengan ekstensi `vector` dan `pg_trgm` tersedia. Periksa versi, port, konfigurasi jaringan, dan backup yang ada sebelum mengubah server.
-- Port loopback 4311/4312 tersedia. Aplikasi memakai host networking agar dapat membaca PostgreSQL yang hanya tersedia di loopback VPS.
-- Proxy HTTPS yang sudah ada ditinjau sebelum konfigurasi baru ditambahkan. Contoh Caddy di `infra/deploy/Caddyfile.example` mengalirkan SSE tanpa buffering dan menolak `/internal/*` dari internet. HTTPS diperlukan untuk izin mikrofon di browser.
-- Arsitektur image saat ini `linux/amd64`, mengikuti runner `ubuntu-latest`. Verifikasi arsitektur VPS sebelum aktivasi.
+Versi PostgreSQL dan konfigurasi backup diambil dalam satu koneksi preflight. Audit npm dilakukan terpisah dari install dependency. Artifact build otomatis kedaluwarsa dalam satu hari.
 
-## Persiapan database sekali saja
+Runner deployment khusus di VPS menarik image GHCR yang sudah diuji menggunakan token otomatis GitHub; tidak menjalankan npm install/build, browser, atau pengujian aplikasi. Image release memakai SHA dan run/attempt unik. Commit yang sudah digantikan head branch terbaru tidak di-deploy. Checks dan packaging commit yang sudah digantikan dibatalkan otomatis; job deployment yang sudah menyentuh server tidak dibatalkan. Concurrency deployment dan `flock` VPS mencegah dua release lingkungan yang sama berjalan bersamaan. Image PostgreSQL client dan gateway dipakai ulang jika sudah tersedia.
 
-Script `infra/deploy/bootstrap-database.sql` dijalankan menggunakan administrator PostgreSQL yang sudah ada. Script menolak lingkungan selain stage/prod dan menolak menimpa nama database/role yang sudah ada. Password owner dan app harus acak, berbeda, dan minimal 32 karakter.
+## Pergantian versi tanpa menghentikan slot aktif
 
-Set koneksi administrator melalui konfigurasi PostgreSQL privat pada VPS. Jangan menyimpan kredensial administrator bersama aplikasi atau di Git.
+- Gateway lokal Caddy tetap hidup di port 4311/4312; proxy HTTPS publik meneruskan trafik ke port tersebut. API admin Caddy dinonaktifkan. Image gateway dipin versi dan digest.
+- Kandidat dijalankan pada slot kosong, dengan port loopback berbeda dari versi aktif. Backup dan migrasi dilakukan sementara aplikasi lama tetap melayani. Migrasi diberi batas tunggu lock 3 detik dan statement 60 detik.
+- Image, label commit, database, kesehatan kandidat, dan sumber HTML diperiksa sebelum pengalihan. Bundle JS/CSS hash disalin ke penyimpanan gateway; aset versi aktif dan satu versi sebelumnya dipertahankan agar tab lama masih dapat memuatnya.
+- Konfigurasi gateway tetap. Matcher file membaca satu pointer symlink `gateway/current` per permintaan untuk memilih blue/green. Switch mengganti symlink secara atomik, tanpa reload/restart listener HTTP. Kandidat gagal tidak menggantikan slot aktif; switch gagal dipulihkan ke pointer lama. Jika konfigurasi gateway berubah, rilis aplikasi ditolak dan diperlukan upgrade gateway terencana.
+- POST pembukaan sesi suara mendapat cookie `ceo_voice_slot`, `HttpOnly`, `Secure`, `SameSite=Strict`. Cookie hanya digunakan untuk merutekan endpoint sesi suara yang sudah ada ke proses asal. Otorisasi akun/pemilik sesi tetap diperiksa aplikasi. Sesi baru memakai slot baru.
+- Setelah switch, slot lama menolak sesi suara baru dan menyelesaikan sesi yang sudah ada. Listener dan koneksi yang sudah ada tetap berjalan. Setelah sesi habis, rute lama dihapus dan container lama dihentikan secara graceful lalu dihapus.
+- Menunggu sesi lama terjadi setelah versi baru sudah melayani; bukan downtime aplikasi. Jika sesi/control lama tertahan, kedua slot dipertahankan. Deployment berikutnya tidak boleh menimpa slot yang masih mempunyai sesi.
+
+Tidak ada pemulihan database otomatis ketika rollback aplikasi: tindakan itu dapat menghapus perubahan pengguna. Semua migrasi wajib kompatibel dengan dua versi bersamaan. Perubahan destructive memakai expand/contract pada release terpisah. Kapasitas VPS harus cukup untuk dua proses aplikasi saat pergantian; pola ini tidak menghilangkan kegagalan host, database, atau migrasi yang tidak kompatibel.
+
+## Cleanup aman
+
+Setiap akhir percobaan deploy, `cleanup.sh` hanya menghapus tag release milik repository dan lingkungan terkait, dengan label sumber GitHub yang cocok. Image aktif, satu image rollback, dan image yang dipakai container mana pun dipertahankan. Dengan kondisi normal, masing-masing lingkungan menyimpan dua image release. Kegagalan deployment awal juga dibersihkan ketika tidak ada container yang memakainya.
+
+Tidak ada `docker system prune`, volume prune, atau penghapusan image paksa/global. Container slot lama dihapus setelah drain. Database, volume budget, backup, dan image layanan lain tidak disentuh. Bundle frontend hanya dipertahankan untuk commit aktif dan rollback; cleanup aset batal jika manifest proteksi tidak lengkap. Docker log dibatasi 10 MB per file, 5 file aplikasi dan 3 file gateway.
+
+Backup berada pada kebijakan terpisah; tetapkan retensi dan penyalinan off-host sebelum aktivasi. Cleanup image tidak menghapus backup.
+
+## Prasyarat dan konfigurasi VPS
+
+- Linux amd64, Docker Engine/Compose v2, Bash, Python 3, curl, flock, dan OpenSSL.
+- Runner GitHub Actions Linux amd64 khusus repository ini, label `ceo-agent-deploy`, dijalankan sebagai layanan dengan akun khusus yang mempunyai akses Docker dan direktori deployment. Build, pengujian, dan package tetap memakai runner GitHub.
+- `gh` CLI dan akses HTTPS keluar ke GitHub/GHCR. Tidak diperlukan koneksi SSH dari workspace untuk rilis rutin.
+- PostgreSQL bersama versi 15+ dengan `vector` dan `pg_trgm`. Jangan mengganti cluster atau merestart PostgreSQL untuk rilis aplikasi.
+- Port loopback gateway dan slot di tabel tersedia. Tidak perlu membuka port tersebut ke internet.
+- Domain HTTPS stage/prod; proxy publik yang sudah ada ditinjau sebelum menambah konfigurasi. Contoh integrasi di `infra/deploy/Caddyfile.example`. HTTPS dibutuhkan untuk mikrofon dan cookie sesi suara.
+
+Buat `/var/www/ceo-agent/stage` dan `/var/www/ceo-agent/prod` mode 0700, dimiliki akun runner deployment. Masing-masing mempunyai:
+
+- `shared/api.env` mode 0600: URL database role app, origin HTTPS, SMTP perusahaan, session secret, token deployment acak, konfigurasi AI/model/budget. Ikuti `infra/deploy/api.env.example`. Token deployment berupa hex 64 karakter tanpa tanda kutip.
+- `shared/compose.env` mode 0600: tiga port `GATEWAY_PORT`, `BLUE_PORT`, dan `GREEN_PORT`. Salin contoh `compose.stage.env.example` atau `compose.prod.env.example` sesuai lingkungan. Parser menolak variabel lain, ekspresi shell, port duplikat, dan port tidak valid. Jangan mengubah port gateway yang sudah aktif tanpa upgrade terencana.
+- `shared/migrate.env` mode 0600: `DATABASE_ADMIN_URL` milik owner database lingkungan. Kredensial ini tidak masuk container aplikasi.
+- `releases/<SHA>/` berisi script dan Compose dari commit terverifikasi; konfigurasi privat tetap di `shared`, di luar checkout runner dan tidak ditimpa release.
+- `active-image`, `rollback-image`, `active-slot`, `active-commit`, `rollback-commit`, folder `gateway/`, dan `backups/` dikelola script deployment.
+
+`GH_TOKEN` memakai `${{ github.token }}` dengan `contents: read` dan `packages: read`. Token hanya dipakai untuk mengecek head branch dan menarik image; konfigurasi login Docker dibuat sementara lalu dihapus, tanpa mengganti kredensial Docker pengguna lain. `RELEASE_ID` adalah SHA commit; `RELEASE_IMAGE_ID` memverifikasi ID image yang dihasilkan job package. Tidak dibutuhkan PAT atau secret SSH untuk jalur ini.
+
+Compose app hanya menjalankan aplikasi. Compose gateway menjalankan proxy lokal. Budget suara disimpan pada volume `ceo-stage-voice-budget` / `ceo-prod-voice-budget`, dipakai bersama kedua slot pada lingkungan yang sama; pergantian slot tidak mereset ledger biaya. Jangan menyalin akun seed ke produksi.
+
+Instalasi lama yang sudah memakai topologi satu port memerlukan migrasi gateway terencana; script menolak menerka slot jika marker `active-slot` belum ada. Instalasi pertama langsung memakai topologi baru; keadaan VPS harus diperiksa sebelum pemasangan.
+
+## Database pada PostgreSQL bersama
+
+Jalankan `infra/deploy/bootstrap-database.sql` sekali melalui administrator cluster yang sudah ada. Script membuat database dan owner/app role terpisah, menolak nama yang sudah ada, mencabut koneksi PUBLIC, serta memasang ekstensi. Role runtime bukan superuser dan tidak bypass RLS.
 
 ```sh
-# Jalankan dari shell administrator yang mempunyai koneksi ke cluster bersama.
 export CEO_OWNER_PASSWORD="$(openssl rand -hex 32)"
 export CEO_APP_PASSWORD="$(openssl rand -hex 32)"
 psql -X -v environment=stage -f infra/deploy/bootstrap-database.sql
-# Simpan dua nilai di file privat stage sebelum membersihkan variabel.
+# Simpan nilai pada konfigurasi privat stage.
 unset CEO_OWNER_PASSWORD CEO_APP_PASSWORD
-# Ulangi untuk prod dengan dua password acak baru, -v environment=prod.
+# Ulangi untuk prod dengan password baru dan environment=prod.
 ```
 
-Script membuat database baru dan role `ceo_stage_owner`/`ceo_stage_app` atau `ceo_prod_owner`/`ceo_prod_app`. Instalasi ekstensi yang belum tersedia harus disesuaikan dengan versi PostgreSQL yang ditemukan; jangan mengganti cluster bersama.
+Gunakan URL password yang di-URL-encode. Runtime/migrasi harus menunjuk host, port, dan database yang sama dengan user berbeda. Tidak ada bootstrap atau seed otomatis pada setiap release.
 
-## File privat pada VPS
+## Aktivasi GitHub
 
-Siapkan `/opt/ceo-voice-agent/stage` dan `/opt/ceo-voice-agent/prod` dengan permission direktori 0700. Masing-masing berisi:
+Pemilik/admin membuat Environment `stage` dan `prod`, membatasi branch masing-masing ke `develop` / `main`. Pada setiap Environment isi variable `APP_URL` HTTPS. Kedua Environment sudah ada; domain masih menunggu pemilik.
 
-- `runtime.env`, mode 0600, mengikuti `infra/deploy/runtime.env.example`. Isi URL database role app, origin HTTPS, SMTP perusahaan, kunci sesi acak, token deployment acak, konfigurasi model dan kunci OpenAI. Token deployment berupa hex 64 karakter tanpa tanda kutip.
-- `migrate.env`, mode 0600, hanya berisi `DATABASE_ADMIN_URL` milik owner database lingkungan itu. File ini dipakai container migrasi/backup, bukan proses aplikasi.
-- `active-image` dan `active-commit` ditulis otomatis setelah deployment berhasil.
-- `backups/` menyimpan snapshot sebelum migrasi. Salin backup ke penyimpanan backup yang sudah tersedia dan tetapkan retensi setelah memeriksa kapasitas VPS. Script tidak menghapus backup lama otomatis.
+Pasang runner sekali pada VPS melalui **Settings → Actions → Runners → New self-hosted runner**, pilih Linux x64, dan jalankan instruksi GitHub di VPS dengan akun khusus. Gunakan label tambahan `ceo-agent-deploy` pada `config.sh --labels ceo-agent-deploy`, lalu instal/jalankan service runner. Token registrasi runner dari halaman tersebut hanya untuk instalasi, berbeda dengan `GH_TOKEN` otomatis tiap job; jangan simpan token registrasi dalam Git atau log/chat. Runner harus terdaftar khusus untuk repository ini; jangan mengganti atau merestart runner aplikasi lain.
 
-Gunakan URL PostgreSQL dengan password yang di-URL-encode. Host, port, dan nama database runtime/migrasi harus sama; user harus berbeda. Origin, session secret, token deployment, SMTP, konfigurasi AI, dan budget setiap lingkungan dikelola terpisah. Jangan menyalin akun seed atau password uji ke produksi. Bootstrap akun Superadmin dilakukan sekali dengan kredensial perusahaan melalui CLI administrasi yang tersedia.
+Repository ini publik. Batasi izin penulisan workflow, wajibkan approval untuk semua workflow dari kontributor luar, dan jangan menyetujui job PR/fork yang meminta runner VPS. Perlindungan branch dan pembatasan Environment harus terpasang sebelum aktivasi. Runner dengan akses Docker mempunyai akses istimewa ke host; kode PR/fork tidak boleh berjalan di sana. Pipeline ini menempatkan seluruh job PR, checks, package, dan regresi pada runner GitHub; runner VPS hanya dipilih untuk deploy hasil merge yang sudah diverifikasi.
 
-## GitHub Environments
+Sesudah runner, konfigurasi shared, database, proxy/domain, backup, dan smoke test siap, aktifkan repository variable `STAGE_DEPLOY_ENABLED=true`, uji stage, lalu `PROD_DEPLOY_ENABLED=true`. Tanpa flag tersebut, package tetap tersedia dan job VPS dilewati. Hapus kebutuhan lama `VPS_SSH_KEY`/`VPS_HOST`/`VPS_PORT`/`VPS_USER`/`VPS_KNOWN_HOSTS` dari setup; workflow tidak menggunakannya.
 
-Pemilik repo menyiapkan Environment `stage` dan `prod` di Settings → Environments. Batasi branch deployment stage ke `develop`, prod ke `main`. Pipeline memakai branch asli untuk deployment.
+Workspace tidak perlu login lewat Cloud Browser atau memperoleh akses TCP ke VPS. Akses API integrasi untuk mengubah variables, secrets, runner, dan branch protection masih terbatas. Engineer melaporkan runner `ceo-agent-srv1667462`, service `ceo-deploy`, file shared, database, dan GitHub protections sudah disiapkan; kedua flag deployment false. Domain/origin, APP_URL, dan SMTP masih tertunda. Kesiapan server diverifikasi melalui pemeriksaan manual runner, bukan dengan menganggap file contoh sebagai konfigurasi yang sudah terpasang. Tidak ada deployment publik yang diaktifkan.
 
-Pada **masing-masing Environment**:
+## Pemeriksaan runner sebelum domain tersedia
 
-- Secret `VPS_SSH_KEY`: private key khusus deployment yang public key-nya dipasang pada akun SSH VPS.
-- Variable `VPS_HOST`: alamat VPS.
-- Variable `VPS_PORT`: port SSH yang diverifikasi.
-- Variable `VPS_USER`: akun SSH deployment.
-- Variable `VPS_KNOWN_HOSTS`: baris known_hosts dari host key yang sudah diverifikasi. Jangan mengambil fingerprint baru tanpa pemeriksaan pada setiap deployment.
-- Variable `APP_URL`: origin HTTPS lingkungan itu. Pipeline memeriksa akses HTTPS melalui domain setelah pemeriksaan lokal VPS. Kegagalan proxy/DNS/TLS membuat job gagal untuk diperiksa; snapshot database tidak dipulihkan otomatis.
+Sesudah perubahan workflow mencapai default branch, jalankan `checks.yml` secara manual pada `develop` atau `main` dengan input `vps_readiness=true`. Job hanya memakai runner VPS untuk memeriksa konfigurasi stage/prod sesuai branch. Tidak ada build, install paket, pull image, migrasi, perubahan data, restart, ataupun deployment. Job memerlukan kedua flag deployment `false`; pemeriksaan port kosong ini khusus tahap sebelum instalasi pertama.
 
-Setelah konfigurasi server, domain, backup, dan smoke test selesai, aktifkan variable **repository** `STAGE_DEPLOY_ENABLED=true`. Uji stage, lalu aktifkan `PROD_DEPLOY_ENABLED=true`. Aktivasi terpisah memungkinkan stage diuji sebelum prod berjalan.
+Pemeriksaan mencakup akun runner, ownership/permission file privat, akses Docker/Compose, port, koneksi PostgreSQL owner/runtime, ekstensi, dan hak koneksi lintas database. Query memakai transaksi default baca-saja dengan batas waktu. Output hanya metadata aman; URL, password, dan pesan error mentah tidak dicetak. Pengecekan domain/origin serta SMTP tetap tertunda. Ini bukan pengganti smoke test release sesudah domain tersedia.
 
-Token integrasi GitHub yang tersedia saat persiapan mendapat HTTP 403 pada API pembuatan Environment. Pembuatan Environment dan pengisian secrets memerlukan akses pemilik/admin repo. Ini berbeda dari akses push kode yang sudah tersedia.
+Laporan engineer 27 November 2026 menyatakan setup runner/database selesai. Engineer juga melaporkan instalasi pgvector menarik PostgreSQL 16.15 → 16.16 dan restart otomatis sekitar 8 detik. Hal ini melanggar batas tanpa restart; cluster dilaporkan kembali active. Bukti asli berada pada komputer engineer dan belum dibaca dari workspace ini. Pemeriksaan runner berikutnya tidak memasang paket atau merestart layanan. Jangan mengklaim tidak ada dampak pada aplikasi lain hanya dari status cluster active.
 
 ## Verifikasi
 
 ```sh
+npm run test:tools
 npm run build
 npm run build:server
 docker build -t ceo-ci:local .
 bash infra/deploy/smoke.sh ceo-ci:local
-node --test scripts/deployment-script.test.mjs
+node --test infra/deploy/gateway-smoke.mjs
+# Opsional, hanya lokal: dua slot app nyata dengan DB disposable.
+# Menolak slot/port/volume ceo-stage yang sudah ada; bukan jalur CI deployment.
+bash infra/deploy/rollout-smoke.sh ceo-ci:local
+# Terpisah dari deployment:
+npx playwright install chromium
+npm run test:browser-tools
+npm run test:e2e
 ```
 
-Uji container memakai dua database baru pada container PostgreSQL sementara, bukan VPS. Uji memeriksa migrasi compiled JavaScript, UI dan API produksi, token kontrol deployment, backup yang dapat dibaca, serta isolasi koneksi database. Tes backend memeriksa drain/resume tanpa menghentikan giliran suara aktif. Tes script memeriksa kegagalan migrasi, rollback image, dan penolakan parameter yang tidak valid.
+Smoke database menggunakan dua database pada PostgreSQL sementara, bukan VPS. Uji gateway memakai dua HTTP fixture, cookie sesi, stream SSE, trafik saat switch atomik, aset lama, target tidak valid, dan pembalikan rute. Unit script menguji kegagalan migrasi/kandidat/switch, slot sibuk, drain tertahan, branch policy, serta isolasi cleanup. Uji ini membuktikan perilaku dalam lingkup skenario tersebut; bukan jaminan mutlak terhadap seluruh kondisi VPS.
 
-Pada executor dengan proxy CA khusus, build lokal memakai Dockerfile sementara dengan CA sebagai BuildKit secret. CA tidak disalin ke image maupun konfigurasi repo dan verifikasi TLS tetap aktif.
+### Hasil verifikasi 27 November 2026
 
-Hasil verifikasi 27 November 2026: 244 tes backend, 8 tes frontend, 40 tes tool/script, typecheck, build server, build image produksi non-root, actionlint, dan smoke container kedua lingkungan lulus. Setiap database sementara berhasil menjalankan 19 migrasi dengan owner non-superuser, melayani UI/API, membatasi kontrol sesi dengan token, menolak koneksi role aplikasi ke database lingkungan lain, serta menghasilkan arsip backup yang dapat dibaca. Uji ini tidak memakai API OpenAI berbayar dan tidak menyentuh VPS.
+- 244 tes backend dan 8 tes frontend lulus; typecheck/build frontend dan compiled backend lulus.
+- Tes unit/script mencakup cabang gagal migrasi, kandidat gagal, config/switch gagal, slot sibuk, drain gagal, retensi image/aset, serta pembatalan transfer karena commit baru.
+- Gateway nyata lulus 100 request bersamaan dengan 20 switch blue/green, pin sesi lama, pembukaan sesi baru, stream SSE yang tidak terputus, aset hash sebelumnya, penolakan endpoint internal, penolakan target tidak valid, dan pembalikan rute.
+- Instalasi pertama dan blue → green berhasil memakai container aplikasi nyata dengan AI dinonaktifkan serta PostgreSQL disposable. Migrasi, sumber UI, marker slot/image, dan penghapusan container lama diverifikasi.
+- Uji lokal memakai ulang image aplikasi yang sudah dibangun karena perubahan ini hanya menyentuh deployment/test/rules. Tidak ada panggilan OpenAI berbayar atau perubahan VPS. Bukti ini tidak menyatakan stage/prod sudah aktif.
 
-CI awal main menemukan timeout pada uji intersepsi browser yang lulus di develop. Harness sekarang membatasi launch/navigasi/fetch, memberi waktu untuk cleanup, dan menutup koneksi server uji. Pemeriksaan kesamaan byte WAV tidak diubah. Kasus Chromium tersebut lulus dalam 12 pengulangan lokal setelah perbaikan.
+Gateway tidak di-reload pada rilis rutin karena reload HTTP/1 dapat menutup koneksi pada celah penerimaan permintaan; lihat [laporan upstream Caddy](https://github.com/caddyserver/caddy/issues/8233). Rute berbasis file menggunakan [matcher file resmi Caddy](https://caddyserver.com/docs/caddyfile/matchers#file), tanpa modul tambahan atau layanan berlangganan.
 
-Log CI kemudian memperlihatkan timeout terjadi saat launch Chromium sistem. Pemilihan otomatis browser sistem dihapus agar CI menggunakan browser yang dipasang oleh Playwright. Instalasi lokal khusus tetap didukung melalui `PLAYWRIGHT_CHROMIUM_EXECUTABLE`, mengikuti konfigurasi Playwright aplikasi.
+### Audit efisiensi pipeline
 
-## Status koneksi awal
+- Hapus build frontend/backend dan instalasi dependency development di Docker; image memakai artifact dari build runner yang sama.
+- Hapus instalasi/restart pgTAP dan uji SQL ganda pada workflow regresi UI. Pengujian kebijakan database tetap di checks utama.
+- Pindahkan tes alat bantu pilot AI dan stress test gateway dari jalur rilis ke regresi mendalam. Unit deployment tetap wajib.
+- Pisahkan audit npm dari install dependency; audit tetap tersedia pada regresi mendalam.
+- Gabungkan pembacaan versi PostgreSQL dan metadata backup menjadi satu koneksi, dengan validasi database/ekstensi tetap berjalan.
+- Pertahankan pengujian kode hasil merge karena hasil penggabungan dapat berbeda dari branch PR yang diuji. Backup, migrasi, isolasi data, verifikasi image, health check, dan perlindungan sesi aktif tetap diperlukan.
 
-Pada 27 November 2026 koneksi SSH ke VPS yang diberikan pada port 22 ditolak sebelum autentikasi, termasuk percobaan dari sandbox, dengan akses jaringan tambahan, dan di luar sandbox. HTTP VPS memberi respons, tetapi itu tidak membuktikan SSH tersedia. Domain stage/prod ditunda oleh pemilik. Belum ada perubahan layanan, database, akun, firewall, atau proxy pada VPS.
+### Metode runner VPS
 
-Untuk melanjutkan konfigurasi langsung, akses SSH perlu tersedia. Dari console provider, operator dapat memeriksa `systemctl status ssh`, `ss -ltnp`, dan aturan firewall/allowlist. Gunakan hasil pemeriksaan tersebut untuk menentukan tindakan, tanpa menonaktifkan firewall secara menyeluruh.
+Mengikuti pola [workflow cari-kerja](https://github.com/EGI-HOLDING/cari-kerja/blob/main/.github/workflows/ci.yml): job deploy memakai self-hosted runner, token otomatis, SHA release, serta file shared di server. Build/test tetap dipisah ke runner GitHub agar VPS cukup menjalankan image. Blue-green, backup sebelum migrasi, sesi suara aktif, dan cleanup image terisolasi tetap dipertahankan.
+
+Validasi perubahan runner VPS: 42 tes script/unit deployment lulus, termasuk stage/prod, image salah, head branch berubah sebelum/sesudah pull, kegagalan pull, lock bersamaan, pewarisan lock ke deploy, konfigurasi privat, dan penolakan ekspresi shell pada compose.env. Lint workflow dan sintaks Bash lulus. Instalasi awal serta blue → green dengan aplikasi nyata, shared env, dan PostgreSQL disposable juga lulus; container slot lama dihapus sesudah drain. Pengujian lokal ini tidak memasang runner maupun mengaktifkan server VPS.
