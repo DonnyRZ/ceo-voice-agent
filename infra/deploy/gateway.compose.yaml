@@ -1,0 +1,22 @@
+services:
+  gateway:
+    image: ${GATEWAY_IMAGE:?Image gateway wajib ditentukan}
+    user: "${DEPLOY_UID:?UID wajib ditentukan}:${DEPLOY_GID:?GID wajib ditentukan}"
+    container_name: ceo-${DEPLOY_ENV:?Lingkungan wajib ditentukan}-gateway
+    command: [caddy, run, --config, /etc/ceo/active.Caddyfile, --adapter, caddyfile]
+    network_mode: host
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    # Official Caddy binary has this file capability, even on high ports.
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ${GATEWAY_CONFIG_DIR:?Folder konfigurasi gateway wajib ditentukan}:/etc/ceo:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'

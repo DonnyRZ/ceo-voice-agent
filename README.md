@@ -28,6 +28,7 @@ npm run test:backend
 npm run test:frontend
 npx playwright install chromium
 npm run test:tools
+npm run test:browser-tools
 npm run test:e2e
 npm run build
 ```

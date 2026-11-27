@@ -1,0 +1,46 @@
+name: Regresi mendalam terpisah
+
+on: [pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  ui-regression:
+    concurrency:
+      group: deep-regression-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Siapkan dan lindungi kredensial pengujian
+        run: |
+          npm run env:init
+          node --env-file=.env --input-type=module <<'JS'
+          const keys = ['POSTGRES_PASSWORD', 'DATABASE_APP_PASSWORD', 'DATABASE_ADMIN_URL',
+            'DATABASE_URL', 'BETTER_AUTH_SECRET', 'SEED_PASSWORD', 'SMTP_PASSWORD', 'SUPERADMIN_PASSWORD'];
+          for (const key of keys) {
+            const value = process.env[key];
+            if (value) process.stdout.write(`::add-mask::${value}\n`);
+          }
+          JS
+      - run: docker compose up -d --wait db mailpit
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - name: Audit dependency terpisah dari deployment
+        run: npm audit --omit=dev
+        continue-on-error: true
+      - run: npm run test:pilot-tools
+      - name: Stress test pergantian proxy
+        run: node --test infra/deploy/gateway-smoke.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser-tools
+      - run: npm run test:e2e
