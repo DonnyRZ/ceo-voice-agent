@@ -26,3 +26,4 @@ services:
 
 volumes:
   voice-budget:
+    name: ceo-${DEPLOY_ENV:?Lingkungan wajib ditentukan}-voice-budget

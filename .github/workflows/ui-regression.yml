@@ -1,0 +1,46 @@
+name: Regresi UI terpisah
+
+on: [pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  ui-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Siapkan dan lindungi kredensial pengujian
+        run: |
+          npm run env:init
+          node --env-file=.env --input-type=module <<'JS'
+          const keys = ['POSTGRES_PASSWORD', 'DATABASE_APP_PASSWORD', 'DATABASE_ADMIN_URL',
+            'DATABASE_URL', 'BETTER_AUTH_SECRET', 'SEED_PASSWORD', 'SMTP_PASSWORD', 'SUPERADMIN_PASSWORD'];
+          for (const key of keys) {
+            const value = process.env[key];
+            if (value) process.stdout.write(`::add-mask::${value}\n`);
+          }
+          JS
+      - run: docker compose up -d --wait db mailpit
+      - name: Pasang pgTAP
+        run: |
+          docker compose exec -T -u root db sh -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends postgresql-17-pgtap'
+          docker compose restart db
+          docker compose up -d --wait db
+      - run: npm run db:migrate
+      - name: Uji kebijakan PostgreSQL dan audit
+        run: |
+          docker compose exec -T db psql -X -U ruang_kerja_admin -d ruang_kerja \
+            -v ON_ERROR_STOP=1 -v app_role=ruang_kerja_app < backend/db/pgtap.sql
+      - run: npm run db:seed
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser-tools
+      - run: npm run test:e2e

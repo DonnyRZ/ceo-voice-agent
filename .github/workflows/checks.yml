@@ -1,6 +1,11 @@
 name: Uji Ruang Kerja
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,6 +22,9 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Validasi alur PR
+        if: github.event_name == 'pull_request'
+        run: node scripts/branch-policy.mjs pull-request
       - run: npm ci
       - name: Siapkan dan lindungi kredensial pengujian
         run: |
@@ -44,10 +52,9 @@ jobs:
       - run: npm run test:backend
       - run: npm run test:frontend
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
       - run: npm run test:tools
-      - name: Uji desktop dan mobile
-        run: npm run test:e2e
+      - name: Uji pergantian proxy tanpa browser
+        run: node --test infra/deploy/gateway-smoke.mjs
 
   package:
     needs: checks
@@ -57,6 +64,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: read
     outputs:
       image: ${{ steps.release.outputs.image }}
       image_id: ${{ steps.release.outputs.image_id }}
@@ -78,6 +86,8 @@ jobs:
           set -euo pipefail
           [[ "$BRANCH" == main || "$BRANCH" == develop ]]
           [[ "$SHA" =~ ^[a-f0-9]{40}$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/pulls" > "$RUNNER_TEMP/release-prs.json"
+          GITHUB_EVENT_PATH="$RUNNER_TEMP/release-prs.json" node scripts/branch-policy.mjs release
           latest=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$BRANCH" --jq '.object.sha')
           [[ "$latest" == "$SHA" ]] || { echo 'Commit sudah digantikan versi baru; release dilewati.'; exit 0; }
           target=stage

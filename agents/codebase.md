@@ -8,3 +8,5 @@
 - Untuk kode AI, ikuti [Aturan Codebase AI](ai-codebase.md).
 - Untuk implementasi UI, ikuti [Aturan Frontend](frontend.md).
 - Gunakan teknologi yang tercatat di [Tech Stack Ruang Kerja](tech-stack.md).
+
+- Untuk branch, PR, CI/CD, dan rilis, baca seluruh [Aturan Deployment](deployments/README.md).

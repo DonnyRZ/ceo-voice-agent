@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Sourced by deploy.sh. The old app continues serving during backup/migration.
+run_db() { docker run --rm --network host --env-file "$site/runtime.env" --env-file "$site/migrate.env" "$image" "$@"; }
+backup_and_migrate() {
+  local major backup
+  major=$(run_db node ops/database.mjs version)
+  [[ "$major" =~ ^(1[5-9]|[2-9][0-9])$ ]] || return 65
+  # Pull only on first use; don't contact the registry on every release.
+  docker image inspect "postgres:$major" >/dev/null 2>&1 || docker pull "postgres:$major" >/dev/null
+  run_db node ops/database.mjs pg-env > "$scratch/pg.env"
+  mkdir -p "$site/backups"
+  backup="$site/backups/$(date -u +%Y%m%dT%H%M%SZ)-${revision:0:12}.dump"
+  docker run --rm --network host --env-file "$scratch/pg.env" "postgres:$major" pg_dump --format=custom > "$backup.partial"
+  [[ -s "$backup.partial" ]] || return 65
+  mv "$backup.partial" "$backup"
+  # Bound lock waits so a migration cannot block live writes indefinitely.
+  docker run --rm --network host --env-file "$site/runtime.env" --env-file "$site/migrate.env" \
+    -e 'PGOPTIONS=-c lock_timeout=3000 -c statement_timeout=60000' "$image" node build/backend/db/migrate.js
+}
