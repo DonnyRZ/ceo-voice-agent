@@ -57,7 +57,7 @@ export function TimesheetHeading({ title, division, backTo = '/timesheet', mobil
 export function LoadState({ error, retry }: { error?: string; retry?: () => void }) {
   return (
     <div className="ts-card ts-load-state" role={error ? 'alert' : 'status'}>
-      <p>{error ?? 'Memuat data…'}</p>
+      <p>{error ?? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Memuat data</span>}</p>
       {retry && <button className="ts-button ts-button--secondary" onClick={retry}>Coba lagi</button>}
     </div>
   )

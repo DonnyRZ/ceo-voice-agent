@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { hashPassword } from 'better-auth/crypto';
 import type { FastifyInstance } from 'fastify';
 import type { Pool } from 'pg';
@@ -13,11 +12,13 @@ import { registrationRejection } from './rejection.js';
 import { claimDelivery } from './delivery.js';
 import { resumeRegistration } from './resume.js';
 import { registerOnboardingRoutes } from './onboarding-routes.js';
+import { registerVerificationRoute } from './verification.js';
 
 export function registerRegistrationRoutes(
   app: FastifyInstance, pool: Pool, config: AppConfig, send: SendRegistration,
 ) {
   registerOnboardingRoutes(app, pool, config);
+  registerVerificationRoute(app, pool, config);
   async function deliver(id: string, email: string, token: string) {
     let delivery = 'sent';
     try {
@@ -94,21 +95,4 @@ export function registerRegistrationRoutes(
     return { delivery, registration: await registrationProgress(pool, digest(claim)) };
   });
 
-  app.post('/api/registration/verify', async (request) => {
-    const { token } = parseInput(verificationInput, request.body);
-    await limitRegistration(pool, request, config.BETTER_AUTH_SECRET, 'verify');
-    const claim = readClaim(request, config.APP_ORIGIN);
-    const { rows: [recovery] } = await pool.query<{ required: boolean }>(
-      'SELECT public.registration_requires_original_browser($1, $2) AS required', [digest(token), claim ? digest(claim) : null],
-    );
-    if (recovery.required) throw new ApiError(403, 'Untuk mengamankan pemulihan kata sandi, buka tautan email ini di browser tempat Anda meminta pemulihan. Tautan masih berlaku.');
-    const { rows: [verified] } = await pool.query<{ email: string; origin_device: string | null; same_browser: boolean }>(
-      'SELECT * FROM public.confirm_member_registration($1, $2, $3, $4)',
-      [digest(token), randomUUID(), randomUUID(), claim ? digest(claim) : null],
-    );
-    if (!verified) throw new ApiError(400, 'Tautan tidak berlaku atau sudah digunakan. Periksa email terbaru atau mulai pendaftaran kembali.');
-    request.log.info({ event: 'registration.verified', originDevice: verified.origin_device, sameBrowser: verified.same_browser }, 'Email pendaftaran terverifikasi');
-    return { ...verified, registration: verified.same_browser && claim
-      ? await registrationProgress(pool, digest(claim)) : null };
-  });
 }

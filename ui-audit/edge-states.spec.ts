@@ -15,7 +15,7 @@ for (const state of ['loading', 'error']) test(`member-task__conflict-latest-${s
     : route.fallback());
   await page.getByRole('button', { name: 'Simpan perubahan' }).click();
   await expect(page.getByText('Tugas sudah diperbarui pengguna lain.', { exact: true })).toBeVisible();
-  await expect(page.getByText(state === 'loading' ? 'Memuat data…' : 'Versi terbaru belum dapat dimuat.', { exact: true })).toBeVisible();
+  await expect(page.getByText(state === 'loading' ? 'Memuat data' : 'Versi terbaru belum dapat dimuat.', { exact: true })).toBeVisible();
   await capture(page, info, `member-task__conflict-latest-${state}`);
 });
 
@@ -29,7 +29,7 @@ test('member-project-edit__pending-and-server-fields', async ({ page }, info) =>
   await capture(page, info, 'member-project-edit__server-fields');
   write.set(0);
   await page.getByRole('button', { name: 'Simpan perubahan', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Menyimpan…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Menyimpan' })).toBeDisabled();
   await capture(page, info, 'member-project-edit__saving');
 });
 

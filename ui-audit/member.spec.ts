@@ -38,7 +38,7 @@ for (const edit of [false, true]) test(`member-task-${edit ? 'edit' : 'new'}__fo
   await capture(page, info, `${prefix}__server-validation`);
   write.set(0);
   await submit();
-  await expect(page.getByRole('button', { name: 'Menyimpan…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Menyimpan' })).toBeDisabled();
   await capture(page, info, `${prefix}__submitting`);
   await write.release(200, task);
   await expect(page.getByRole('heading', { name: 'Detail Tugas', exact: true })).toBeVisible();
@@ -82,7 +82,7 @@ for (const edit of [false, true]) test(`member-project-${edit ? 'edit' : 'new'}_
   } else {
     write.set(0);
     await submit();
-    await expect(page.getByRole('button', { name: 'Menyimpan…' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Menyimpan' })).toBeDisabled();
     await capture(page, info, `${prefix}__submitting`);
     await write.release(200, project);
     await expect(page.getByRole('heading', { name: 'Detail Proyek', exact: true })).toBeVisible();

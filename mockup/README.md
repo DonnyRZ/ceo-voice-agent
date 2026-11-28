@@ -20,7 +20,7 @@ Rancangan revisi menggunakan ImageGen, satu mockup per gambar. Pemilik secara ek
 - [Verifikasi mobile dan perpindahan perangkat](Anggota-Divisi/mobile/registration-verification/README.md)
 - [Email verifikasi bertombol](Anggota-Divisi/email/README.md)
 
-Ukuran implementasi mengikuti [standar konsistensi UI](../docs/ui-consistency.md). Akun aktif setelah verifikasi perusahaan; penyelesaian pemasangan merupakan status terpisah.
+Ukuran implementasi mengikuti [standar konsistensi UI](../docs/ui-consistency.md). Desktop aktif setelah konfirmasi email. Mobile aktif setelah verifikasi email dan penyelesaian tahap pemasangan/panduan; email terverifikasi saja belum menyelesaikan registrasi.
 
 ## Login Superadmin — dokumentasi yang sudah tersedia
 
@@ -32,3 +32,19 @@ Kedua mockup berikut sudah tersimpan di repository sebelum penambahan mockup reg
 | Mobile | [Login Superadmin](Superadmin/mobile/24-login-superadmin.png) |
 
 Catatan: gambar login Superadmin merupakan referensi desain terdahulu. Aturan terbaru tentang keseragaman ukuran, login tanpa scroll, serta penghapusan panah dan teks kembali ke login pengguna **menggantikan bagian gambar lama yang bertentangan**, sesuai [aturan frontend](../agents/frontend.md) dan [konsistensi UI](../agents/ui-consistency.md). Jangan mengembalikan elemen lama tersebut saat implementasi.
+
+## Konfirmasi lintas browser dan animasi loading
+
+Rancangan ImageGen dibuat sebelum implementasi dalam tugas sembilan langkah yang diotorisasi pemilik.
+
+- [Konfirmasi kata sandi — desktop](Anggota-Divisi/desktop/registration-verification/confirm-password.png)
+- [Konfirmasi kata sandi — mobile](Anggota-Divisi/mobile/registration-verification/confirm-password.png)
+- [Loading tombol — desktop](Anggota-Divisi/desktop/registration-verification/verifying.png)
+- [Loading tombol — mobile](Anggota-Divisi/mobile/registration-verification/verifying.png)
+- [Loading sesi — desktop](Anggota-Divisi/desktop/loading/session.png)
+- [Loading sesi — mobile](Anggota-Divisi/mobile/loading/session.png)
+
+Pola spinner kecil dengan teks tanpa ellipsis diterapkan pada loading data, tombol, dialog, dan dropdown di seluruh peran. Spinner sesi berukuran 32 px CSS, spinner inline 20 px; kontrol mengikuti standar ukuran aplikasi. Gambar memperlihatkan keadaan animasi secara statis, bukan pengukur progres atau bukti proses selesai.
+
+### Loading undangan Superadmin
+- [Desktop](Superadmin/desktop/kondisi/25-memuat-undangan.png) dan [mobile](Superadmin/mobile/kondisi/25-memuat-undangan.png): dibuat dengan ImageGen sebelum implementasi. Daftar divisi menampilkan animasi selama permintaan berjalan; riwayat undangan desktop juga membedakan memuat dari data kosong.

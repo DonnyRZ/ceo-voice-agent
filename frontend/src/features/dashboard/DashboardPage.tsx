@@ -61,7 +61,7 @@ export function DashboardPage() {
             <div className={`dashboard-stat dashboard-stat--${status}`} key={status}>
               <Icon className="dashboard-stat-icon" aria-hidden="true" strokeWidth={1.55} />
               <div>
-                <strong>{tasks.isPending || tasks.isError ? '—' : count}</strong>
+                <strong>{tasks.isPending ? <span className="loading-inline" role="status" aria-label="Memuat ringkasan"><span className="ui-spinner" aria-hidden="true" /></span> : tasks.isError ? '—' : count}</strong>
                 <span>{statusLabels[status]}</span>
               </div>
             </div>
@@ -88,7 +88,7 @@ export function DashboardPage() {
           void projects.refetch();
         }} />
       ) : tasks.isPending || projects.isPending ? (
-        <p role="status" className="dashboard-no-updates">Memuat pembaruan…</p>
+        <p role="status" className="dashboard-no-updates"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat pembaruan</span></p>
       ) : (
         <RecentUpdates tasks={loadedTasks} projects={projects.data} />
       )}

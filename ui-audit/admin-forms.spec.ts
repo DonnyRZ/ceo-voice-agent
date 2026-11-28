@@ -20,7 +20,7 @@ test('admin-invite__validation-send-failure-retry-success', async ({ page }, inf
   await capture(page, info, 'admin-invite__server-error');
   write.set(0);
   await send();
-  await expect(page.getByRole('button', { name: 'Mengirim…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Mengirim' })).toBeDisabled();
   await capture(page, info, 'admin-invite__sending');
   await write.release(200, { ...user, id: 'invitation-1', kind: 'invitation', status: 'failed', name: null });
   await expect(page.getByText('Undangan gagal dikirim', { exact: true })).toBeVisible();
@@ -30,7 +30,7 @@ test('admin-invite__validation-send-failure-retry-success', async ({ page }, inf
   await capture(page, info, 'admin-invite__retry-error');
   retry.set(0);
   await page.getByRole('button', { name: 'Coba kirim lagi' }).click();
-  await expect(page.getByRole('button', { name: 'Mengirim…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Mengirim' })).toBeDisabled();
   await capture(page, info, 'admin-invite__retry-sending');
   await retry.release(200, { ...user, id: 'invitation-1', kind: 'invitation', status: 'pending' });
   await expect(page.getByRole('heading', { name: 'Undangan berhasil dikirim' })).toBeVisible();
@@ -59,7 +59,7 @@ for (const edit of [false, true]) test(`admin-division-${edit ? 'edit' : 'new'}_
   await page.getByRole('textbox', { name: /Nama divisi/ }).fill(division.name + ' Baru');
   write.set(0);
   await submit();
-  await expect(page.getByRole('button', { name: 'Menyimpan…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Menyimpan' })).toBeDisabled();
   await capture(page, info, `${prefix}__saving`);
   await write.release(200, division);
   await expect(page.getByRole('heading', { name: 'Detail dan Edit Divisi' })).toBeVisible();
@@ -76,7 +76,7 @@ for (const result of ['blocked', 'error', 'success']) test(`admin-division__arch
   await capture(page, info, `admin-division__archive-${result}-dialog`);
   write.set(0);
   await dialog.getByRole('button', { name: 'Arsipkan divisi', exact: true }).click();
-  await expect(dialog.getByRole('button', { name: 'Memproses…' })).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Memproses' })).toBeDisabled();
   await capture(page, info, `admin-division__archive-${result}-busy`);
   const archived = { ...division, status: 'archived' };
   if (result === 'success') fixture.overrides.set('/api/admin/divisions/division-1', archived);

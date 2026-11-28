@@ -109,7 +109,7 @@ export function ProjectForm({ divisionName, project }: FormProps) {
         )}
         <div className="project-form-actions">
           <button type="submit" className="project-button project-button-primary" disabled={save.isPending || stale}>
-            {save.isPending ? 'Menyimpan…' : edit ? 'Simpan perubahan' : 'Simpan proyek'}
+            {save.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Menyimpan</span> : edit ? 'Simpan perubahan' : 'Simpan proyek'}
           </button>
           <Link className="project-button project-button-outline" to={cancelPath}>Batal</Link>
         </div>

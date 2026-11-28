@@ -49,7 +49,7 @@ export function AdminDivisionsPage() {
       </div>
       <section className="mgmt-panel mgmt-divisions-table" aria-label="Divisi">
         <div className="mgmt-division-head" aria-hidden="true"><span>Divisi</span><span>Status</span></div>
-        {divisions.isPending && <p role="status">Memuat divisi…</p>}
+        {divisions.isPending && <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat divisi</span></p>}
         {divisions.isError && <ManagementAlert><p>Daftar divisi belum berhasil dimuat.</p><button type="button" className="mgmt-button mgmt-outline" onClick={() => void divisions.refetch()}>Coba lagi</button></ManagementAlert>}
         {divisions.data?.length === 0 && (
           <ManagementEmpty title={filtered ? 'Tidak ada hasil' : 'Belum ada divisi'} filtered={filtered}

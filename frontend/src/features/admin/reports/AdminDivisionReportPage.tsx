@@ -25,7 +25,7 @@ export function AdminDivisionReportPage() {
         { label: 'Timesheet', to: back },
         { label: 'Detail Timesheet Divisi' },
       ]} />
-      {division.isPending || tasks.isPending ? <p role="status">Memuat timesheet divisi…</p>
+      {division.isPending || tasks.isPending ? <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat timesheet divisi</span></p>
         : division.isError || tasks.isError
           ? <LoadProblem title="Timesheet divisi belum dapat dimuat." retry={() => {
             void division.refetch();

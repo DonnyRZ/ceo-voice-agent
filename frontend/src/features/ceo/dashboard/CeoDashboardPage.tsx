@@ -16,7 +16,7 @@ export function CeoDashboardPage() {
   return <div className="ceo-page ceo-dashboard-page">
     <CeoPageHeader title="Dashboard CEO" />
     <CeoPeriodPicker month={month} onChange={(value) => value && setParams({ month: value })} />
-    {dashboard.isPending ? <CeoEmpty>Memuat ringkasan pekerjaan…</CeoEmpty>
+    {dashboard.isPending ? <CeoEmpty><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat ringkasan pekerjaan</span></CeoEmpty>
       : dashboard.isError ? <CeoQueryProblem error={dashboard.error} name="Ringkasan pekerjaan" retry={() => void dashboard.refetch()} />
         : data && <>
           <CeoStatusSummary counts={data.byStatus} heading="Ringkasan pekerjaan">

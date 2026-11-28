@@ -28,7 +28,7 @@ export function AndroidInstall({ step, go, complete, busy }: {
     <h2>Ruang Kerja</h2><p>Ruang Kerja telah terdeteksi terpasang pada perangkat ini.</p>
     <a className="ui-button install-wide" href="/launch?source=onboarding" target="_blank" rel="noopener" aria-disabled={busy}
       onClick={openInstalled}>
-      Buka Ruang Kerja <ExternalLink /></a>
+      {busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Menyelesaikan</span> : <>Buka Ruang Kerja <ExternalLink /></>}</a>
     <p className="registration-caption">Jika tetap terbuka di browser, ketuk ikon Ruang Kerja di layar utama.</p>
     <button className="registration-text-action" onClick={() => setManual(!manual)}>Lihat cara membuka</button>
     {manual && <p>Kembali ke layar utama Android, cari ikon Ruang Kerja, lalu ketuk ikon tersebut.</p>}

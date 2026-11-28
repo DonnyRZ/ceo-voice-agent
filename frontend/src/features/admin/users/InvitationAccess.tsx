@@ -37,7 +37,7 @@ export function InvitationAccess({ user }: { user: AdminUser }) {
       <div className="mgmt-actions">
         {user.status !== 'revoked' && (
           <button className="mgmt-button mgmt-primary" type="button" disabled={mutation.isPending} onClick={() => mutation.mutate('retry')}>
-            <Send aria-hidden="true" />{mutation.isPending && !confirm ? 'Mengirim…' : 'Kirim ulang undangan'}
+            {!mutation.isPending && <Send aria-hidden="true" />}{mutation.isPending && !confirm ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Mengirim</span> : 'Kirim ulang undangan'}
           </button>
         )}
         <Link className="mgmt-button mgmt-outline" to="/admin/users"><ArrowLeft aria-hidden="true" />Kembali ke daftar pengguna</Link>

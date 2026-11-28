@@ -20,7 +20,7 @@ for (const portal of ['login', 'superadmin']) test(`${portal}__interaction-state
   }
   write.set(0);
   await page.getByRole('button', { name: 'Masuk', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Sedang masuk…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Sedang masuk' })).toBeDisabled();
   await capture(page, info, `${portal}__submitting`);
 });
 
@@ -40,7 +40,7 @@ test('activation__interaction-states', async ({ page }, info) => {
   await capture(page, info, 'activation__server-error');
   write.set(0);
   await page.getByRole('button', { name: 'Aktifkan akun' }).click();
-  await expect(page.getByRole('button', { name: 'Mengaktifkan…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Mengaktifkan' })).toBeDisabled();
   await capture(page, info, 'activation__submitting');
   await write.release(200, { success: true });
   await expect(page.getByRole('heading', { name: 'Akun sudah aktif' })).toBeVisible();
@@ -57,7 +57,7 @@ for (const [role, path] of [['member', '/account'], ['superadmin', '/admin/accou
     await capture(page, info, `${role}__logout-error`);
     write.set(0);
     await page.getByRole('button', { name: 'Keluar', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Sedang keluar…' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Sedang keluar' })).toBeDisabled();
     await capture(page, info, `${role}__logging-out`);
   });
 }
@@ -67,7 +67,7 @@ for (const role of ['member', 'superadmin', 'ceo'] as Role[]) for (const state o
     await mockScreen(page, role);
     await page.route('**/api/session', (route) => state === 'loading' ? undefined : route.fulfill({ status: 503, json: { message: 'Gangguan sesi.' } }));
     await page.goto(role === 'member' ? '/' : role === 'superadmin' ? '/admin' : '/ceo');
-    await expect(page.getByText(state === 'loading' ? 'Memeriksa sesi…' : 'Sesi tidak dapat diperiksa.', { exact: true })).toBeVisible();
+    await expect(page.getByText(state === 'loading' ? 'Memeriksa sesi' : 'Sesi tidak dapat diperiksa.', { exact: true })).toBeVisible();
     await capture(page, info, `${role}__session-${state}`);
   });
 }

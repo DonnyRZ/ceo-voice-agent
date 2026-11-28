@@ -39,10 +39,18 @@ test('registrasi perusahaan, email nyata ke Mailpit, aktivasi, login, dan isolas
 
   expect(message.HTML).toContain('>Verifikasi email</a>');
   const mailContext = await browser.newContext({ viewport: info.project.name === 'mobile' ? { width: 1440, height: 900 } : { width: 390, height: 844 } });
-  const verifyPage = await mailContext.newPage();
+  let verifyPage = await mailContext.newPage();
   await verifyPage.setContent(message.HTML);
   await verifyPage.getByRole('link', { name: 'Verifikasi email', exact: true }).click();
-  await expect(verifyPage).toHaveURL(/\/register\/verify$/); // Secret fragment is removed before interaction.
+  await expect(verifyPage).toHaveURL(/\/register\/verify#token=[a-f0-9]{64}$/); // Keep the fragment until success so reloading an unused link remains possible.
+  // Opening or reloading the link is read-only. Closing the tab and opening
+  // the same inbox button must still allow one successful confirmation.
+  await verifyPage.reload();
+  await expect(verifyPage.getByRole('button', { name: 'Verifikasi email', exact: true })).toBeVisible();
+  await verifyPage.close();
+  verifyPage = await mailContext.newPage();
+  await verifyPage.setContent(message.HTML);
+  await verifyPage.getByRole('link', { name: 'Verifikasi email', exact: true }).click();
   await verifyPage.getByRole('button', { name: 'Verifikasi email', exact: true }).click();
   await expect(verifyPage.getByRole('heading', { name: info.project.name === 'mobile' ? 'Email terverifikasi' : 'Registrasi selesai', exact: true })).toBeVisible();
   if (info.project.name === 'mobile') await expect(verifyPage.getByRole('heading', { name: 'Kembali ke HP tempat Anda mendaftar', exact: true })).toBeVisible();

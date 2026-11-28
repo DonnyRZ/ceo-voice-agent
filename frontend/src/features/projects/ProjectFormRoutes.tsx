@@ -25,7 +25,7 @@ export function EditProject() {
   return (
     <div className="project-page project-edit-page">
       <ProjectHeading title="Edit Proyek" section="Proyek" context="Edit Proyek" parentPath="/projects" />
-      {project.isPending && <p className="project-message" role="status">Memuat proyek…</p>}
+      {project.isPending && <p className="project-message" role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat proyek</span></p>}
       {project.isError && <ProjectError retry={missing ? undefined : () => void project.refetch()}>{missing ? 'Proyek tidak ditemukan.' : 'Proyek belum berhasil dimuat.'}</ProjectError>}
     </div>
   );

@@ -62,9 +62,10 @@ export function RegistrationPage() {
         <div className="registration-input"><Layers aria-hidden="true" />
           <select id="registration-division" name="divisionId" required value={draft.divisionId} onChange={(event) => setDraft({ ...draft, divisionId: event.target.value })}
             disabled={register.isPending || !divisions.data?.divisions.length}>
-            <option value="">{divisions.isPending ? 'Memuat divisi…' : 'Pilih divisi'}</option>
+            <option value="">Pilih divisi</option>
             {divisions.data?.divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
           </select></div>
+        {divisions.isPending && <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Memuat divisi</span>}
         {divisions.error && <div className="auth-error" role="alert">Divisi belum dapat dimuat.
           <button type="button" className="registration-text-action" onClick={() => void divisions.refetch()}>Coba lagi</button></div>}
         {divisions.data && !divisions.data.divisions.length && <p className="auth-error">Belum ada divisi aktif. Hubungi Superadmin.</p>}
@@ -72,7 +73,7 @@ export function RegistrationPage() {
       <PasswordField disabled={register.isPending} /><PasswordField confirm disabled={register.isPending} />
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button className="ui-button registration-submit" disabled={register.isPending || !divisions.data?.divisions.length}>
-        {register.isPending ? 'Menyimpan…' : 'Simpan dan lanjut'}
+        {register.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Menyimpan</span> : 'Simpan dan lanjut'}
       </button>
       <p className="registration-caption registration-next">Berikutnya: verifikasi email perusahaan.</p>
       <p className="registration-login">Sudah punya akun? <Link to="/login">Masuk</Link></p>

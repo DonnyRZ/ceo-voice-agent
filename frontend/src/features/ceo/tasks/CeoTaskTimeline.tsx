@@ -8,7 +8,7 @@ export function CeoTaskTimeline({ id }: { id: string }) {
   const history = useQuery(ceoTaskHistoryQuery(id));
   return <section className="ceo-surface ceo-task-history" aria-labelledby="ceo-status-history">
     <h2 id="ceo-status-history">Riwayat Status</h2>
-    {history.isPending ? <CeoEmpty>Memuat riwayat…</CeoEmpty>
+    {history.isPending ? <CeoEmpty><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat riwayat</span></CeoEmpty>
       : history.isError ? <CeoQueryProblem name="Riwayat status" error={history.error} retry={() => void history.refetch()} />
         : !history.data.length ? <CeoEmpty>Belum ada perubahan status tercatat.</CeoEmpty>
           : <ol className="ceo-history-list">

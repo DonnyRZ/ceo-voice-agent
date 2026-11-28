@@ -87,7 +87,7 @@ export function ManagementConfirm({ title, description, icon: Icon = FileText, c
       <div className="mgmt-actions">
         <button className="mgmt-button mgmt-outline" type="button" disabled={busy} onClick={onClose} autoFocus>Batal</button>
         <button className={`mgmt-button ${warning ? 'mgmt-danger' : 'mgmt-primary'}`} type="button" disabled={busy} onClick={onConfirm}>
-          {busy ? 'Memproses…' : confirm}
+          {busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Memproses</span> : confirm}
         </button>
       </div>
     </dialog>

@@ -8,6 +8,7 @@ import { router } from './app/routes';
 import './styles/base.css';
 import './styles/sizes.css';
 import './styles/shell.css';
+import './styles/loading.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

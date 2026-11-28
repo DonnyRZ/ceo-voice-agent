@@ -25,7 +25,8 @@ export async function limitRegistration(pool: Pool | PoolClient, request: Fastif
   const key = createHmac('sha256', secret).update(action + ':' + (identity ?? request.ip)).digest('hex');
   const { rows: [result] } = await pool.query<{ allowed: boolean }>(
     'SELECT public.registration_rate_allowed($1, $2, $3) AS allowed',
-    [key, action.startsWith('email') ? 5 : 100, action.startsWith('email') ? 600 : 60],
+    [key, action.startsWith('email') || action === 'verification-password' ? 5 : 100,
+      action.startsWith('email') || action === 'verification-password' ? 600 : 60],
   );
   if (!result.allowed) throw new ApiError(429, 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.');
 }

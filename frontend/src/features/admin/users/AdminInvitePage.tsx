@@ -37,7 +37,7 @@ export function AdminInvitePage() {
   });
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (invite.isPending) return;
+    if (invite.isPending || divisions.isPending || divisions.isError) return;
     const invalid: Record<string, string> = {};
     if (!email.trim() || !emailField.current?.validity.valid) invalid.email = 'Masukkan email perusahaan yang valid.';
     if (access.role === 'member' && !access.divisionId) invalid.divisionId = 'Pilih divisi pengguna.';
@@ -73,18 +73,20 @@ export function AdminInvitePage() {
               <FieldError id="invite-email-error" message={errors.email} />
             </div>
             <AccessFields value={access} onChange={(value) => { setAccess(value); setErrors((old) => ({ ...old, divisionId: '', role: '' })); }}
-              divisions={divisions.data ?? []} errors={errors} required />
+              divisions={divisions.data ?? []} errors={errors} required disabled={invite.isPending || divisions.isPending || divisions.isError} />
+            {divisions.isPending && <p className="loading-inline" role="status"><span className="ui-spinner" aria-hidden="true" />Memuat divisi</p>}
+            {divisions.isError && <ManagementAlert>Divisi belum dapat dimuat. <button type="button" className="mgmt-text-action" onClick={() => void divisions.refetch()}>Coba lagi</button></ManagementAlert>}
           </div>
           {invite.isError && !Object.values(errors).some(Boolean) && <ManagementAlert>{invite.error.message}</ManagementAlert>}
           <div className="mgmt-actions">
-            <button className="mgmt-button mgmt-primary" type="submit" disabled={invite.isPending}>
-              <Send aria-hidden="true" />{invite.isPending ? 'Mengirim…' : 'Kirim undangan'}
+            <button className="mgmt-button mgmt-primary" type="submit" disabled={invite.isPending || divisions.isPending || divisions.isError}>
+              {!invite.isPending && <Send aria-hidden="true" />}{invite.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Mengirim</span> : 'Kirim undangan'}
             </button>
             <Link className="mgmt-button mgmt-outline" to="/admin/users">Batal</Link>
           </div>
         </form>
       </div>
-      <RecentInvitations users={users.data ?? []} />
+      <RecentInvitations users={users.data ?? []} pending={users.isPending} error={users.isError} onRetry={() => void users.refetch()} />
     </div>
   );
 }

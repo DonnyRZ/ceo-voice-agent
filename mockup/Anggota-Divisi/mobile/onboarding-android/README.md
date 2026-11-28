@@ -24,7 +24,7 @@ Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Div
 - Tombol Buka Ruang Kerja merupakan usulan tindakan yang perlu diverifikasi per browser Android. Halaman web tidak dapat menjamin navigasi selalu beralih ke jendela PWA terpasang. Jika dukungan pembukaan langsung tidak tersedia atau pengguna masih berada di browser, tampilkan petunjuk membuka ikon Ruang Kerja dari layar utama, seperti pada mockup selesai.
 - Pembatalan pemasangan, browser tidak mendukung, dan kegagalan memerlukan penanganan saat alur implementasi ditentukan. Jangan menahan pengguna pada loading tanpa jalan kembali.
 - Rangkaian khusus iPhone kini tersedia dalam [dokumentasi onboarding iPhone](../onboarding-iphone/README.md). Jalur Android pada folder ini tetap dipertahankan.
-- Akun aktif setelah verifikasi email egiresources.com pada divisi yang dipilih. Pemasangan sendiri tidak memberi akses.
+- Akun mobile aktif hanya setelah email egiresources.com terverifikasi dan langkah akhir pemasangan/pembukaan aplikasi diselesaikan. Verifikasi email saja tidak memberikan akses data divisi.
 
 Warna, ikon, dan tipografi mengikuti bahasa desain Ruang Kerja. Ukuran implementasi nantinya mengikuti [standar UI](../../../../docs/ui-consistency.md); ukuran raster ImageGen bukan hasil pengukuran CSS. Status pengujian dan batas browser dicatat pada dokumentasi implementasi.
 

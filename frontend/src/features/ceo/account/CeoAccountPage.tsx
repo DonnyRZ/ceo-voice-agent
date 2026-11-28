@@ -38,7 +38,7 @@ export function CeoAccountPage() {
           <Settings aria-hidden="true" /><span>Pengaturan</span><ChevronRight aria-hidden="true" />
         </Link>
         <button type="button" className="ceo-account-action" onClick={() => logout.mutate()} disabled={logout.isPending}>
-          <LogOut aria-hidden="true" /><span>{logout.isPending ? 'Sedang keluar…' : 'Keluar'}</span><ChevronRight aria-hidden="true" />
+          <LogOut aria-hidden="true" /><span>{logout.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Sedang keluar</span> : 'Keluar'}</span><ChevronRight aria-hidden="true" />
         </button>
       </div>
       {logout.isError && <p className="ceo-account-error" role="alert">Belum dapat keluar. Periksa koneksi, lalu coba lagi.</p>}

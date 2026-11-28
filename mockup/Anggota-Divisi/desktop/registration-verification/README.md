@@ -16,3 +16,5 @@ Dibuat dengan OpenAI ImageGen pada 28 November 2026, satu layar per gambar. Pemi
 Form awal tetap berisi nama, email, divisi, kata sandi, dan konfirmasi. Simpan dan lanjut membuka verifikasi; pengiriman email dipicu tombol tersendiri. Jenis alur disimpan saat pendaftaran: desktop selesai setelah verifikasi; HP melanjutkan pilihan perangkat sesudah verifikasi. Membuka email di perangkat lain tidak mengubah alur asal.
 
 Ukuran kode mengikuti standar CSS aplikasi, bukan ukuran piksel raster. Nomor dan tanda centang menandai tahap aktif/selesai; verifikasi email berbeda dari penyelesaian pemasangan.
+
+Revisi verifikasi lintas browser dan loading: [Konfirmasi kata sandi pendaftaran](confirm-password.png) dan [Verifikasi sedang berjalan](verifying.png), dibuat memakai ImageGen pada 28 November 2026. Pemilik mengizinkan mockup dilanjutkan ke implementasi pada tugas sembilan langkah. Konfirmasi sandi hanya untuk pemulihan akun lama tanpa bukti browser asal; bukan sandi baru. Spinner menggantikan indikator teks bertitik.

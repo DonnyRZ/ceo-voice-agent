@@ -84,8 +84,8 @@ export function TaskForm({ task, projects, members, divisionName }: TaskFormProp
         <div className="ts-form-actions">
           <Link className="ts-button ts-button--secondary ts-cancel-button" to={cancelPath}>Batal</Link>
           <button className="ts-button ts-button--primary" type="submit" disabled={save.isPending}>
-            <Save className="ts-save-icon" aria-hidden="true" />
-            {save.isPending ? 'Menyimpan…' : failed ? 'Coba simpan lagi' : editing ? 'Simpan perubahan' : 'Simpan tugas'}
+            {!save.isPending && <Save className="ts-save-icon" aria-hidden="true" />}
+            {save.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Menyimpan</span> : failed ? 'Coba simpan lagi' : editing ? 'Simpan perubahan' : 'Simpan tugas'}
           </button>
         </div>
       </form>

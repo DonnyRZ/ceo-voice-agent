@@ -21,7 +21,7 @@ for (const origin of ['desktop', 'mobile'] as const) {
         : ['not_sent', 'sending'].includes(state) ? 'Verifikasi email' : state === 'failed' ? 'Email belum terkirim' : 'Periksa email Anda';
       await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
       await capture(page, info, 'verification-flow__' + origin + '-' + state);
-      if (state === 'sending') await expect(page.getByRole('button', { name: 'Mengirim…', exact: true })).toBeDisabled();
+      if (state === 'sending') await expect(page.getByRole('button', { name: 'Mengirim', exact: true })).toBeDisabled();
       if (origin === 'mobile' && state !== 'verified') await expect(page.getByRole('button', { name: 'Lanjutkan', exact: true })).toBeDisabled();
       if (state === 'verified') await expect(page.getByRole('link', { name: origin === 'mobile' ? 'Lanjutkan' : 'Masuk ke Ruang Kerja', exact: true })).toBeVisible();
     }

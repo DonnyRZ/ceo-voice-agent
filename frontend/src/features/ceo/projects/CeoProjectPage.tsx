@@ -18,7 +18,7 @@ export function CeoProjectPage() {
   return <div className="ceo-page ceo-project-page">
     <CeoPageHeader title="Detail Proyek" back={back} backLabel={data?.divisionName || 'Divisi'} />
     <CeoVoiceSourceNote />
-    {project.isPending ? <CeoEmpty>Memuat detail proyek…</CeoEmpty>
+    {project.isPending ? <CeoEmpty><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat detail proyek</span></CeoEmpty>
       : project.isError ? <CeoQueryProblem error={project.error} name="Proyek" retry={() => void project.refetch()} />
         : data && <>
           <section className="ceo-banner" aria-label="Informasi proyek">

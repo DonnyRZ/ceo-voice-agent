@@ -105,7 +105,7 @@ export function AdminAuditPage() {
           </button>}
         </div>
       </section>
-      {entries.isPending || unfiltered.isPending || divisions.isPending ? <p role="status">Memuat audit log…</p>
+      {entries.isPending || unfiltered.isPending || divisions.isPending ? <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat audit log</span></p>
         : entries.isError || unfiltered.isError || divisions.isError ? <LoadProblem title="Audit log belum dapat dimuat." retry={() => {
             void entries.refetch();
             void unfiltered.refetch();

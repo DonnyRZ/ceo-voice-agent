@@ -100,3 +100,5 @@
   .mgmt-invite-summary > div:first-child dd { grid-area: auto; grid-column: 2; grid-row: 1 / span 2; }
   .mgmt-invite-summary > div:first-child dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 }
+
+.mgmt-invite-page .mgmt-text-action { min-height: 48px; padding: 0 8px; border: 0; background: transparent; color: var(--mgmt-teal); font: inherit; text-decoration: underline; cursor: pointer; }

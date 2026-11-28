@@ -15,6 +15,7 @@ for (const screen of screens) for (const state of screen.states) {
     if (screen.id === 'registration') fixture.overrides.set('/api/registration/status', { registration: null });
     await page.goto(screen.path);
     await expect(page.locator('h1')).toBeVisible();
+    if (state === 'loading') await expect(page.locator('.ui-spinner, .install-spinner, .ceo-voice-spin').first()).toBeVisible();
     if (screen.id === 'onboarding-done') await expect(page.getByRole('heading',{name:'Panduan selesai'})).toBeVisible();
     if (state !== 'loading') await expect.poll(async () =>
       (await page.locator('main').innerText()).includes('Memuat '), { timeout: 5000 }).toBe(false);

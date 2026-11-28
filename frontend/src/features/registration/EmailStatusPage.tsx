@@ -35,7 +35,7 @@ export function RegistrationEmailPage() {
         : failed ? 'Data akun tersimpan. Coba kirim email kembali.'
           : sent ? 'Tautan verifikasi sudah dikirim.' : mobile ? 'Verifikasi email sebelum menyiapkan aplikasi.' : 'Satu langkah lagi untuk mengaktifkan akun Anda.'}>
     <section className="registration-card registration-email-card">
-      {current.isPending ? <p role="status">Memeriksa pendaftaran…</p>
+      {current.isPending ? <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memeriksa pendaftaran</span></p>
         : current.error ? <><p role="alert">Pendaftaran belum dapat diperiksa.</p>
           <button className="ui-button" onClick={() => void current.refetch()}>Coba lagi</button></>
           : !registration ? <><p>Tidak ada pendaftaran aktif pada browser ini. Gunakan browser tempat Anda mendaftar.</p>
@@ -57,7 +57,7 @@ export function RegistrationEmailPage() {
                 : !failed && <p>Kirim tautan verifikasi, lalu buka email dari Ruang Kerja.</p>}
               <button className={'ui-button registration-wide' + (sent ? ' ui-button--outline' : '')}
                 disabled={sending || seconds > 0 || registration.sends_remaining === 0}
-                onClick={() => send.mutate()}>{sending ? 'Mengirim…' : registration.delivery === 'not_sent' ? 'Kirim email verifikasi' : 'Kirim ulang email'}</button>
+                onClick={() => send.mutate()}>{sending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Mengirim</span> : registration.delivery === 'not_sent' ? 'Kirim email verifikasi' : 'Kirim ulang email'}</button>
               <p className="registration-caption registration-next" role="status">{registration.sends_remaining === 0 ? 'Batas pengiriman tercapai. Gunakan email terbaru atau daftar kembali setelah tautan kedaluwarsa.'
                 : seconds > 0 ? `Tersedia kembali dalam ${seconds} detik.` : 'Tautan berlaku 24 jam.'}</p>
               {send.error && <p className="auth-error" role="alert">{send.error instanceof ApiError ? send.error.message : 'Koneksi gagal. Periksa status sebelum mencoba kembali.'}</p>}

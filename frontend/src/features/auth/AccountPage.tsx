@@ -33,7 +33,7 @@ export function AccountPage() {
         {logout.isError && <p className="auth-error" role="alert">Tidak dapat keluar sekarang. Coba lagi.</p>}
         <button type="button" className="account-logout" onClick={() => logout.mutate()} disabled={logout.isPending}>
           <LogOut aria-hidden="true" />
-          {logout.isPending ? 'Sedang keluar…' : 'Keluar'}
+          {logout.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Sedang keluar</span> : 'Keluar'}
           <ChevronRight aria-hidden="true" />
         </button>
       </div>

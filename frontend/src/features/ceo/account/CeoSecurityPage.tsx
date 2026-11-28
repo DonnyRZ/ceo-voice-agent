@@ -55,7 +55,7 @@ export function CeoSecurityPage() {
         {(validation || changePassword.isError) && <p className="ceo-account-error" role="alert">{validation || error}</p>}
         {changePassword.isSuccess && <p className="ceo-account-feedback" role="status">Kata sandi berhasil diperbarui. Sesi lain telah dikeluarkan.</p>}
         <button type="submit" className="ui-button" disabled={changePassword.isPending}>
-          {changePassword.isPending ? 'Menyimpan…' : 'Simpan kata sandi'}
+          {changePassword.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Menyimpan</span> : 'Simpan kata sandi'}
         </button>
       </form>
     </section>

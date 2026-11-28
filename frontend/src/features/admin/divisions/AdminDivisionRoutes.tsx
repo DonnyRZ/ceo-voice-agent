@@ -87,7 +87,7 @@ export function AdminDivisionDetailPage() {
   return (
     <div className="mgmt-page mgmt-division-detail">
       <ManagementHeading title="Detail dan Edit Divisi" section="Divisi" context={division.data?.name ?? 'Detail Divisi'} back="/admin/divisions" />
-      {division.isPending && <p role="status">Memuat divisi…</p>}
+      {division.isPending && <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat divisi</span></p>}
       {division.isError && <ManagementAlert><p>{missing ? 'Divisi tidak ditemukan.' : 'Detail divisi belum berhasil dimuat.'}</p>
         {!missing && <button className="mgmt-button mgmt-outline" type="button" onClick={() => void division.refetch()}>Coba lagi</button>}</ManagementAlert>}
       {division.data && <DivisionDetailBody key={division.data.id} division={division.data} />}

@@ -27,7 +27,7 @@ for (const action of ['update', 'revoke']) for (const result of ['error', 'succe
   await capture(page, info, `admin-user__${action}-${result}-dialog`);
   write.set(0);
   await dialog.getByRole('button', { name: action === 'update' ? 'Konfirmasi perubahan' : 'Cabut akses', exact: true }).click();
-  await expect(dialog.getByRole('button', { name: 'Memproses…' })).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Memproses' })).toBeDisabled();
   await capture(page, info, `admin-user__${action}-${result}-busy`);
   const updated = { ...user, role: action === 'update' ? 'ceo' : 'member', status: action === 'revoke' ? 'revoked' : 'active' };
   if (result === 'success') fixture.overrides.set('/api/admin/users/member-1', updated);
@@ -55,7 +55,7 @@ for (const action of ['retry', 'revoke']) test(`admin-invitation__${action}-stat
   await capture(page, info, `admin-invitation__${action}-error`);
   write.set(0);
   await start();
-  await expect(page.getByRole('button', { name: action === 'retry' ? 'Mengirim…' : 'Memproses…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: action === 'retry' ? 'Mengirim' : 'Memproses' })).toBeDisabled();
   await capture(page, info, `admin-invitation__${action}-busy`);
   const updated = { ...user, kind: 'invitation', status: action === 'retry' ? 'pending' : 'revoked', name: null };
   fixture.overrides.set('/api/admin/users/member-1', updated);

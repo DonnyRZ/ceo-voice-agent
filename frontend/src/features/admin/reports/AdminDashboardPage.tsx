@@ -29,7 +29,7 @@ export function AdminDashboardPage() {
       <section className="admin-surface admin-dashboard-recent" aria-labelledby="admin-recent-title">
         <h2 id="admin-recent-title">Pembaruan terbaru</h2>
         {dashboard.isError ? <LoadProblem title="Pembaruan belum dapat dimuat." retry={() => void dashboard.refetch()} />
-          : dashboard.isPending ? <p role="status" className="admin-notice">Memuat pembaruan…</p>
+          : dashboard.isPending ? <p role="status" className="admin-notice"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat pembaruan</span></p>
           : !recent ? <p className="admin-notice">Belum ada pembaruan pada periode ini.</p>
           : <Link className="admin-dashboard-link" to={recent.entity === 'task' && recent.action !== 'DELETE'
             ? `/admin/tasks/${recent.recordId}` : `/admin/audit/${recent.id}`}>

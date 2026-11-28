@@ -22,7 +22,7 @@ export function AdminAuditDetailPage() {
       <AdminPageHeader title="Detail Perubahan Audit" breadcrumbs={[
         { label: 'Audit Log', to: back }, { label: 'Detail Perubahan Audit' },
       ]} />
-      {details.isPending ? <p role="status">Memuat detail perubahan…</p>
+      {details.isPending ? <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat detail perubahan</span></p>
         : details.isError ? <LoadProblem title="Perubahan belum dapat dimuat." retry={() => void details.refetch()} />
         : event && <>
           <AdminBanner icon={ClipboardCheck} title={auditDescription(event)} description={<span className="audit-desktop-subject">{subject}</span>} />
