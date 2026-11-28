@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Compass, Home, Info, PlusSquare, Share, Check } from 'lucide-react';
 
-export function IphoneGuide({ step, go }: { step: string; go: (step: string) => void }) {
+export function IphoneGuide({ step, go, busy }: { step: string; go: (step: string) => void; busy: boolean }) {
   const first = step === 'iphone-share';
   const last = step === 'iphone-open';
   return <section className="registration-card install-guide">
@@ -16,7 +16,7 @@ export function IphoneGuide({ step, go }: { step: string; go: (step: string) => 
       <h2>Buka dari layar utama</h2><p>Kembali ke layar utama iPhone, cari ikon Ruang Kerja, lalu ketuk untuk membuka aplikasi.</p>
       <img className="install-app-icon" src="/pwa/icon-512.png" alt="Ikon Ruang Kerja" />
       <p>Anda mungkin perlu masuk kembali saat pertama membuka aplikasi.</p>
-      <p className="registration-note">Tombol Selesai menutup panduan. Aplikasi dibuka secara manual dari ikonnya.</p>
+      <p className="registration-note">Tombol Selesai menyelesaikan registrasi. Buka aplikasi melalui ikonnya.</p>
     </> : <>
       <ol className="install-instructions">
         <li><PlusSquare /><div><h2>4. Periksa nama aplikasi</h2><p>Pastikan namanya Ruang Kerja.</p></div></li>
@@ -26,9 +26,9 @@ export function IphoneGuide({ step, go }: { step: string; go: (step: string) => 
       <p className="registration-note"><Info /> Tombol di bawah hanya melanjutkan panduan setelah Anda menambahkan ikon.</p>
     </>}
     <div className="registration-actions">
-      <button className="ui-button ui-button--outline" onClick={() => go(first ? 'device' : last ? 'iphone-add' : 'iphone-share')}>
+      <button className="ui-button ui-button--outline" disabled={busy} onClick={() => go(first ? 'device' : last ? 'iphone-add' : 'iphone-share')}>
         <ArrowLeft /> Sebelumnya</button>
-      <button className="ui-button" onClick={() => go(first ? 'iphone-add' : last ? 'done' : 'iphone-open')}>
+      <button className="ui-button" disabled={busy} onClick={() => go(first ? 'iphone-add' : last ? 'done' : 'iphone-open')}>
         {first ? 'Lanjutkan' : last ? 'Selesai' : 'Sudah ditambahkan'}{!last && <ArrowRight />}</button>
     </div>
     {!last && <p className="install-guide-number">Panduan {first ? '1' : '2'} dari 2</p>}

@@ -2,11 +2,11 @@
 
 ## Kebijakan akun
 
-Keputusan pemilik pada 28 November 2026: registrasi mandiri hanya untuk Anggota Divisi; email perusahaan yang diizinkan saat ini adalah `egiresources.com`. Setelah verifikasi email, akun langsung aktif pada divisi yang dipilih, tanpa antrean persetujuan Superadmin. CEO dan Superadmin tetap melalui undangan.
+Keputusan pemilik pada 28 November 2026: registrasi mandiri hanya untuk Anggota Divisi; email perusahaan yang diizinkan saat ini adalah `egiresources.com`. Keputusan revisi: akun desktop aktif setelah konfirmasi email karena alur desktop selesai pada tahap itu. Akun mobile baru dibuat/aktif setelah langkah akhir onboarding, bukan langsung setelah verifikasi email. Tidak ada antrean persetujuan Superadmin. CEO dan Superadmin tetap melalui undangan.
 
 Backend membaca daftar domain dari `REGISTRATION_EMAIL_DOMAINS` (dipisahkan koma). Pencocokan domain harus sama persis; subdomain dan domain yang menyerupai perusahaan tidak otomatis diizinkan. Dropdown hanya memuat ID/nama divisi aktif. Divisi diperiksa lagi ketika verifikasi dijalankan.
 
-Data pendaftaran disimpan di tabel privat dengan RLS, terpisah dari akun aktif. Kata sandi di-hash memakai Better Auth; token email dan klaim progres browser disimpan sebagai hash. Akun, kredensial Better Auth, akses member, dan anggota divisi dibuat dalam satu transaksi setelah verifikasi. Peran member merupakan konstanta backend. Input tambahan seperti peran ditolak. Penyimpanan sementara token/kredensial dibersihkan setelah aktivasi; permintaan kedaluwarsa dibersihkan pada pendaftaran berikutnya.
+Data pendaftaran disimpan di tabel privat dengan RLS, terpisah dari akun aktif. Kata sandi di-hash memakai Better Auth; token email dan klaim progres browser disimpan sebagai hash. Akun, kredensial Better Auth, akses member, dan anggota divisi dibuat dalam satu transaksi saat registrasi selesai; email mobile yang sudah terverifikasi masih berada dalam penyimpanan privat sampai langkah akhir. Peran member merupakan konstanta backend. Input tambahan seperti peran ditolak. Penyimpanan sementara token/kredensial dibersihkan setelah aktivasi; permintaan kedaluwarsa dibersihkan pada pendaftaran berikutnya.
 
 Tautan verifikasi berlaku 24 jam, sekali pakai, dan memakai fragment agar token tidak masuk log URL HTTP. Halaman menghapus fragment sebelum interaksi; tombol konfirmasi mengirim token lewat POST. Status pendaftaran hanya bisa dibaca memakai cookie progres HttpOnly, host-only, SameSite Strict, Secure dengan awalan __Host- dan Path=/ pada HTTPS agar cookie domain induk tidak dapat menggantikannya. Klaim ini bukan sesi login dan tidak memberi akses data divisi.
 
@@ -19,17 +19,17 @@ SMTP memakai konfigurasi server yang sama dengan undangan. Kegagalan pengiriman 
 - `/register/check-email`: tombol Kirim email verifikasi, instruksi inbox/spam, menunggu, kegagalan, hitung mundur kirim ulang, dan kelanjutan setelah verifikasi.
 - `/register/verify`: konfirmasi tautan email, termasuk tautan hilang/tidak berlaku.
 - `/onboarding`: pilihan perangkat, Android, atau panduan Safari. Hanya tersedia setelah verifikasi untuk pendaftaran yang dimulai di HP. URL langsung tidak melewati gerbang ini.
-- `/launch`: jika benar-benar standalone, arahkan ke login/dashboard sesuai sesi. Jika masih tab browser, tampilkan petunjuk membuka ikon; jangan mengaku sudah membuka aplikasi.
+- `/launch`: jika benar-benar standalone, lanjutkan registrasi yang masih pending terlebih dahulu; bila sudah selesai, arahkan ke login/dashboard sesuai sesi. Jika masih tab browser, tampilkan petunjuk membuka ikon; jangan mengaku sudah membuka aplikasi.
 
-Jenis alur (`originDevice`: mobile/desktop) ditangkap pada Simpan dan lanjut, divalidasi, serta disimpan pada browser pendaftaran melalui klaim privat. Nilai yang sudah tercatat tidak berubah saat viewport diubah atau email dibuka pada perangkat lain. Verifikasi pada browser yang sama kembali ke status privat; pada browser lain tidak memberikan klaim pendaftaran. Asal mobile menampilkan arahan kembali ke HP/browser asal, dan halaman asal mendeteksi verifikasi melalui polling sehingga Lanjutkan aktif. Asal desktop menampilkan Registrasi selesai dan Masuk. Email terverifikasi mengaktifkan akun; onboarding HP masih memiliki langkah pemasangan.
+Jenis alur (`originDevice`: mobile/desktop) ditangkap pada Simpan dan lanjut, divalidasi, serta disimpan pada browser pendaftaran melalui klaim privat. Nilai yang sudah tercatat tidak berubah saat viewport diubah atau email dibuka pada perangkat lain. Verifikasi pada browser yang sama kembali ke status privat; pada browser lain tidak memberikan klaim pendaftaran. Asal mobile menampilkan arahan kembali ke HP/browser asal, dan halaman asal mendeteksi verifikasi melalui polling sehingga Lanjutkan aktif. Asal desktop menampilkan Registrasi selesai dan Masuk. Email terverifikasi tidak mengaktifkan akun baru mobile. Onboarding HP masih memiliki langkah pemasangan; akun hanya dibuat ketika penyelesaian diterima server.
 
 Pengiriman pertama dan ulang memakai POST `/api/registration/send-email`, dengan maksimal lima pengiriman dan jeda satu menit setelah percobaan. Endpoint `/api/registration/resend` telah dihapus. Respons status menyertakan sisa jeda berdasarkan waktu server agar hitung mundur tidak bergantung pada kesamaan jam perangkat. Email multipart memiliki tombol HTML bertautan HTTPS, logo CID yang tersedia offline dalam image runtime, dan teks alternatif aksesibel.
 
-Pendaftaran yang sudah ada sebelum revisi tidak memiliki metadata perangkat; hasil verifikasinya memberikan arahan umum kembali ke browser asal, tanpa menebak HP/desktop. Akun dan data lama tidak dihapus. Bila formulir pending diedit ulang dari browser pemilik, konteks baru diinisialisasi dan email verifikasi perlu dikirim ulang. Migrasi dan primitif penyimpanan/aktivasi yang masih dipakai dipertahankan; tidak ada jalur runtime ke UI otomatis kirim atau pemasangan sebelum verifikasi.
+Sebagian pendaftaran sebelum revisi tidak memiliki metadata perangkat; hasil verifikasinya memberikan arahan umum kembali ke browser asal, tanpa menebak HP/desktop. Akun dan data lama tidak dihapus. Bila formulir pending diedit ulang dari browser pemilik, konteks baru diinisialisasi dan email verifikasi perlu dikirim ulang. Migrasi dan primitif penyimpanan/aktivasi yang masih dipakai dipertahankan; tidak ada jalur runtime ke UI otomatis kirim atau pemasangan sebelum verifikasi.
 
-Mengganti email draft dari browser asal dilakukan dalam transaksi yang sama: draft pending dan tautan lama dinonaktifkan hanya jika pengganti berhasil disimpan. Konflik email membatalkan transaksi sehingga draft lama tetap dapat digunakan. Asal perangkat draft dipertahankan; akun yang sudah aktif tidak dihapus.
+Mengganti email draft dari browser asal dilakukan dalam transaksi yang sama: draft pending dan tautan lama dinonaktifkan hanya jika pengganti berhasil disimpan. Kegagalan penyimpanan membatalkan transaksi sehingga draft lama tetap dapat digunakan. Draft pending milik browser lain tidak dianggap akun aktif atau pengunci email. Asal perangkat draft dipertahankan; akun yang sudah aktif tidak dihapus.
 
-Kembali ke data akun mempertahankan nama/email/divisi selama tab masih hidup. Kata sandi tidak disimpan dalam localStorage, sessionStorage, atau URL. Pengguna bisa melanjutkan data yang sudah tersimpan melalui tautan progres.
+Kembali ke data akun atau memuat ulang formulir mempertahankan nama/email/divisi melalui cache dengan allowlist eksplisit. Progres sesudah Simpan dan lanjut berada di server dan dapat dilanjutkan setelah tab ditutup atau hard refresh. Kata sandi tidak disimpan dalam localStorage, sessionStorage, atau URL. Pengguna bisa melanjutkan data yang sudah tersimpan melalui tautan progres.
 
 Ukuran mengikuti token CSS aplikasi: logo 220/180 px, judul 32/28 px, teks dan kontrol 16 px, kontrol 48 px, serta kategori ikon yang sama dengan halaman lain. Sumber desain: [indeks mockup](../mockup/README.md). Logo di dalam kartu loading dihilangkan sesuai revisi; logo header tetap ada.
 
@@ -45,14 +45,14 @@ Android:
 5. Pemeriksaan memiliki batas waktu dan jalan kembali. Browser yang tidak mendukung deteksi mendapatkan panduan manual, tanpa sukses palsu.
 6. Buka Ruang Kerja mencoba tautan aplikasi di jendela baru. OS/browser dan preferensi pengguna menentukan penangkapan tautan. Jika tetap browser, halaman pembuka menyediakan petunjuk manual dari layar utama.
 
-iPhone: pilih iPhone, buka Safari, Bagikan (atau Lainnya lalu Bagikan), Tambah ke Layar Utama, Buka sebagai aplikasi web jika tersedia, lalu Tambah. Pengguna membuka ikon secara manual. Tombol Sudah ditambahkan adalah pernyataan pengguna untuk melanjutkan panduan; Selesai menutup panduan. Tidak ada animasi pemasangan otomatis atau redirect yang dijanjikan.
+iPhone: pilih iPhone, buka Safari, Bagikan (atau Lainnya lalu Bagikan), Tambah ke Layar Utama, Buka sebagai aplikasi web jika tersedia, lalu Tambah. Pengguna membuka ikon secara manual. Tombol Sudah ditambahkan adalah pernyataan pengguna untuk melanjutkan panduan; Selesai menyelesaikan registrasi dan aktivasi akun di server; kegagalan tetap mempertahankan langkah terakhir. Tidak ada animasi pemasangan otomatis atau redirect yang dijanjikan.
 
 Service worker tidak menyimpan respons API, sesi, HTML akun, timesheet, atau audio. HTTP gagal tetap gagal; halaman offline hanya menggantikan navigasi yang kehilangan jaringan.
 
 ## Pengujian
 
 - Backend: `npm run test:backend`; mencakup verifikasi, RLS, domain, pembatasan percobaan, penolakan role, pengiriman gagal, divisi diarsipkan, serta replay/concurrency.
-- PostgreSQL: `backend/db/pgtap.sql`, 95 pemeriksaan.
+- PostgreSQL: `backend/db/pgtap.sql`, 102 pemeriksaan.
 - Unit frontend: `npm run test:frontend`; termasuk siklus prompt, timeout, pembatalan, respons lama, dan bukti aplikasi yang tepat.
 - End-to-end: `npm run test:e2e`; registrasi mengirim email sungguhan ke Mailpit lokal, mengaktifkan akun, lalu login dan memeriksa akses.
 - Visual: `npm run test:ui-audit`, matriks desktop/mobile termasuk setiap rute baru, validasi, email gagal, loading, kosong, panduan iPhone, serta kondisi pemasangan yang disimulasikan secara eksplisit.
@@ -77,6 +77,27 @@ Setelah HTTP Preview ternyata tidak tersedia pada environment chat, pemilik memi
 - Audit UI mencakup 43 rute dengan 522/522 kasus unik desktop/mobile lulus. Sebanyak 833 capture final (410 desktop, 423 mobile), 742 gambar unik, dan seluruh bagian halaman panjang telah ditinjau. Tidak ada capture final yang belum direview; bukti hash/pengukuran tersimpan di `test-results/registration-verification-complete/visual-review.json`, diabaikan Git. Audit sempat terhenti karena disk lokal penuh saat build container; 406 kasus lulus dipertahankan, sisa kasus dan status verifikasi terbaru dijalankan kembali hingga seluruh matriks lulus.
 - Uji native PWA desktop pada build revisi berhasil: manifest diterima, instalasi dan deteksi aplikasi sendiri berhasil, peluncuran native membuka jendela standalone ke login. Tombol tautan onboarding pada platform Linux ini membuka panduan manual dengan jujur; tidak diklaim selalu berhasil beralih otomatis ke aplikasi terpasang.
 - Android/iPhone asli dan tampilan email di klien perusahaan tetap perlu diperiksa di staging. Pengiriman SMTP perusahaan sudah dilaporkan berhasil oleh engineer pada versi sebelumnya; pengujian revisi lokal memakai Mailpit, bukan inbox produksi.
+
+## Pemulihan progres dan aktivasi akhir, 28 November 2026
+
+Aturan terbaru menggantikan aktivasi langsung setelah verifikasi email mobile. Status privat menambahkan `completed` dan `step`; verifikasi mobile mengisi `verified`, menghapus token sekali pakai, dan memperpanjang progres hingga tujuh hari. Hash kata sandi tetap privat hingga akun dibuat, lalu dibersihkan. Desktop menyelesaikan aktivasi secara atomik bersama verifikasi email.
+
+`POST /api/registration/progress` menyimpan tahap pemasangan. `POST /api/registration/complete` hanya menerima klaim pemilik yang terverifikasi dan tahap akhir yang sesuai. iPhone memakai konfirmasi pengguna pada tombol Selesai; Android memakai sinyal pemasangan/dibuka standalone dari browser. Ini adalah bukti klien, bukan attestation OS yang bisa dibuktikan kriptografis oleh server. Pengiriman sukses, klik verifikasi, atau timer tidak menyelesaikan onboarding mobile.
+
+Browser asal membuka `/register` dan otomatis kembali ke tahap tersimpan. Tahap dari server mengungguli parameter URL tab lama, termasuk ketika registrasi sudah selesai. Tautan Sebelumnya menuju formulir memakai `?edit=1`. Browser baru yang kehilangan cookie dapat mengirim formulir dengan email/kata sandi yang sama; backend membandingkan hash, memindahkan klaim privat, dan mempertahankan tahap serta perangkat asal. Kata sandi/nama/divisi akun tidak diganti oleh pemulihan. Email saja atau kata sandi yang salah tidak boleh membaca/mengambil alih progres. Draft baru yang terisolasi tetap dapat dibuat untuk email yang belum memiliki akun; hanya penyelesaian yang mengunci pembuatan satu akun.
+
+Draft lintas browser memiliki budget pengiriman email bersama, disimpan di PostgreSQL. Penolakan cooldown/budget membatalkan transaksi lease sehingga tautan sebelumnya tidak rusak. Completion bersifat idempoten dan serial per email, dengan pemeriksaan ulang divisi, undangan, serta peran member tetap konstan.
+
+Akun dari versi lama tidak dihapus atau dinonaktifkan berdasarkan tebakan. Registrasi lama yang terverifikasi tetapi tidak memiliki penanda selesai mobile dapat dipulihkan dengan hash kata sandi akun yang cocok; ID akun, peran, divisi, dan kata sandi tetap. Akun yang sudah selesai tetap diarahkan ke login. Log terstruktur mencatat `registration.rejected` beserta alasan, `registration.resumed`, dan `registration.completed`, tanpa email, kata sandi, token, atau claim.
+
+## Validasi pemulihan progres, 28 November 2026
+
+- Backend 286/286, PostgreSQL/pgTAP 102/102, frontend 15/15, dan alat deployment 68/68 lulus; typecheck, build frontend/server, serta pemeriksaan cakupan 43 rute juga lulus.
+- Regresi seluruh aplikasi terhadap database lokal lulus 112/112 pada desktop/mobile. Delapan skenario pemulihan juga lulus pada build server/frontend produksi dengan database terpisah dan pembatasan login asli tetap aktif. Harness pengujian menghormati respons 429 dan waktu tunggu server, tanpa menonaktifkan batas aplikasi.
+- Audit visual mencakup 530 kasus unik desktop/mobile yang seluruhnya lulus setelah pemeriksaan ulang. Seluruh 851 capture akhir (754 gambar unik) ditinjau sampai nol gambar belum direview. Lihat `docs/ui-consistency.md` dan bukti privat lokal `test-results/registration-resume-complete/visual-review.json`.
+- Pengujian mencakup akun mobile belum aktif setelah verifikasi, token sekali pakai, penyelesaian serentak/idempoten, draft browser lain, pemulihan memakai hash kredensial, pencabutan klaim lama, progres setelah reload/tutup tab/pindah viewport, URL lama, kegagalan penyimpanan, serta pembukaan kembali panduan tanpa membatalkan registrasi selesai.
+- Akun dari versi lama dipertahankan. Bila penyelesaian pemulihan desktop ditolak karena divisi tidak aktif, transaksi dibatalkan sehingga klaim lama tetap tersedia; tidak ada respons sukses palsu.
+- Pengiriman email pengujian lokal memakai Mailpit. Pemeriksaan ini tidak mengklaim telah membaca log VPS atau menguji ulang WebAPK/Safari pada HP fisik. Pemasangan Android/iPhone tetap mengikuti batas bukti platform dan pengujian manual staging yang sudah dicatat.
 
 ## Rujukan platform
 

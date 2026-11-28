@@ -2,7 +2,7 @@ import { api } from '../../shared/api';
 
 export type Registration = { name: string; email: string; division_id: string; verified: boolean;
   delivery: 'not_sent' | 'pending' | 'sent' | 'failed'; origin_device: 'mobile' | 'desktop' | null;
-  retry_after_seconds: number; sends_remaining: number };
+  retry_after_seconds: number; sends_remaining: number; completed: boolean; step: string };
 export const registrationQuery = {
   queryKey: ['registration'],
   queryFn: () => api<{ registration: Registration | null }>('/api/registration/status'),

@@ -51,6 +51,13 @@ test('registrasi perusahaan, email nyata ke Mailpit, aktivasi, login, dan isolas
   if (info.project.name === 'mobile') {
     await page.getByRole('link', { name: 'Lanjutkan', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Pilih perangkat Anda' })).toBeVisible();
+    await page.getByRole('radio', { name: /iPhone/ }).click();
+    await page.getByRole('button', { name: 'Lanjutkan', exact: true }).click();
+    await page.getByRole('button', { name: 'Lanjutkan', exact: true }).click();
+    await page.getByRole('button', { name: 'Sudah ditambahkan', exact: true }).click();
+    await page.getByRole('button', { name: 'Selesai', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Panduan selesai' })).toBeVisible();
+    expect((await (await page.request.get('/api/registration/status')).json()).registration.completed).toBe(true);
   }
   await page.goto('/login');
   await submitLogin(page, email, password);
@@ -67,8 +74,12 @@ test('registrasi perusahaan, email nyata ke Mailpit, aktivasi, login, dan isolas
 });
 
 test('panduan iPhone berjalan berurutan tanpa klaim pemasangan otomatis', async ({ page }) => {
+  await page.route('**/api/registration/progress', (route) => route.fulfill({json:{registration:{
+    name:'Anggota QA',email:'qa@egiresources.com',division_id:'it',verified:true,completed:false,
+    origin_device:'mobile',delivery:'sent',step:route.request().postDataJSON().step,retry_after_seconds:0,sends_remaining:4,
+  }}}));
   await page.route('**/api/registration/status', (route) => route.fulfill({ json: { registration: {
-    name: 'Anggota QA', email: 'qa@egiresources.com', division_id: 'it', verified: true, delivery: 'sent', origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4,
+    name: 'Anggota QA', email: 'qa@egiresources.com', division_id: 'it', verified: true, delivery: 'sent', origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4, completed: false, step: 'device',
   } } }));
   await page.goto('/onboarding');
   await page.getByRole('radio', { name: /iPhone/ }).click();

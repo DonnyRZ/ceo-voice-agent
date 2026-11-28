@@ -1,26 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Layers, Mail, UserRound } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../../shared/api';
 import { divisionOptionsQuery, registrationQuery } from './api';
 import { PasswordField } from './PasswordField';
 import { RegistrationShell } from './RegistrationShell';
+import { useRegistrationDraft } from './draft';
+import { registrationDestination } from './destination';
 
-// Only non-secret input is retained while navigating within this tab.
-let draft = { name: '', email: '', divisionId: '' };
 export function RegistrationPage() {
   const divisions = useQuery(divisionOptionsQuery);
   const current = useQuery(registrationQuery);
   const client = useQueryClient();
   const navigate = useNavigate();
+  const [parameters] = useSearchParams();
+  const [draft, setDraft] = useRegistrationDraft();
+  const progress = current.data?.registration;
+  useEffect(() => {
+    if (progress && parameters.get('edit') !== '1') navigate(registrationDestination(progress), { replace: true });
+  }, [progress, navigate, parameters]);
+  useEffect(() => {
+    if (progress && !progress.completed && !draft.email) setDraft({ name: progress.name, email: progress.email, divisionId: progress.division_id });
+  }, [progress, draft.email, setDraft]);
   const [validation, setValidation] = useState('');
   const register = useMutation({
     mutationFn: (input: typeof draft & { password: string; originDevice: 'mobile' | 'desktop' }) =>
       api<{ registration: import('./api').Registration }>('/api/registration', { method: 'POST', body: JSON.stringify(input) }),
     onSuccess: (data) => {
       client.setQueryData(registrationQuery.queryKey, data);
-      navigate('/register/check-email');
+      navigate(registrationDestination(data.registration));
     },
   });
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -29,8 +38,9 @@ export function RegistrationPage() {
     const form = new FormData(event.currentTarget);
     const password = String(form.get('password'));
     if (password !== form.get('confirm')) { setValidation('Konfirmasi kata sandi belum sama.'); return; }
-    draft = { name: String(form.get('name')).trim(), email: String(form.get('email')).trim(), divisionId: String(form.get('divisionId')) };
-    register.mutate({ ...draft, password, originDevice: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop' });
+    const input = { name: String(form.get('name')).trim(), email: String(form.get('email')).trim(), divisionId: String(form.get('divisionId')) };
+    setDraft(input);
+    register.mutate({ ...input, password, originDevice: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop' });
   }
   const error = register.error instanceof ApiError ? register.error.message
     : register.error ? 'Koneksi terputus. Coba simpan kembali.' : validation;
@@ -42,15 +52,15 @@ export function RegistrationPage() {
       <div className="registration-field"><label htmlFor="registration-name">Nama lengkap</label>
         <div className="registration-input"><UserRound aria-hidden="true" />
           <input id="registration-name" name="name" autoComplete="name" required minLength={2} maxLength={120}
-            placeholder="Nama lengkap Anda" defaultValue={draft.name} disabled={register.isPending} /></div></div>
+            placeholder="Nama lengkap Anda" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} disabled={register.isPending} /></div></div>
       <div className="registration-field"><label htmlFor="registration-email">Email perusahaan</label>
         <div className="registration-input"><Mail aria-hidden="true" />
           <input id="registration-email" name="email" type="email" autoComplete="email" required maxLength={254}
-            placeholder="nama@egiresources.com" defaultValue={draft.email} disabled={register.isPending} /></div>
+            placeholder="nama@egiresources.com" value={draft.email} onChange={(event) => setDraft({ ...draft, email: event.target.value })} disabled={register.isPending} /></div>
         {!!divisions.data?.emailDomains.length && <small>Gunakan email {divisions.data.emailDomains.join(', ')}.</small>}</div>
       <div className="registration-field"><label htmlFor="registration-division">Divisi</label>
         <div className="registration-input"><Layers aria-hidden="true" />
-          <select id="registration-division" name="divisionId" required defaultValue={draft.divisionId}
+          <select id="registration-division" name="divisionId" required value={draft.divisionId} onChange={(event) => setDraft({ ...draft, divisionId: event.target.value })}
             disabled={register.isPending || !divisions.data?.divisions.length}>
             <option value="">{divisions.isPending ? 'Memuat divisi…' : 'Pilih divisi'}</option>
             {divisions.data?.divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}

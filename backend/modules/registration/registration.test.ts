@@ -10,7 +10,7 @@ describe('verified company member registration', () => {
   const password = 'Testing-member-8364';
   const claims = new Map<string, string>();
   const headers = () => ({ origin: fixture.config.APP_ORIGIN });
-  const input = (email: string) => ({ name: 'Anggota Baru', email, divisionId, password, originDevice: 'mobile' });
+  const input = (email: string) => ({ name: 'Anggota Baru', email, divisionId, password, originDevice: 'desktop' });
   const post = async (email: string) => {
     const response = await fixture.app.inject({ method: 'POST', url: '/api/registration', headers: headers(), payload: input(email) });
     if (response.statusCode === 201) claims.set(email, String(response.headers['set-cookie']).split(';')[0]);
@@ -32,11 +32,11 @@ describe('verified company member registration', () => {
     expect(Object.keys(result.json().divisions[0]).sort()).toEqual(['id', 'name']);
   });
 
-  it('creates no account until email verification, then activates the selected division and Better Auth login', async () => {
+  it('desktop creates no account until email verification, then activates the selected division and Better Auth login', async () => {
     const email = 'new.member@egiresources.com';
     const response = await post(email);
     expect(response.statusCode).toBe(201);
-    expect(response.json().registration).toMatchObject({ delivery: 'not_sent', origin_device: 'mobile', verified: false });
+    expect(response.json().registration).toMatchObject({ delivery: 'not_sent', origin_device: 'desktop', verified: false });
     expect(sent).toHaveLength(0);
     const cookie = String(response.headers['set-cookie']).split(';')[0];
     expect(response.headers['set-cookie']).toMatch(/HttpOnly; SameSite=Strict/);
@@ -95,7 +95,7 @@ describe('verified company member registration', () => {
     const email = 'parallel@egiresources.com';
     await post(email);
     await send(email);
-    expect((await post(email)).statusCode).toBe(409);
+    expect((await post(email)).statusCode).toBe(201);
     const token = tokenFor(email);
     const responses = await Promise.all([verify(token), verify(token)]);
     expect(responses.map((response) => response.statusCode).sort()).toEqual([200, 400]);
@@ -119,7 +119,7 @@ describe('verified company member registration', () => {
     expect(sent.findLast((mail) => mail.email === uppercase.toLowerCase())).toBeDefined();
     const email = 'limited@egiresources.com';
     expect((await post(email)).statusCode).toBe(201);
-    for (let count = 0; count < 4; count++) expect((await post(email)).statusCode).toBe(409);
+    for (let count = 0; count < 4; count++) expect((await post(email)).statusCode).toBe(201);
     expect((await post(email)).statusCode).toBe(429);
   });
 

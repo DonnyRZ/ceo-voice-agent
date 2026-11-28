@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { Pool } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 import { ApiError } from '../../http/api-error.js';
 
 const cookieName = (origin: string) => origin.startsWith('https:') ? '__Host-rk_registration' : 'rk_registration';
@@ -17,14 +17,15 @@ export function readClaim(request: FastifyRequest, origin: string) {
 export function writeClaim(reply: FastifyReply, secret: string, origin: string) {
   const secure = origin.startsWith('https:') ? '; Secure' : '';
   const path = secure ? '/' : '/api/registration';
-  reply.header('set-cookie', cookieName(origin) + '=' + secret + '; Path=' + path + '; Max-Age=86400; HttpOnly; SameSite=Strict' + secure);
+  reply.header('set-cookie', cookieName(origin) + '=' + secret + '; Path=' + path + '; Max-Age=604800; HttpOnly; SameSite=Strict' + secure);
 }
 
-export async function limitRegistration(pool: Pool, request: FastifyRequest, secret: string, action: string, identity?: string) {
+export async function limitRegistration(pool: Pool | PoolClient, request: FastifyRequest, secret: string, action: string, identity?: string) {
   // Ignore caller-controlled forwarding headers; the server's trusted peer is the key.
   const key = createHmac('sha256', secret).update(action + ':' + (identity ?? request.ip)).digest('hex');
   const { rows: [result] } = await pool.query<{ allowed: boolean }>(
-    'SELECT public.registration_rate_allowed($1, $2, $3) AS allowed', [key, action === 'email' ? 5 : 100, action === 'email' ? 600 : 60],
+    'SELECT public.registration_rate_allowed($1, $2, $3) AS allowed',
+    [key, action.startsWith('email') ? 5 : 100, action.startsWith('email') ? 600 : 60],
   );
   if (!result.allowed) throw new ApiError(429, 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.');
 }

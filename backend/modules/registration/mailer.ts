@@ -13,7 +13,7 @@ export function createRegistrationMailer(source: NodeJS.ProcessEnv = process.env
       html: registrationEmail(verificationUrl),
       attachments: [{ filename: 'ruang-kerja.png', cid: 'ruang-kerja-brand',
         content: await readFile(new URL('../mail/assets/brand.png', import.meta.url)) }],
-      text: ['Verifikasi email perusahaan untuk mengaktifkan akun Anggota Divisi Anda.',
+      text: ['Verifikasi email perusahaan untuk melanjutkan pendaftaran Anggota Divisi Anda.',
         verificationUrl, 'Tautan berlaku 24 jam dan hanya dapat digunakan satu kali.',
         'Abaikan email ini jika Anda tidak membuat akun.'].join('\n\n'),
     });

@@ -83,3 +83,11 @@ Cakupan ini memverifikasi ukuran dan interaksi aplikasi pada viewport yang diseb
 - Bukti final `test-results/registration-verification-complete/`: 833 capture (410 desktop, 423 mobile), 742 gambar unik. Seluruh capture dan bagian halaman panjang sudah ditinjau; tidak ada hash final yang belum direview. `visual-review.json` menyimpan cakupan kasus, viewport, SHA-256, dan status review.
 - Regresi fungsional aplikasi lulus 104/104. Registrasi pada build produksi lokal lulus 14/14; dua alur email/aktivasi/login desktop/mobile diulang setelah perbaikan status pengiriman dan lulus. Backend 276/276, pgTAP 95/95, frontend 15/15, typecheck dan build lulus.
 - Pemasangan native desktop diverifikasi kembali; Android WebAPK/Safari iPhone asli tetap memerlukan pemeriksaan di staging. Bukti viewport mobile tidak dipakai untuk mengklaim pemasangan pada perangkat asli.
+
+
+## Pemulihan progres registrasi, 28 November 2026
+
+- Seluruh 530 kasus unik pada 43 rute desktop/mobile lulus setelah pemeriksaan ulang. Putaran lengkap menghasilkan 529 lulus; satu fixture pemasangan yang masih memakai tahap lama diperbaiki agar mengikuti progres server. Sebanyak 62 kasus registrasi/pemasangan dan 18 kasus verifikasi/pemulihan kemudian dijalankan kembali dan semuanya lulus.
+- Bukti akhir: `test-results/registration-resume-complete/`, 851 capture (419 desktop, 432 mobile), 754 gambar unik. Seluruh gambar dan bagian halaman panjang telah dilihat; `visual-review.json` mencatat hash, viewport, hasil 530 kasus, dan nol gambar yang belum ditinjau. Bukti yang identik hanya diwarisi bila SHA-256 cocok persis.
+- Halaman dan ukuran komponen yang sudah disetujui dipertahankan. Teks status mengikuti keputusan terbaru: email mobile yang terverifikasi belum berarti akun aktif. Membuka panduan lagi sesudah selesai tidak menurunkan status registrasi; URL tab lama tidak boleh mengganti progres server.
+- Service worker diblokir hanya pada audit dengan respons API yang dikendalikan agar skenario gagal benar-benar mencapai interceptor. Pemeriksaan cache, navigasi offline, serta pemasangan native tetap memakai worker asli pada rangkaian terpisah. Tidak ada perubahan pipeline deployment.
