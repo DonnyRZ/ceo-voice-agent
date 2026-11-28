@@ -59,7 +59,7 @@ Service worker tidak menyimpan respons API, sesi, HTML akun, timesheet, atau aud
 - Pemasangan PWA nyata pada Chromium desktop terhadap build produksi lokal berhasil: manifest diterima, aplikasi sendiri terdeteksi, dan peluncuran native membuka jendela standalone ke login. Tautan dari onboarding pada platform ini membuka panduan manual; hasil tersebut tidak diklaim sebagai keberhasilan membuka aplikasi terpasang. Bukti: `test-results/pwa-native/evidence.json`.
 - Pemasangan dan pembukaan pada Android WebAPK dan Safari iPhone asli belum diverifikasi. Preview HTTPS yang dapat dibuka dari HP diperlukan untuk pemeriksaan itu. Preview menggunakan database pengujian tersendiri, AI dinonaktifkan, dan email ditangkap Mailpit lokal; hasil ini tidak membuktikan pengiriman SMTP perusahaan.
 
-PR implementasi ditahan sampai pemeriksaan perangkat asli yang diminta selesai. Tidak ada perubahan database atau konfigurasi VPS dalam pekerjaan ini.
+Setelah HTTP Preview ternyata tidak tersedia pada environment chat, pemilik memilih staging untuk pengujian perangkat asli. Perubahan yang sudah lolos pemeriksaan lokal masuk melalui PR ke `develop`, lalu deployment stage yang sudah ada. Pemasangan Android/iPhone asli tetap berstatus belum diverifikasi sampai diuji di `https://ceo-stage.egiresources.com`; hasil desktop tidak menggantikannya. Tidak ada promosi ke `main` dalam tahap ini.
 
 ## Rujukan platform
 
