@@ -7,6 +7,18 @@ on:
     branches: [develop, main]
   workflow_dispatch:
     inputs:
+      registration_audit:
+        description: Audit registrasi staging secara baca-saja, hasil terenkripsi
+        type: boolean
+        default: false
+      audit_subject:
+        description: Alamat email pendaftaran yang diaudit
+        type: string
+        default: ''
+      audit_certificate:
+        description: Sertifikat publik penerima audit, base64; bukan private key
+        type: string
+        default: ''
       vps_readiness:
         description: Periksa VPS secara baca-saja; tanpa build, migrasi, atau deploy
         type: boolean
@@ -25,7 +37,7 @@ permissions:
 
 jobs:
   checks:
-    if: github.event_name != 'workflow_dispatch' || (!inputs.vps_readiness && !inputs.repair_stage_gateway)
+    if: github.event_name != 'workflow_dispatch' || (!inputs.vps_readiness && !inputs.repair_stage_gateway && !inputs.registration_audit)
     concurrency:
       group: checks-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -175,9 +187,42 @@ jobs:
           RELEASE_ENV: ${{ needs.package.outputs.environment }}
         run: bash infra/deploy/publish.sh
 
+  registration-audit:
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.registration_audit &&
+      github.repository == 'DonnyRZ/ceo-voice-agent' && github.actor == github.repository_owner &&
+      github.ref_name == 'develop'
+    runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
+    environment: stage
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    concurrency:
+      group: deploy-stage
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Audit staging tanpa mengubah akun, progres, atau layanan
+        env:
+          AUDIT_SITE: /var/www/ceo-agent/stage
+          AUDIT_SUBJECT: ${{ inputs.audit_subject }}
+          AUDIT_CERT_BASE64: ${{ inputs.audit_certificate }}
+          AUDIT_OUTPUT: ${{ runner.temp }}/ceo-registration-audit/registration-audit.cms
+        run: |
+          umask 077
+          python3 infra/audit/registration.py
+      - name: Simpan bukti terenkripsi
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: encrypted-registration-audit
+          path: ${{ runner.temp }}/ceo-registration-audit/registration-audit.cms
+          retention-days: 1
+
   vps-readiness:
     if: >-
-      github.event_name == 'workflow_dispatch' && inputs.vps_readiness &&
+      github.event_name == 'workflow_dispatch' && inputs.vps_readiness && !inputs.registration_audit &&
       github.repository == 'DonnyRZ/ceo-voice-agent' &&
       (github.ref_name == 'develop' || github.ref_name == 'main')
     runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
@@ -200,7 +245,7 @@ jobs:
 
   repair-stage-gateway:
     if: >-
-      github.event_name == 'workflow_dispatch' && inputs.repair_stage_gateway &&
+      github.event_name == 'workflow_dispatch' && inputs.repair_stage_gateway && !inputs.registration_audit &&
       github.repository == 'DonnyRZ/ceo-voice-agent' && github.ref_name == 'develop'
     runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
     timeout-minutes: 3

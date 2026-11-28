@@ -30,7 +30,7 @@ export async function loadIdentity(
     FROM account_access account
     JOIN "user" profile ON profile.id = account.user_id
     LEFT JOIN divisions division ON division.id = account.division_id
-    WHERE account.user_id = $1 AND account.state = 'active'
+    WHERE account.user_id = $1 AND account.state = 'active' AND account.registration_complete
       AND (account.role IN ('superadmin', 'ceo') OR division.status = 'active')
       AND ($2::text IS NULL OR EXISTS (
         SELECT 1 FROM session

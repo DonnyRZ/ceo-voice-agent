@@ -4,7 +4,8 @@ import { ApiError } from '../../http/api-error.js';
 const messages: Record<string, string> = {
   division_unavailable: 'Divisi yang dipilih sudah tidak aktif. Muat ulang daftar divisi lalu pilih kembali.',
   account_exists: 'Email ini sudah memiliki akun. Silakan masuk menggunakan akun Anda.',
-  registration_incomplete: 'Pendaftaran sebelumnya belum selesai. Gunakan email dan kata sandi pendaftaran sebelumnya untuk melanjutkan.',
+  account_inactive: 'Akses akun dinonaktifkan. Hubungi Superadmin untuk memeriksa hak akses.',
+  recovery_unavailable: 'Progres pendaftaran belum dapat dipulihkan. Hubungi Superadmin untuk memeriksa data pendaftaran.',
   invitation_exists: 'Email ini sudah memiliki undangan. Selesaikan aktivasi melalui tautan undangan terbaru.',
   send_limit: 'Batas pengiriman verifikasi tercapai. Gunakan email terakhir atau coba lagi setelah pendaftaran kedaluwarsa.',
   save_conflict: 'Pendaftaran belum dapat disimpan. Coba lagi.',

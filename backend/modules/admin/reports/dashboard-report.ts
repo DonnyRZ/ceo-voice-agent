@@ -12,7 +12,7 @@ export async function dashboardReport(db: PoolClient, period: ReportPeriod) {
   const { rows: [summary] } = await db.query<DashboardCounts>(`
     SELECT jsonb_build_object(
       'divisions', (SELECT count(*) FROM divisions WHERE status = 'active'),
-      'users', (SELECT count(*) FROM account_access WHERE state = 'active'),
+      'users', (SELECT count(*) FROM account_access WHERE state = 'active' AND registration_complete),
       'tasks', count(*),
       'audit', (SELECT count(*) FROM audit_log
         WHERE ($1::date IS NULL OR changed_at >= ($1::date::timestamp AT TIME ZONE 'Asia/Jakarta'))

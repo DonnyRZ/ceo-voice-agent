@@ -6,7 +6,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(102);
+SELECT plan(108);
 
 INSERT INTO public."user" (id, name, email) VALUES
     ('pgtap-member-it', 'Anggota IT pgTAP', 'pgtap-it@example.test'),
@@ -384,5 +384,24 @@ SELECT is((SELECT count(*) FROM public.registration_status(repeat('8',64))), 0::
     'Draft lama tidak dapat dilanjutkan setelah digantikan');
 RESET ROLE;
 
+SELECT ok(NOT has_function_privilege('public','app_private.reconcile_incomplete_registrations()','EXECUTE'),
+    'Rekonsiliasi akun lama bukan hak PUBLIC');
+SELECT ok(NOT has_function_privilege('public','app_private.verify_registration_recovery(uuid,text,text,text)','EXECUTE'),
+    'Pemulihan internal bukan hak PUBLIC');
+UPDATE public.account_access SET registration_complete=false WHERE user_id='pgtap-context-user';
+SET ROLE :"app_role";
+SELECT set_config('app.user_id','pgtap-context-user',true),set_config('app.division_id','10000000-0000-4000-8000-000000000001',true);
+SELECT is(app_private.member_division_id(),NULL::uuid,'Registrasi belum selesai tidak memperoleh scope divisi');
+SELECT is((SELECT count(*) FROM public.tasks),0::bigint,'RLS menolak data tugas bagi registrasi belum selesai');
+SELECT set_config('app.user_id','pgtap-ceo',true);
+SELECT ok(NOT app_private.is_active_member('10000000-0000-4000-8000-000000000001','pgtap-context-user'),
+    'Direktori CEO tidak menganggap registrasi belum selesai sebagai anggota aktif');
+RESET ROLE;
+UPDATE public.account_access SET registration_complete=true WHERE user_id='pgtap-context-user';
+SET ROLE :"app_role";
+SELECT set_config('app.user_id','pgtap-context-user',true),set_config('app.division_id','10000000-0000-4000-8000-000000000001',true);
+SELECT is(app_private.member_division_id(),'10000000-0000-4000-8000-000000000001'::uuid,
+    'Scope divisi tersedia setelah registrasi selesai');
+RESET ROLE;
 SELECT * FROM finish(true);
 ROLLBACK;

@@ -52,7 +52,7 @@ Service worker tidak menyimpan respons API, sesi, HTML akun, timesheet, atau aud
 ## Pengujian
 
 - Backend: `npm run test:backend`; mencakup verifikasi, RLS, domain, pembatasan percobaan, penolakan role, pengiriman gagal, divisi diarsipkan, serta replay/concurrency.
-- PostgreSQL: `backend/db/pgtap.sql`, 102 pemeriksaan.
+- PostgreSQL: `backend/db/pgtap.sql`, 108 pemeriksaan.
 - Unit frontend: `npm run test:frontend`; termasuk siklus prompt, timeout, pembatalan, respons lama, dan bukti aplikasi yang tepat.
 - End-to-end: `npm run test:e2e`; registrasi mengirim email sungguhan ke Mailpit lokal, mengaktifkan akun, lalu login dan memeriksa akses.
 - Visual: `npm run test:ui-audit`, matriks desktop/mobile termasuk setiap rute baru, validasi, email gagal, loading, kosong, panduan iPhone, serta kondisi pemasangan yang disimulasikan secara eksplisit.
@@ -84,11 +84,11 @@ Aturan terbaru menggantikan aktivasi langsung setelah verifikasi email mobile. S
 
 `POST /api/registration/progress` menyimpan tahap pemasangan. `POST /api/registration/complete` hanya menerima klaim pemilik yang terverifikasi dan tahap akhir yang sesuai. iPhone memakai konfirmasi pengguna pada tombol Selesai; Android memakai sinyal pemasangan/dibuka standalone dari browser. Ini adalah bukti klien, bukan attestation OS yang bisa dibuktikan kriptografis oleh server. Pengiriman sukses, klik verifikasi, atau timer tidak menyelesaikan onboarding mobile.
 
-Browser asal membuka `/register` dan otomatis kembali ke tahap tersimpan. Tahap dari server mengungguli parameter URL tab lama, termasuk ketika registrasi sudah selesai. Tautan Sebelumnya menuju formulir memakai `?edit=1`. Browser baru yang kehilangan cookie dapat mengirim formulir dengan email/kata sandi yang sama; backend membandingkan hash, memindahkan klaim privat, dan mempertahankan tahap serta perangkat asal. Kata sandi/nama/divisi akun tidak diganti oleh pemulihan. Email saja atau kata sandi yang salah tidak boleh membaca/mengambil alih progres. Draft baru yang terisolasi tetap dapat dibuat untuk email yang belum memiliki akun; hanya penyelesaian yang mengunci pembuatan satu akun.
+Browser asal membuka `/register` dan otomatis kembali ke tahap tersimpan. Tahap dari server mengungguli parameter URL tab lama, termasuk ketika registrasi sudah selesai. Tautan Sebelumnya menuju formulir memakai `?edit=1`. Browser baru yang kehilangan cookie dapat mengirim formulir dengan email/kata sandi yang sama; backend membandingkan hash, memindahkan klaim privat, dan mempertahankan tahap serta perangkat asal. Pemulihan dengan kredensial yang cocok tidak mengganti nama, divisi, atau kata sandi akun. Pemulihan melalui bukti email baru mengikuti aturan koreksi terbaru di bawah. Email saja atau kata sandi yang salah tidak boleh membaca/mengambil alih progres. Draft baru yang terisolasi tetap dapat dibuat untuk email yang belum memiliki akun; hanya penyelesaian yang mengunci pembuatan satu akun.
 
 Draft lintas browser memiliki budget pengiriman email bersama, disimpan di PostgreSQL. Penolakan cooldown/budget membatalkan transaksi lease sehingga tautan sebelumnya tidak rusak. Completion bersifat idempoten dan serial per email, dengan pemeriksaan ulang divisi, undangan, serta peran member tetap konstan.
 
-Akun dari versi lama tidak dihapus atau dinonaktifkan berdasarkan tebakan. Registrasi lama yang terverifikasi tetapi tidak memiliki penanda selesai mobile dapat dipulihkan dengan hash kata sandi akun yang cocok; ID akun, peran, divisi, dan kata sandi tetap. Akun yang sudah selesai tetap diarahkan ke login. Log terstruktur mencatat `registration.rejected` beserta alasan, `registration.resumed`, dan `registration.completed`, tanpa email, kata sandi, token, atau claim.
+Aturan pemulihan terbaru di bawah menggantikan perilaku aktivasi akun lama. Akun dan riwayat tidak dihapus. Registrasi lama yang terverifikasi tetapi tidak memiliki penanda selesai mobile dapat dipulihkan dengan hash kata sandi akun yang cocok; Pemulihan dengan kredensial cocok mempertahankan ID akun, peran, divisi, dan kata sandinya; pemulihan melalui bukti email baru mengikuti koreksi di bawah. Akun yang sudah selesai tetap diarahkan ke login. Log terstruktur mencatat `registration.rejected` beserta alasan, `registration.resumed`, dan `registration.completed`, tanpa email, kata sandi, token, atau claim.
 
 ## Validasi pemulihan progres, 28 November 2026
 
@@ -105,3 +105,22 @@ Akun dari versi lama tidak dihapus atau dinonaktifkan berdasarkan tebakan. Regis
 - [web.dev — perbedaan persetujuan dan pemasangan WebAPK](https://web.dev/learn/pwa/detection)
 - [Chrome — navigasi dan penangkapan tautan aplikasi](https://developer.chrome.com/docs/capabilities/pwa-navigation-management)
 - [Apple — menggunakan situs sebagai aplikasi di iPhone](https://support.apple.com/en-az/guide/iphone/iphea86e5236/26/ios/26)
+
+
+## Koreksi akun lama dan pemulihan lewat email
+
+Audit staging menemukan pendaftaran terverifikasi dengan onboarding belum selesai tetapi akun sudah dibuat oleh alur sebelumnya. Hash kredensial akun itu tidak memverifikasi kata sandi yang dilaporkan pemilik. Pemulihan yang hanya mengandalkan kredensial lama menyebabkan kebuntuan; tes lama yang mengharapkan penolakan pada kondisi tersebut telah diperbaiki.
+
+- `account_access.registration_complete` menjadi syarat login, akses sesi, scope RLS, dan daftar/hitungan pengguna aktif. Migrasi menandai akun Anggota Divisi dengan catatan legacy yang belum selesai sebagai belum selesai, mencabut sesi serta klaim browser lamanya sekali, tanpa menghapus akun, riwayat, peran, atau divisi. Rekonsiliasi idempoten tidak membatalkan klaim pemulihan yang sudah sah.
+- Jika kredensial lama tidak dapat dipakai, formulir tetap menerima permintaan sementara dan menuju layar verifikasi yang tersedia. Permintaan ini terpisah dari progres kanonis: email atau form saja tidak memindahkan progres dan tidak mengubah password akun.
+- Email pemulihan harus dibuka pada browser tempat permintaan pemulihan dibuat. Browser lain menerima penjelasan pada kondisi gagal yang sudah tersedia, tanpa mengonsumsi token atau membuka akun. Ini mengikat perubahan sandi ke pemegang tautan email sekaligus peminta, sehingga klik email pada browser lain tidak menyetujui sandi yang diajukan browser asing. Alur lintas perangkat untuk registrasi baru tidak berubah.
+- Setelah bukti email cocok, klaim berpindah ke peminta yang sah dan tahap kanonis dilanjutkan. Password baru masih berbentuk hash privat; baru diterapkan saat penyelesaian akhir bersama pembukaan akses. Desktop selesai pada konfirmasi email; mobile tetap menuntaskan onboarding.
+- Akun yang sudah selesai, dicabut, atau berubah menjadi peran pimpinan tidak boleh diambil alih lewat pendaftaran. Role dan divisi tidak diubah oleh pemulihan. Progres kanonis lama yang kedaluwarsa tetap dapat dipulihkan melalui email, tanpa mengaktifkan akun karena berlalunya waktu.
+- Tidak ada halaman, layout, aset, atau komponen baru. Pemulihan memakai formulir, pengiriman email, konfirmasi, kondisi gagal, dan panduan pemasangan yang sudah tersedia.
+
+Audit operasional hanya melalui dispatch manual pemilik repository pada `develop`, memakai environment stage dan runner VPS yang ada. Transaksi PostgreSQL dipaksa read-only. Bukti privat dienkripsi CMS AES-256-GCM untuk sertifikat publik operator sebelum menjadi artifact; private key tetap di workspace, bukan di GitHub atau VPS. Audit tidak mengirim email, menjalankan migrasi, atau deploy.
+
+
+### Validasi koreksi akun lama
+
+Backend 291/291, pgTAP 108/108, frontend 15/15, dan alat deployment 70/70 lulus. Sesudah penajaman alasan penolakan, lima tes pemulihan dijalankan ulang dan lulus. Regresi mencakup 116 kasus unik desktop/mobile: 115 lulus pada putaran lengkap, satu kasus responsif menerima HTTP 502 selama pergantian proses server pengembangan; kedua viewport kasus itu dijalankan ulang setelah kode dibekukan dan lulus. Empat skenario insiden juga lulus pada build produksi dengan database lokal terpisah serta SMTP Mailpit. Seluruh 18 capture pemulihan produksi dan bagian halaman panjang telah ditinjau. Typecheck, build frontend/server, dan pemeriksaan file sensitif lulus. Pemeriksaan ini tidak menggantikan pengujian instalasi Android/iPhone fisik di staging.

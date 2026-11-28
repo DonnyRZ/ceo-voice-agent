@@ -22,6 +22,7 @@ const records = `
   FROM account_access access
   JOIN "user" profile ON profile.id = access.user_id
   LEFT JOIN divisions division ON division.id = access.division_id
+  WHERE access.registration_complete
   UNION ALL
   SELECT invite.id::text, '' AS name, invite.email, invite.role, invite.division_id, division.name,
          CASE
