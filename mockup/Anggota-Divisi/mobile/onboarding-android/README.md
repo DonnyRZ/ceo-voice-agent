@@ -19,6 +19,7 @@ Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Div
 
 - Pemasangan PWA memerlukan dukungan browser dan konfirmasi pengguna. Tombol Android atau Pasang aplikasi tidak boleh mengklaim dapat memasang secara diam-diam.
 - Indikator menunggu adalah representasi statis animasi loading. Tidak ada persentase, durasi pasti, atau kemajuan unduhan yang dikarang.
+- Revisi visual: kartu menunggu hanya memakai spinner sebagai visual utama, tanpa tile logo aplikasi atau tulisan Ruang Kerja di atas spinner. Logo pada header halaman tetap dipertahankan.
 - Status selesai hanya boleh ditampilkan berdasarkan bukti pemasangan yang tersedia. Perilaku dan event aktual browser perlu diuji saat implementasi; gambar tidak membuktikan dukungan browser tersebut.
 - Tombol Buka Ruang Kerja merupakan usulan tindakan yang perlu diverifikasi per browser Android. Halaman web tidak dapat menjamin navigasi selalu beralih ke jendela PWA terpasang. Jika dukungan pembukaan langsung tidak tersedia atau pengguna masih berada di browser, tampilkan petunjuk membuka ikon Ruang Kerja dari layar utama, seperti pada mockup selesai.
 - Pembatalan pemasangan, browser tidak mendukung, dan kegagalan memerlukan penanganan saat alur implementasi ditentukan. Jangan menahan pengguna pada loading tanpa jalan kembali.
