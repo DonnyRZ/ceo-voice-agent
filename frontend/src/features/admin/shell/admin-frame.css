@@ -33,6 +33,8 @@
 @media (max-width: 767px) {
   .admin-sidebar { display: none; }
   .admin-mobile-header {
+    flex-wrap: wrap;
+    gap: 16px;
     min-height: var(--mobile-header-height);
     justify-content: space-between;
     align-items: flex-start;
@@ -40,8 +42,9 @@
   }
   .division-mobile-header.admin-mobile-header .brand { width: var(--brand-width); }
   .admin-brand p { margin: -3px 0 0 25%; font-size: var(--font-body); }
-  .admin-mobile-header .admin-account { width: var(--icon-button-size); }
-  .mobile-navigation.admin-mobile-navigation { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; padding-inline: clamp(5px, 2.1vw, 10px); }
+  .admin-mobile-header .admin-account { width: var(--icon-button-size); flex: none; margin-left: auto; }
+  .admin-mobile-header .admin-brand { min-width: 0; max-width: 100%; }
+  .mobile-navigation.admin-mobile-navigation { grid-template-columns: repeat(5, minmax(max-content, 1fr)); gap: 3px; padding-inline: clamp(5px, 2.1vw, 10px); }
   .mobile-navigation.admin-mobile-navigation .nav-item { font-size: var(--font-nav-mobile); }
   .mobile-navigation.admin-mobile-navigation .nav-item svg { width: var(--icon-nav); height: var(--icon-nav); }
   .admin-main { --admin-gap: clamp(12px, 3.9vw, 17px); --admin-font: var(--font-body); }

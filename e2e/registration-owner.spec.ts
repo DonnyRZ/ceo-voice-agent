@@ -40,7 +40,7 @@ test('verifikasi pada browser asal mempertahankan langkah sesudah reload dan men
   if (originDevice === 'mobile') {
     await confirmation.getByRole('link', { name: 'Lanjutkan', exact: true }).click();
     await expect(confirmation.getByRole('heading', { name: 'Pilih perangkat Anda', exact: true })).toBeVisible();
-    await confirmation.getByRole('link', { name: 'Sebelumnya', exact: true }).click();
+    await confirmation.getByRole('link', { name: 'Sebelumnya, kembali satu tahap', exact: true }).click();
     await expect(confirmation.getByRole('heading', { name: heading, exact: true })).toBeVisible();
   } else {
     await confirmation.goto('/onboarding');

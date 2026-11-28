@@ -1,5 +1,7 @@
 import { expect, type Page, type TestInfo } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
+import { sweepLayout } from './layout-sweep';
+import { inspectLayout } from './layout-integrity';
 
 const capturedNames = new WeakMap<TestInfo, Map<string, number>>();
 
@@ -47,9 +49,11 @@ export async function capture(page: Page, info: TestInfo, name: string) {
       navigation: measure('.side-navigation a, .mobile-navigation a, .ceo-side-nav a, .ceo-bottom-nav a'), icons: measure('svg'),
     };
   }, viewport);
+  const layoutIssues = await page.evaluate(inspectLayout);
   await page.screenshot({ path: info.outputPath(`${name}.png`), fullPage: true, animations: 'disabled' });
-  await writeFile(info.outputPath(`${name}.json`), JSON.stringify(metrics, null, 2));
+  await writeFile(info.outputPath(`${name}.json`), JSON.stringify({ ...metrics, layoutIssues }, null, 2));
   if (process.env.UI_AUDIT_PHASE !== 'before') {
+    expect(layoutIssues, `${name}: rendered layout integrity`).toEqual([]);
     expect(metrics.loadingDots, `${name}: replaced loading labels`).toEqual([]);
     for (const spinner of metrics.spinners) expect(spinner.animation, `${name}: spinner animation`).not.toBe('none');
     expect(metrics.document.width, `${name}: horizontal overflow`).toBeLessThanOrEqual(metrics.viewport.width);
@@ -82,5 +86,6 @@ export async function capture(page: Page, info: TestInfo, name: string) {
       expect(metrics.document.height, `${name}: login scroll`).toBeLessThanOrEqual(metrics.viewport.height);
     }
   }
+  await sweepLayout(page, info, name);
   return metrics;
 }

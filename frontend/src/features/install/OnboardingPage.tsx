@@ -63,8 +63,8 @@ export function OnboardingPage() {
                   </label>)}
               </div>
               <p className="registration-note">Email Anda sudah terverifikasi.</p>
-              <div className="registration-actions"><Link className="ui-button ui-button--outline" to="/register/check-email"><ArrowLeft /> Sebelumnya</Link>
-                <button className="ui-button" disabled={!platform || progress.busy} onClick={() => void go(platform === 'Android' ? 'android-install' : 'iphone-share')}>{progress.busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Tunggu</span> : <>Lanjutkan <ArrowRight /></>}</button></div>
+              <div className="registration-actions"><Link className="ui-button ui-button--outline" to="/register/check-email" aria-label="Sebelumnya, kembali satu tahap"><ArrowLeft /><span className="registration-action-label--full">Sebelumnya</span><span className="registration-action-label--compact">Kembali</span></Link>
+                <button className="ui-button" disabled={!platform || progress.busy} aria-label={progress.busy ? 'Menyimpan, tunggu' : 'Lanjutkan'} onClick={() => void go(platform === 'Android' ? 'android-install' : 'iphone-share')}>{progress.busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" /><span className="registration-action-busy-label">Tunggu</span></span> : <><span className="registration-action-label--full">Lanjutkan</span><span className="registration-action-label--compact">Lanjut</span><ArrowRight /></>}</button></div>
             </section> : android ? <AndroidInstall step={step} go={go} complete={() => progress.complete.mutateAsync('android-installed')} busy={progress.busy} />
               : iphone ? <IphoneGuide step={step} go={go} busy={progress.busy} />
                 : <section className="registration-card"><h2>Buka melalui ikon Ruang Kerja</h2>

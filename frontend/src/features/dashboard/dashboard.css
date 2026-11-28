@@ -6,6 +6,7 @@
 .dashboard-heading { padding-inline: 0; }
 .dashboard-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: clamp(16px, 3.1vw, 54px);
   margin-top: clamp(10px, 1vw, 18px);
@@ -13,10 +14,12 @@
   line-height: 1.2;
 }
 
-.dashboard-breadcrumb { display: flex; gap: clamp(10px, 1.4vw, 24px); align-items: center; }
+.dashboard-breadcrumb { display: flex; gap: clamp(10px, 1.4vw, 24px); align-items: center; min-width: 0; max-width: 100%; }
 .dashboard-period {
   position: relative;
   display: flex;
+  flex: none;
+  min-width: max-content;
   width: clamp(192px, 19.4vw, 324px);
   min-height: var(--control-height);
   align-items: center;
@@ -25,7 +28,6 @@
   background: #e0f2f1;
   border: 1px solid #d0e9e8;
   border-radius: clamp(9px, .9vw, 15px);
-  overflow: hidden;
 }
 
 .dashboard-period:focus-within { outline: 2px solid var(--teal); outline-offset: 3px; }
@@ -42,7 +44,8 @@
 
 .dashboard-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  font-size: var(--font-caption);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14em), 1fr));
   gap: clamp(10px, 1.25vw, 21px);
   padding-inline: clamp(3px, .6vw, 10px);
 }
@@ -62,7 +65,7 @@
 .dashboard-stat-icon { width: var(--icon-stat); height: var(--icon-stat); flex: none; color: var(--status-color); }
 .dashboard-stat div { display: grid; gap: 2px; }
 .dashboard-stat strong { font-size: var(--font-metric); line-height: 1.05; font-weight: 760; }
-.dashboard-stat span { font-size: var(--font-caption); white-space: nowrap; }
+.dashboard-stat > div > span { font-size: var(--font-caption); white-space: normal; text-align: center; }
 
 .dashboard-open {
   display: flex;
@@ -89,6 +92,7 @@
 .dashboard-open-icon svg { width: var(--icon-feature); height: var(--icon-feature); }
 .dashboard-open strong { font-size: var(--font-card); line-height: 1.2; font-weight: 720; }
 .dashboard-open-action {
+  min-width: 0;
   display: flex;
   min-height: clamp(38px, 3.75vw, 63px);
   align-items: center;
@@ -101,7 +105,7 @@
   border-radius: clamp(8px, .9vw, 16px);
   font-size: var(--font-body);
   font-weight: 620;
-  white-space: nowrap;
+  white-space: normal;
 }
 .dashboard-open:hover .dashboard-open-action { background: #00584e; }
 .dashboard-arrow { width: var(--icon-inline); height: var(--icon-inline); }
@@ -124,7 +128,7 @@
 }
 .dashboard-update-table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
   text-align: left;
@@ -136,7 +140,7 @@
 .dashboard-update-table th,
 .dashboard-update-table td {
   padding: 12px 16px;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 .dashboard-update-table th { background: var(--mint); font-weight: 700; }
 .dashboard-update-table th:first-child { border-radius: 12px 0 0 12px; }
@@ -145,3 +149,5 @@
 .dashboard-update-table a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .dashboard-project-link { font-weight: 650; }
 .dashboard-no-updates { margin: 0; padding: 10px 0; color: var(--muted); }
+
+.desktop-recent { overflow-x: auto; }

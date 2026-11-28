@@ -97,7 +97,7 @@ test('panduan iPhone berjalan berurutan tanpa klaim pemasangan otomatis', async 
   await expect(page.getByRole('heading', { name: '6. Ketuk Tambah' })).toBeVisible();
   await page.getByRole('button', { name: 'Sudah ditambahkan', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Buka dari layar utama', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Sebelumnya', exact: true }).click();
+  await page.getByRole('button', { name: 'Sebelumnya, kembali satu tahap', exact: true }).click();
   await expect(page.getByRole('heading', { name: '6. Ketuk Tambah' })).toBeVisible();
 });
 

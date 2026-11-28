@@ -5,6 +5,8 @@ import { capture } from './capture';
 import { task, project, history, updatedAt } from './data';
 
 test('ceo-voice__all-session-and-result-states', async ({ page }, info) => {
+  // This scenario sweeps every state across 31 viewport/text combinations.
+  if (process.env.UI_LAYOUT_SWEEP === '1') test.setTimeout(120_000);
   const server = await mockVoiceApp(page);
   await openVoice(page);
   await capture(page, info, 'voice__idle');

@@ -98,7 +98,8 @@
     z-index: 3;
     inset: auto 0 0;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(max-content, 1fr));
+    overflow-x: auto;
     gap: clamp(4px, 1.3vw, 10px);
     min-height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
     padding: 8px 5px calc(8px + env(safe-area-inset-bottom));

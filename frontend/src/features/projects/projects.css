@@ -1,4 +1,4 @@
-.project-page {
+.project-page { container-type: inline-size;
   --project-text: var(--ink, #0c2126);
   --project-muted: var(--muted, #3e5960);
   --project-teal: var(--teal, #005e57);
@@ -171,4 +171,11 @@
     background: var(--project-tint);
   }
   .project-hero h2 { font-size: var(--font-section); }
+}
+
+@media (max-width: 767px) {
+  @container (max-width: 16em) {
+    .project-hero, .project-mobile-description { flex-wrap: wrap; }
+    .project-hero h2, .project-mobile-description > div { flex-basis: 100%; }
+  }
 }

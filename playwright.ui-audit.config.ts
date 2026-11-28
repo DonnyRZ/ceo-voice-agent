@@ -14,6 +14,7 @@ export default defineConfig({
     timeout: 60_000,
   },
   outputDir: `test-results/ui-audit-${process.env.UI_AUDIT_PHASE ?? 'after'}`,
+  timeout: 60_000,
   workers: 2,
   reporter: [['list'], ['json', { outputFile: `test-results/ui-audit-${process.env.UI_AUDIT_PHASE ?? 'after'}/results.json` }]],
 });

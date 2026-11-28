@@ -42,7 +42,7 @@
   appearance: none;
   width: 100%;
   min-height: var(--control-height);
-  padding: 7px clamp(24px, 3vw, 50px) 7px clamp(7px, 1vw, 17px);
+  padding: 7px calc(var(--icon-inline) + 1.2em) 7px clamp(7px, 1vw, 17px);
   border: 1px solid #c4d5d9;
   border-radius: var(--control-radius);
   background: #fbfcfd;
@@ -52,7 +52,7 @@
 }
 .admin-filter-control-icon { display: none; }
 .admin-filter-chevron { position: absolute; width: var(--icon-inline); height: var(--icon-inline); right: .73em; top: calc(50% - .5em); pointer-events: none; }
-.admin-status-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.25vw, 22px); }
+.admin-status-summary { display: grid; font-size: var(--font-caption); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14em), 1fr)); gap: clamp(8px, 1.25vw, 22px); }
 .admin-stat { display: flex; align-items: center; min-height: clamp(68px, 7.75vw, 130px); gap: clamp(8px, 2.3vw, 39px); padding: 8px clamp(8px, 2.75vw, 46px); border-radius: var(--admin-radius); }
 .admin-stat-pending { background: #fff0d8; --admin-status: #9b5500; --admin-status-bg: #ffe2ab; }
 .admin-stat-on_progress { background: #dcecff; --admin-status: #0068ca; --admin-status-bg: #c9e4fc; }
@@ -60,11 +60,11 @@
 .admin-stat > svg { color: var(--admin-status); width: var(--icon-stat); height: var(--icon-stat); flex: none; }
 .admin-stat div { display: grid; gap: 3px; }
 .admin-stat strong { font-size: var(--font-metric); line-height: 1.06; font-weight: 750; }
-.admin-stat span { font-size: var(--font-caption); white-space: nowrap; }
+.admin-stat span { font-size: var(--font-caption); white-space: normal; }
 .admin-notice { color: var(--muted); margin: 0; }
 
 .admin-data-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: var(--font-body); }
-.admin-data-table th, .admin-data-table td { padding: 12px 16px; overflow-wrap: anywhere; }
+.admin-data-table th, .admin-data-table td { padding: 12px 16px; overflow-wrap: normal; }
 .admin-data-table th { background: var(--mint); font-weight: 710; }
 .admin-data-table th:first-child { border-radius: 11px 0 0 11px; }
 .admin-data-table th:last-child { border-radius: 0 11px 11px 0; }
@@ -80,7 +80,7 @@
   .admin-banner { min-height: 62px; padding: 11px 14px; }
   .admin-banner .admin-tile { width: var(--tile-size); }
   .admin-banner strong { font-size: var(--font-card); }
-  .admin-status-summary { padding: 11px 0; gap: 0; border-radius: var(--admin-radius); background: #dff1ed; }
+  .admin-status-summary { grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5em), 1fr)); padding: 11px 0; gap: 0; border-radius: var(--admin-radius); background: #dff1ed;  row-gap: 12px; }
   .admin-stat { justify-content: center; min-height: auto; background: transparent; padding: 0 3px; border-radius: 0; }
   .admin-stat + .admin-stat { border-left: 1px solid #bedbd7; }
   .admin-stat > svg { display: none; }

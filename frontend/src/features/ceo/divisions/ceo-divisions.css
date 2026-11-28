@@ -5,8 +5,8 @@
 .ceo-search input:focus { outline: none; }
 .ceo-search:focus-within { outline: 3px solid #087765; outline-offset: 3px; }
 .ceo-search input::placeholder { color: #6e8080; }
-.ceo-division-filter { display: flex; align-items: center; gap: 11px; color: var(--muted); font-size: var(--font-body); margin-top: -10px; }
-.ceo-division-filter select { min-height: var(--control-height); padding: 7px 11px; color: var(--ink); border: 1px solid #cfdfd9; border-radius: var(--control-radius); background: #fff; font: inherit; }
+.ceo-division-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 11px; color: var(--muted); font-size: var(--font-body); margin-top: -10px; }
+.ceo-division-filter select { max-width: 100%; min-width: 0; flex: 1 1 9em; min-height: var(--control-height); padding: 7px 11px; color: var(--ink); border: 1px solid #cfdfd9; border-radius: var(--control-radius); background: #fff; font: inherit; }
 .ceo-division-list { background: #fff; padding: 0 20px; border: 1px solid #dce7e3; border-radius: 15px; }
 .ceo-division-list .ceo-record-link { padding: 15px 0; }
 .ceo-division-list .ceo-record-copy > strong { font-size: var(--font-card); }

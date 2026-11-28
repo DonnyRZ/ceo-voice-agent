@@ -55,7 +55,7 @@ export function AndroidInstall({ step, go, complete, busy }: {
       <button className="registration-text-action" onClick={() => { retryInstallCheck(); go('android-wait'); }}>Periksa setelah memasang</button></div>}
     <p className="registration-caption">Pemasangan selalu memerlukan persetujuan Anda di browser.</p>
     <div className="registration-actions">
-      <button className="ui-button ui-button--outline" onClick={() => go('device')}><ArrowLeft /> Sebelumnya</button>
+      <button className="ui-button ui-button--outline" aria-label="Sebelumnya, kembali satu tahap" onClick={() => go('device')}><ArrowLeft /><span className="registration-action-label--full">Sebelumnya</span><span className="registration-action-label--compact">Kembali</span></button>
       <button className="ui-button" disabled={!installation.nativeAvailable} onClick={() => { requestInstall(); go('android-wait'); }}>
         Pasang aplikasi</button>
     </div>

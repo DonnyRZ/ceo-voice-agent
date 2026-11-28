@@ -135,3 +135,13 @@
   .project-list-row > svg { width: var(--icon-inline); }
   .project-list li:last-child .project-list-row { border-bottom: 0; }
 }
+
+@media (max-width: 767px) {
+  .project-list { container-type: inline-size; }
+  @container (max-width: 20em) {
+    .project-list-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'icon arrow' 'name name'; }
+    .project-list-row > :first-child { grid-area: icon; }
+    .project-list-row > strong { grid-area: name; }
+    .project-list-row > svg:last-child { grid-area: arrow; }
+  }
+}

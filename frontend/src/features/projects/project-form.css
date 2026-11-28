@@ -184,3 +184,10 @@
   }
   .project-form-actions .project-button { width: 100%; }
 }
+
+@media (min-width: 768px) {
+  @container (max-width: 40em) {
+    .project-create-page .project-heading { padding-inline-end: 0; }
+    .project-create-page .project-division { position: static; min-width: 0; margin-bottom: 16px; }
+  }
+}

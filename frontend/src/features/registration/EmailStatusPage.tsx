@@ -64,8 +64,8 @@ export function RegistrationEmailPage() {
               <p className="registration-caption registration-next">{mobile
                 ? 'Tombol Lanjutkan aktif setelah email terverifikasi.' : 'Registrasi selesai setelah email terverifikasi.'}</p>
               <div className="registration-actions">
-                <Link className="ui-button ui-button--outline" to="/register?edit=1">Sebelumnya</Link>
-                {mobile && <button className="ui-button" disabled>Lanjutkan</button>}
+                <Link className="ui-button ui-button--outline" to="/register?edit=1" aria-label="Sebelumnya, kembali satu tahap"><span className="registration-action-label--full">Sebelumnya</span><span className="registration-action-label--compact">Kembali</span></Link>
+                {mobile && <button className="ui-button" aria-label="Lanjutkan" disabled><span className="registration-action-label--full">Lanjutkan</span><span className="registration-action-label--compact">Lanjut</span></button>}
               </div>
             </>}
     </section>
