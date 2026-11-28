@@ -104,3 +104,7 @@ Perubahan ini memakai frontend yang sama: formulir, verifikasi email, kondisi ga
 - Sebanyak 893 capture (435 desktop, 458 mobile), 775 gambar unik, dan seluruh potongan halaman panjang sudah ditinjau; tidak ada gambar final yang belum direview. Bukti konsolidasi: `test-results/crossbrowser-verification-loading-complete/visual-review.json`. Review terdahulu hanya diwarisi melalui SHA-256 gambar yang identik.
 - Animasi inline 20 px dan sesi 32 px; teks loading bertitik dihapus di seluruh sumber frontend. Pemeriksaan tambahan 320/390 px membuktikan kedua tombol navigasi tetap sejajar saat penyimpanan pending.
 - Rincian kontrak verifikasi, hasil backend/database/integrasi, dan batas pengujian ada di [verifikasi lintas browser dan loading](cross-browser-verification-and-loading.md).
+
+## Audit integritas layout mobile
+
+Screenshot pemilik pada 360 px menunjukkan bahwa kelulusan preset dan pemeriksaan tinggi tombol di audit sebelumnya belum membuktikan seluruh lebar mobile aman. Audit [integritas layout mobile](mobile-layout-integrity.md) memperluas pemeriksaan ke range kata yang dirender, benturan teks/ikon/tile/field, breakpoint, landscape, dan pembesaran teks. Hasil lama merupakan riwayat sesuai cakupan putarannya; gunakan laporan terbaru untuk status responsivitas.

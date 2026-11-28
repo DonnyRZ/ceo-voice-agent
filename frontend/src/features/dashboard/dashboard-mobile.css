@@ -58,28 +58,30 @@
   }
 
   .dashboard-stats {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5em), 1fr));
     gap: 0;
     min-height: clamp(78px, 23.27vw, 100px);
     align-items: center;
     padding-inline: 0;
     background: #def0ed;
     border-radius: 15px;
+    row-gap: 12px;
   }
   .dashboard-stat { min-height: auto; justify-content: center; padding: 0 2px; background: transparent; border-radius: 0; }
   .dashboard-stat + .dashboard-stat { border-left: 1px solid #b8d9d5; }
   .dashboard-stat-icon { display: none; }
-  .dashboard-stat div { justify-items: center; gap: 5px; }
+  .dashboard-stat div { min-width: 0; justify-items: center; gap: 5px; }
   .dashboard-stat strong { font-size: var(--font-metric); }
-  .dashboard-stat span {
+  .dashboard-stat > div > span {
     padding: 4px clamp(7px, 3.2vw, 15px);
     color: var(--status-color);
     border-radius: 999px;
     font-size: var(--font-caption);
     font-weight: 680;
   }
-  .dashboard-stat--pending span { background: #ffe1ac; }
-  .dashboard-stat--on_progress span { background: #c9e4fc; }
-  .dashboard-stat--done span { background: #bdeed0; }
+  .dashboard-stat--pending > div > span { background: #ffe1ac; }
+  .dashboard-stat--on_progress > div > span { background: #c9e4fc; }
+  .dashboard-stat--done > div > span { background: #bdeed0; }
 
   .dashboard-open {
     gap: clamp(12px, 4.3vw, 20px);
@@ -147,4 +149,19 @@
   .dashboard-projects li a:hover { color: var(--teal); }
   .dashboard-project-icon { background: #e1f2ee; width: var(--tile-size); }
   .project-arrow { margin-left: auto; width: var(--icon-inline); height: var(--icon-inline); color: var(--muted); flex: none; }
+}
+
+@media (max-width: 767px) {
+  .dashboard { grid-template-columns: minmax(0, 1fr); container-type: inline-size; }
+  .dashboard-projects { container-type: inline-size; }
+  @container (max-width: 16em) {
+    .dashboard-open .dashboard-open-icon { display: none; }
+    .dashboard-team { flex-wrap: wrap; }
+    .dashboard-team > div { flex-basis: 100%; }
+  }
+  @container (max-width: 20em) {
+    .dashboard-projects li a { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+    .dashboard-projects li a > span:not(.dashboard-project-icon) { grid-column: 1 / -1; grid-row: 2; }
+    .dashboard-projects .project-arrow { grid-column: 2; grid-row: 1; }
+  }
 }

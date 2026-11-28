@@ -12,6 +12,7 @@
 .admin-timeline-table tbody tr:last-child td { border: 0; }
 
 @media (max-width: 767px) {
+  .admin-task-information { container-type: inline-size; }
   .admin-task-information .admin-banner, .admin-timeline-table { display: none; }
   .admin-task-fields { padding: 0; }
   .admin-task-fields > div, .admin-task-fields .admin-mobile-field { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 2px 12px; padding: 8px 2px; }
@@ -30,4 +31,8 @@
   .admin-timeline-pending { color: #aa5600; }
   .admin-timeline-on_progress { color: #0068d0; }
   .admin-timeline-done { color: #127539; }
+  @container (max-width: 16em) {
+    .admin-task-fields > div, .admin-task-fields .admin-mobile-field { grid-template-columns: minmax(0, 1fr); }
+    .admin-task-fields .admin-tile { grid-row: auto; }
+  }
 }

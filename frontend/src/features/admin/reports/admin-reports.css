@@ -16,7 +16,8 @@
 .admin-report-name { display: flex; align-items: center; gap: clamp(9px, 1.45vw, 25px); overflow-wrap: anywhere; min-width: 0; }
 .admin-report-quantity .status-badge, .admin-mobile-tasks, .admin-report-empty-banner { display: none; }
 
-.admin-desktop-tasks .admin-data-table { table-layout: fixed; }
+.admin-desktop-tasks { overflow-x: auto; }
+.admin-desktop-tasks .admin-data-table { table-layout: auto; }
 .admin-desktop-tasks col:nth-child(1) { width: 10.4%; }
 .admin-desktop-tasks col:nth-child(2) { width: 19.2%; }
 .admin-desktop-tasks col:nth-child(3) { width: 24.3%; }
@@ -38,10 +39,11 @@
   .admin-report-empty-page .admin-empty img { width: clamp(76px, 22vw, 95px); height: clamp(76px, 22vw, 95px); border-radius: 25%; background: #e4f4f1; object-fit: contain; }
   .admin-report-empty-page .admin-empty h2 { font-size: var(--font-section); }
   .admin-report-empty-page .admin-empty p { max-width: 28ch; font-size: var(--font-body); }
-  .admin-report-filters .admin-filter { grid-template-columns: minmax(92px, .75fr) minmax(0, 1.15fr); align-items: center; }
+  .admin-report-filters { container-type: inline-size; }
+  .admin-report-filters .admin-filter { grid-template-columns: minmax(max-content, .75fr) minmax(0, 1.15fr); align-items: center; }
   .admin-report-filters .admin-filter-label { display: flex; align-items: center; gap: 7px; }
   .admin-report-filters .admin-filter-label .admin-tile { display: inline-grid; width: var(--tile-size); background: #ccece5; }
-  .admin-report-division { grid-template-columns: 43px minmax(0, 1fr) auto; padding: 9px 0; gap: 3px 10px; }
+  .admin-report-division { grid-template-columns: var(--tile-size) minmax(0, 1fr) auto; padding: 9px 0; gap: 3px 10px; }
   .admin-report-name { display: contents; }
   .admin-report-name .admin-tile { grid-column: 1; grid-row: span 2; width: var(--tile-size); }
   .admin-report-name strong { grid-column: 2; grid-row: 1; }
@@ -49,7 +51,7 @@
   .admin-report-quantity { display: flex; flex-wrap: wrap; gap: 3px 8px; align-items: center; grid-column: 2; grid-row: 2; color: var(--muted); font-size: var(--font-body); }
   .admin-report-quantity .status-badge { display: inline-flex; padding-block: 2px; }
   .admin-report-division strong { line-height: 1.18; }
-  .admin-mobile-tasks { display: grid; gap: var(--admin-gap); }
+  .admin-mobile-tasks { display: grid; gap: var(--admin-gap); container-type: inline-size; }
   .admin-mobile-tasks .admin-surface { display: block; }
   .admin-mobile-tasks .admin-surface:hover { box-shadow: 0 0 0 1px #b9d9d5; }
   .admin-mobile-tasks dl div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.14fr); align-items: start; gap: 10px; padding: 5px 1px; border-bottom: 1px solid var(--border); font-size: var(--font-body); }
@@ -57,4 +59,11 @@
   .admin-mobile-tasks dt { position: relative; color: var(--muted); }
   .admin-mobile-tasks dt::after { content: ':'; position: absolute; right: 0; }
   .admin-mobile-tasks dd { margin: 0; font-weight: 680; overflow-wrap: anywhere; }
+  @container (max-width: 17em) {
+    .admin-report-filters .admin-filter { grid-template-columns: minmax(0, 1fr); }
+  }
+  @container (max-width: 20em) {
+    .admin-mobile-tasks dl div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+    .admin-mobile-tasks dt::after { content: none; }
+  }
 }

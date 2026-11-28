@@ -26,6 +26,7 @@
 .account-page { padding-inline: 0; }
 .account-heading {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: clamp(14px, 2vw, 35px);
   padding: clamp(17px, 2.15vw, 36px);
@@ -71,3 +72,5 @@
 .auth-register p { margin: 0 0 8px; font-size: var(--font-caption); color: var(--muted); }
 .auth-register .ui-button { width: 100%; background: transparent; border-color: var(--teal); color: var(--teal); }
 .auth-register .ui-button:hover { background: var(--mint); }
+
+.account-heading > div { min-width: 0; flex: 1 1 10em; }

@@ -26,10 +26,10 @@ export function IphoneGuide({ step, go, busy }: { step: string; go: (step: strin
       <p className="registration-note"><Info /> Tombol di bawah hanya melanjutkan panduan setelah Anda menambahkan ikon.</p>
     </>}
     <div className="registration-actions">
-      <button className="ui-button ui-button--outline" disabled={busy} onClick={() => go(first ? 'device' : last ? 'iphone-add' : 'iphone-share')}>
-        <ArrowLeft /> Sebelumnya</button>
-      <button className="ui-button" disabled={busy} onClick={() => go(first ? 'iphone-add' : last ? 'done' : 'iphone-open')}>
-        {busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Tunggu</span> : first ? 'Lanjutkan' : last ? 'Selesai' : 'Sudah ditambahkan'}{!last && !busy && <ArrowRight />}</button>
+      <button className="ui-button ui-button--outline" aria-label="Sebelumnya, kembali satu tahap" disabled={busy} onClick={() => go(first ? 'device' : last ? 'iphone-add' : 'iphone-share')}>
+        <ArrowLeft /><span className="registration-action-label--full">Sebelumnya</span><span className="registration-action-label--compact">Kembali</span></button>
+      <button className="ui-button" aria-label={busy ? 'Menyimpan, tunggu' : first ? 'Lanjutkan' : last ? 'Selesai' : 'Sudah ditambahkan'} disabled={busy} onClick={() => go(first ? 'iphone-add' : last ? 'done' : 'iphone-open')}>
+        {busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" /><span className="registration-action-busy-label">Tunggu</span></span> : first ? <><span className="registration-action-label--full">Lanjutkan</span><span className="registration-action-label--compact">Lanjut</span></> : last ? 'Selesai' : <><span className="registration-action-label--full">Sudah ditambahkan</span><span className="registration-action-label--compact">Sudah</span></>}{!last && !busy && <ArrowRight />}</button>
     </div>
     {!last && <p className="install-guide-number">Panduan {first ? '1' : '2'} dari 2</p>}
   </section>;

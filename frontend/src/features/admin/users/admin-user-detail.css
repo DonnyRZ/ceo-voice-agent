@@ -13,6 +13,7 @@
 .mgmt-invited-assignment .mgmt-tile { width: var(--tile-size); }
 
 @media (max-width: 767px) {
+  .mgmt-user-detail { container-type: inline-size; }
   .mgmt-user-detail-stats { display: none; }
   .mgmt-user-detail .page-title { max-width: 18rem; }
   .mgmt-user-identity { display: grid; grid-template-columns: auto minmax(0, 1fr); min-height: 5.1rem; }
@@ -28,4 +29,9 @@
   .mgmt-invited-access > .mgmt-panel > h2 { display: none; }
   .mgmt-invited-assignment { display: grid; gap: 0.55rem; margin-top: 0; }
   .mgmt-invited-assignment > span { padding: 0.45rem 0.55rem; background: var(--mgmt-surface); }
+  @container (max-width: 20em) {
+    .mgmt-user-identity { grid-template-columns: minmax(0, 1fr); }
+    .mgmt-user-identity .mgmt-tile { grid-row: auto; }
+    .mgmt-user-identity > .mgmt-badge { grid-column: 1; }
+  }
 }

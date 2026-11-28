@@ -68,8 +68,8 @@
     grid-template-columns: minmax(0, 1fr);
     align-content: center;
     gap: 3px clamp(10px, 3.1vw, 14px);
-    min-height: clamp(58px, 15.25vw, 67px);
-    padding: 7px 0 7px calc(clamp(42px, 12.5vw, 55px) + clamp(10px, 3.1vw, 14px));
+    min-height: max(calc(var(--tile-size) + 14px), clamp(58px, 15.25vw, 67px));
+    padding: 7px 0 7px calc(var(--tile-size) + clamp(10px, 3.1vw, 14px));
     font-size: var(--font-body);
   }
   .ts-info-row:last-child { border-bottom: 0; }
@@ -89,4 +89,14 @@
   .ts-history-transition > svg { color: #395c6c; }
   .ts-mobile-history-entry time { display: block; margin-top: 4px; color: var(--muted); font-size: var(--font-caption); }
   .ts-mobile-edit { display: inline-flex; width: 100%; }
+}
+
+@media (max-width: 767px) {
+  .ts-detail { container-type: inline-size; }
+  @container (max-width: 16em) {
+    .ts-task-summary { flex-wrap: wrap; }
+    .ts-task-summary-text { flex-basis: 100%; }
+    .ts-info-row, .ts-info-row.ts-info-mobile-only { padding-left: 0; gap: 6px; }
+    .ts-info-mobile-icon { position: static; transform: none; }
+  }
 }

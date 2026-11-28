@@ -3,7 +3,7 @@
 .mgmt-user-filter { display: grid; min-width: 0; gap: 0.36rem; }
 .mgmt-user-filter-control { position: relative; display: flex; align-items: center; }
 .mgmt-filter-icon, .mgmt-filter-empty, .mgmt-users-back { display: none; }
-.mgmt-user-filter-control select { appearance: none; padding-inline-end: 1.8rem; }
+.mgmt-user-filter-control select { appearance: none; padding-inline-end: calc(var(--icon-inline) + 1.2rem); }
 .mgmt-user-filter-control .mgmt-filter-chevron {
   position: absolute;
   right: 0.65rem;
@@ -84,4 +84,26 @@
   .mgmt-user-chevron { display: block; width: var(--icon-inline); height: var(--icon-inline); color: #53767a; }
   .mgmt-user-row .mgmt-badge { font-size: var(--font-caption); }
   .mgmt-users-table li:last-child .mgmt-user-row { border-bottom: 0; }
+}
+
+@media (max-width: 767px) {
+  .mgmt-users-table { container-type: inline-size; }
+  @container (max-width: 28em) {
+    .mgmt-user-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .mgmt-user-name { grid-column: 1 / -1; }
+  }
+  @container (max-width: 16em) {
+    .mgmt-user-name { flex-wrap: wrap; }
+    .mgmt-user-name > span:not(.mgmt-tile) { min-width: 0; flex-basis: 100%; }
+  }
+}
+
+@media (min-width: 768px) {
+  .mgmt-users-table { container-type: inline-size; }
+  @container (max-width: 50em) {
+    .mgmt-user-head, .mgmt-user-divider, .mgmt-user-role { display: none; }
+    .mgmt-user-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .mgmt-user-name { grid-column: 1 / -1; }
+    .mgmt-user-name small, .mgmt-user-chevron { display: block; }
+  }
 }

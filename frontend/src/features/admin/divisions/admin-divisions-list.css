@@ -1,12 +1,13 @@
 .mgmt-division-list-stats { margin-bottom: clamp(0.85rem, 1.55vw, 1.65rem); }
 .mgmt-division-tools {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: clamp(0.65rem, 1.1vw, 1.2rem);
   margin-bottom: clamp(0.85rem, 1.55vw, 1.65rem);
 }
-.mgmt-division-search { position: relative; display: flex; align-items: center; min-width: 0; flex: 1; }
+.mgmt-division-search { position: relative; display: flex; align-items: center; min-width: 0; flex: 1 1 min(100%, 16rem); }
 .mgmt-division-search input {
   width: 100%;
   min-height: var(--control-height);
@@ -57,8 +58,8 @@
   .mgmt-division-tools { gap: 0.85rem; }
   .mgmt-division-status-filters > span { font-size: var(--font-body); font-weight: 700; }
   .mgmt-filter-colon { display: none; }
-  .mgmt-division-status-filters > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .mgmt-division-status-filters button { min-height: 2.3rem; font-size: var(--font-body); }
+  .mgmt-division-status-filters > div { display: flex; flex-wrap: wrap; }
+  .mgmt-division-status-filters button { flex: 1 1 auto; min-height: 2.3rem; font-size: var(--font-body); }
   .mgmt-division-search input { min-height: var(--control-height); font-size: var(--font-body); }
   .mgmt-divisions-table { padding: 0 0.65rem; }
   .mgmt-division-head { display: none; }
@@ -75,4 +76,11 @@
   .mgmt-division-row .mgmt-badge { grid-area: state; align-self: start; }
   .mgmt-division-chevron { grid-area: arrow; }
   .mgmt-divisions-table li:last-child .mgmt-division-row { border-bottom: 0; }
+}
+
+@media (max-width: 767px) {
+  .mgmt-divisions-table { container-type: inline-size; }
+  @container (max-width: 16em) {
+    .mgmt-division-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'icon arrow' 'title title' 'state state'; }
+  }
 }

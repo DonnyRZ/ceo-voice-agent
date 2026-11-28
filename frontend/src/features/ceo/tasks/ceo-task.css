@@ -36,7 +36,7 @@
   .ceo-task-title { padding: 20px 16px; gap: 12px; }
   .ceo-task-title h2 { font-size: var(--font-section); }
   .ceo-task-fields { padding: 0 14px; }
-  .ceo-task-fields > div { grid-template-columns: 48px minmax(0, 1fr); gap: 3px 13px; padding: 14px 0; }
+  .ceo-task-fields > div { grid-template-columns: var(--tile-size) minmax(0, 1fr); gap: 3px 13px; padding: 14px 0; }
   .ceo-task-fields .ceo-icon-tile { display: inline-grid; grid-row: 1 / 3; width: var(--tile-size); height: var(--tile-size); }
   .ceo-task-fields dt { font-size: var(--font-caption); font-weight: 450; }
   .ceo-task-fields dd { grid-column: 2; font-size: var(--font-body); font-weight: 580; }
@@ -51,4 +51,9 @@
   .ceo-task-description { padding: 17px 15px; }
   .ceo-task-description h2 { font-size: var(--font-section); font-weight: 720; }
   .ceo-task-description p { font-size: var(--font-body); margin-top: 3px; }
+  @container (max-width: 16em) {
+    .ceo-task-fields > div { grid-template-columns: minmax(0, 1fr); }
+    .ceo-task-fields .ceo-icon-tile { grid-row: auto; }
+    .ceo-task-fields dd { grid-column: 1; }
+  }
 }
