@@ -23,7 +23,7 @@
 .mgmt-invite-history { margin-top: clamp(0.75rem, 1.35vw, 1.35rem); }
 .mgmt-invite-history table { width: 100%; text-align: left; }
 .mgmt-invite-history th { background: var(--mgmt-tint); font-weight: 725; }
-.mgmt-invite-history th, .mgmt-invite-history td { padding: 0.5rem 0.65rem; }
+.mgmt-invite-history th, .mgmt-invite-history td { padding: 12px 16px; }
 .mgmt-invite-history td { border-bottom: 1px solid #e5eeef; }
 .mgmt-invite-history a:hover { text-decoration: underline; }
 .mgmt-invite-history p { padding: 0.7rem 0.65rem; color: #405b60; }
@@ -44,7 +44,7 @@
   background: #ddf3ee;
 }
 .mgmt-invite-success-icon img { width: 100%; aspect-ratio: 1; object-fit: contain; }
-.mgmt-invite-success h2 { color: #0e322e; font-size: clamp(1.35rem, 2.5vw, 2.4rem); }
+.mgmt-invite-success h2 { color: #0e322e; font-size: var(--font-section); }
 .mgmt-invite-email {
   display: flex;
   align-items: center;
@@ -55,7 +55,7 @@
   background: #e4f3ef;
   overflow-wrap: anywhere;
 }
-.mgmt-invite-email svg { width: 1.22rem; height: 1.22rem; flex: none; color: #14695f; }
+.mgmt-invite-email svg { width: var(--icon-inline); height: var(--icon-inline); flex: none; color: #14695f; }
 .mgmt-invite-result-stats { display: none; }
 .mgmt-invite-summary { margin: 0; }
 .mgmt-invite-summary > div {
@@ -66,7 +66,7 @@
   padding: 0.55rem;
 }
 .mgmt-invite-summary > div + div { border-top: 1px solid #deebeb; }
-.mgmt-invite-summary .mgmt-tile { width: clamp(2.2rem, 3vw, 3.1rem); }
+.mgmt-invite-summary .mgmt-tile { width: var(--tile-size); }
 .mgmt-invite-summary dt { color: #385960; }
 .mgmt-invite-summary dd { margin: 0; overflow-wrap: anywhere; font-weight: 675; }
 .mgmt-invite-failure > .mgmt-actions { flex-direction: row-reverse; justify-content: flex-start; margin-top: 0.92rem; }
@@ -78,7 +78,7 @@
   .mgmt-invite-form .mgmt-form-fields { background: var(--mgmt-surface); border-radius: 0.85rem; padding: 0.95rem; gap: 1rem; }
   .mgmt-invite-form .mgmt-actions { margin-top: 0.9rem; }
   .mgmt-invite-form .mgmt-actions svg { display: none; }
-  .mgmt-invite-email-control svg { display: block; position: absolute; left: 0.65rem; width: 1.1rem; pointer-events: none; color: #386e68; }
+  .mgmt-invite-email-control svg { display: block; position: absolute; left: 0.65rem; width: var(--icon-inline); pointer-events: none; color: #386e68; }
   .mgmt-invite-email-control input { padding-left: 2.18rem; }
   .mgmt-invite-history { display: none; }
   .mgmt-invite-success { min-height: 20rem; padding: 1.1rem; }
@@ -95,7 +95,7 @@
     padding: 0.46rem 0.1rem;
   }
   .mgmt-invite-summary .mgmt-tile { grid-area: icon; }
-  .mgmt-invite-summary dt { grid-area: label; font-size: 0.79rem; }
+  .mgmt-invite-summary dt { grid-area: label; font-size: var(--font-caption); }
   .mgmt-invite-summary dd { grid-area: detail; align-self: center; }
   .mgmt-invite-summary > div:first-child dd { grid-area: auto; grid-column: 2; grid-row: 1 / span 2; }
   .mgmt-invite-summary > div:first-child dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

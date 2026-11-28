@@ -19,34 +19,34 @@
 .mgmt-band, .mgmt-toolbar { background: var(--mgmt-tint); }
 .mgmt-band, .mgmt-actions, .mgmt-tile { display: flex; align-items: center; }
 .mgmt-band { gap: clamp(0.65rem, 1.25vw, 1.3rem); }
-.mgmt-band h2, .mgmt-panel h2 { font-size: clamp(1.16rem, 1.8vw, 1.85rem); line-height: 1.17; font-weight: 740; }
+.mgmt-band h2, .mgmt-panel h2 { font-size: var(--font-section); line-height: 1.3; font-weight: 720; }
 .mgmt-band p { color: #254750; }
 .mgmt-tile {
   flex: none;
   justify-content: center;
-  width: clamp(2.15rem, 4.2vw, 4rem);
+  width: var(--tile-size);
   aspect-ratio: 1;
   border-radius: 0.65rem;
   background: #d0ece6;
   color: var(--mgmt-teal, #00665c);
 }
-.mgmt-tile svg { width: 65%; height: 65%; }
+.mgmt-tile svg { width: var(--icon-feature); height: var(--icon-feature); }
 .mgmt-actions { flex-wrap: wrap; gap: clamp(0.55rem, 1.1vw, 1.2rem); }
 .mgmt-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.52rem;
-  min-height: clamp(2.4rem, 3.65vw, 3.5rem);
+  min-height: var(--control-height);
   padding: 0.48rem clamp(0.95rem, 1.75vw, 1.75rem);
   border: 1px solid transparent;
-  border-radius: 0.65rem;
-  font-size: clamp(0.91rem, 1.3vw, 1.25rem);
-  font-weight: 675;
+  border-radius: var(--control-radius);
+  font-size: var(--font-body);
+  font-weight: 650;
   line-height: 1.2;
   text-align: center;
 }
-.mgmt-button svg { width: 1.22em; height: 1.22em; flex: none; }
+.mgmt-button svg { width: var(--icon-inline); height: var(--icon-inline); flex: none; }
 .mgmt-primary { color: #fff; background: linear-gradient(110deg, #106d63, #065951); }
 .mgmt-primary:hover { background: #00544f; }
 .mgmt-outline { color: #005d55; border-color: #679990; background: rgba(255, 255, 255, 0.42); }
@@ -57,41 +57,41 @@
 
 .mgmt-form-fields { display: grid; gap: clamp(0.72rem, 1.35vw, 1.36rem); }
 .mgmt-field { display: grid; min-width: 0; gap: 0.32rem; }
-.mgmt-field label, .mgmt-filter-label { font-size: clamp(0.88rem, 1.27vw, 1.17rem); font-weight: 675; }
+.mgmt-field label, .mgmt-filter-label { font-size: var(--font-body); font-weight: 675; }
 .mgmt-field :is(input, select, textarea), .mgmt-toolbar :is(input, select) {
   min-width: 0;
   width: 100%;
-  min-height: clamp(2.35rem, 3.2vw, 3.2rem);
+  min-height: var(--control-height);
   border: 1px solid var(--mgmt-border);
-  border-radius: 0.53rem;
+  border-radius: var(--control-radius);
   background: #fbfcfc;
   padding: 0.45rem 0.7rem;
-  font-size: clamp(0.94rem, 1.2vw, 1.15rem);
+  font-size: var(--font-body);
   line-height: 1.32;
 }
-.mgmt-field textarea { min-height: 6rem; resize: vertical; }
+.mgmt-field textarea { min-height: var(--textarea-height); resize: vertical; }
 .mgmt-select-control { position: relative; display: flex; align-items: center; }
 .mgmt-select-control select { appearance: none; padding-inline-end: 1.9rem; }
-.mgmt-select-control svg { position: absolute; width: 1.12rem; height: 1.12rem; pointer-events: none; color: #3d686c; }
+.mgmt-select-control svg { position: absolute; width: var(--icon-inline); height: var(--icon-inline); pointer-events: none; color: #3d686c; }
 .mgmt-select-chevron { right: 0.7rem; }
 .mgmt-select-icon { display: none; }
 .mgmt-field-required { margin-inline-start: 0.2rem; color: #b73026; }
 .mgmt-page :is(input, select, textarea)[aria-invalid='true'] { border-color: #b84235; background: #fff7f5; }
-.mgmt-field-error { color: #aa3022; font-size: 0.84rem; }
+.mgmt-field-error { color: #aa3022; font-size: var(--font-caption); }
 .mgmt-form-fields + .mgmt-actions { margin-top: clamp(0.9rem, 1.8vw, 1.85rem); }
 
 @media (max-width: 767px) {
   .mgmt-page .admin-page-heading { margin-bottom: 0.8rem; }
   .mgmt-panel, .mgmt-band, .mgmt-toolbar { padding: 0.75rem; }
   .mgmt-band { gap: 0.72rem; }
-  .mgmt-tile { width: 2.55rem; }
+  .mgmt-tile { width: var(--tile-size); }
   .mgmt-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
-  .mgmt-button { min-height: 2.75rem; }
+  .mgmt-button { min-height: var(--control-height); }
   .mgmt-field :is(input, select, textarea), .mgmt-toolbar :is(input, select) {
-    min-height: 2.65rem;
-    font-size: 1rem;
+    min-height: var(--control-height);
+    font-size: var(--font-body);
   }
-  .mgmt-field textarea { min-height: 5.2rem; }
+  .mgmt-field textarea { min-height: var(--textarea-height); }
   .mgmt-select-icon { display: block; left: 0.65rem; }
   .mgmt-select-control .mgmt-select-icon + select { padding-inline-start: 2.18rem; }
 }

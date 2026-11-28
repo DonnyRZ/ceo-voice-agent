@@ -8,7 +8,6 @@
   --mint: #d8efeb;
   --surface: #f9fafb;
   --border: #dbe7e9;
-  --mobile-nav-height: clamp(66px, 18.2vw, 82px);
   font-family: 'Inter Variable', Inter, Arial, sans-serif;
   color: var(--ink);
   background: #ebf4f5;
@@ -33,16 +32,16 @@ select:disabled { cursor: not-allowed; }
 
 .page-title {
   margin: 0;
-  font-size: clamp(30px, 2.85vw, 49px);
+  font-size: var(--font-page);
   font-weight: 750;
-  line-height: 1.1;
-  letter-spacing: -.035em;
+  line-height: 1.2;
+  letter-spacing: -.03em;
 }
 
 .ui-button {
   display: inline-flex;
   width: fit-content;
-  min-height: 45px;
+  min-height: var(--control-height);
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -50,26 +49,28 @@ select:disabled { cursor: not-allowed; }
   color: #fff;
   background: var(--teal);
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--control-radius);
   font-weight: 650;
+  font-size: var(--font-body);
   text-decoration: none;
 }
 
 .ui-button:hover:not(:disabled) { background: #00574d; }
 .ui-button:disabled { opacity: .68; }
-.ui-button svg { width: 20px; height: 20px; }
+.ui-button svg { width: var(--icon-inline); height: var(--icon-inline); }
 
 .status-badge {
   display: inline-flex;
   min-width: 0;
+  font-size: var(--font-caption);
   align-items: center;
   gap: 8px;
   padding: 4px 10px;
   border-radius: 999px;
   line-height: 1.25;
-  white-space: nowrap;
+  white-space: normal;
 }
-.status-badge svg { width: 1.2em; height: 1.2em; flex: none; }
+.status-badge svg { width: var(--icon-status); height: var(--icon-status); flex: none; }
 .status-badge--pending { color: #8a4600; background: #ffe2ab; }
 .status-badge--on_progress { color: #064d92; background: #d8eaff; }
 .status-badge--done { color: #136b24; background: #d3f5da; }

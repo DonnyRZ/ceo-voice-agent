@@ -4,12 +4,12 @@
   min-width: 0;
 }
 
-.ts-heading { margin-inline: clamp(0px, .98vw, 17px); }
+.ts-heading { margin-inline: 0; }
 .ts-heading h1 {
-  font-size: clamp(30px, 2.9vw, 49px);
-  font-weight: 760;
-  line-height: 1.12;
-  letter-spacing: -.032em;
+  font-size: var(--font-page);
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -.03em;
 }
 
 .ts-breadcrumb {
@@ -18,7 +18,7 @@
   gap: clamp(12px, 1.32vw, 22px);
   margin-top: clamp(8px, .75vw, 13px);
   color: #3c5a6d;
-  font-size: clamp(15px, 1.4vw, 24px);
+  font-size: var(--font-caption);
 }
 .ts-breadcrumb strong { color: var(--ink); font-weight: 640; }
 .ts-breadcrumb a:hover, .ts-task-link:hover, .ts-info-row a:hover { text-decoration: underline; text-underline-offset: 4px; }
@@ -35,7 +35,7 @@
 .ts-card { background: var(--surface); }
 .ts-icon-tile {
   display: grid;
-  width: clamp(30px, 3.2vw, 54px);
+  width: var(--tile-size);
   aspect-ratio: 1;
   flex: none;
   place-items: center;
@@ -43,26 +43,26 @@
   color: var(--teal);
   background: #daf1ec;
 }
-.ts-icon-tile svg { width: 64%; height: 64%; }
-.ts-banner > .ts-icon-tile { width: clamp(52px, 5.2vw, 88px); background: #baeee1; }
+.ts-icon-tile svg { width: var(--icon-feature); height: var(--icon-feature); }
+.ts-banner > .ts-icon-tile { width: var(--tile-size); background: #baeee1; }
 
 .ts-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: clamp(8px, .83vw, 14px);
-  min-height: clamp(40px, 3.5vw, 59px);
+  min-height: var(--control-height);
   width: fit-content;
   padding: 8px clamp(13px, 1.4vw, 24px);
   border: 1px solid transparent;
-  border-radius: clamp(8px, .9vw, 15px);
-  font-size: clamp(14px, 1.38vw, 23px);
-  font-weight: 670;
+  border-radius: var(--control-radius);
+  font-size: var(--font-body);
+  font-weight: 650;
   line-height: 1.15;
   white-space: nowrap;
   text-decoration: none;
 }
-.ts-button svg { width: 1.26em; height: 1.26em; flex: none; }
+.ts-button svg { width: var(--icon-inline); height: var(--icon-inline); flex: none; }
 .ts-button:disabled { opacity: .65; }
 .ts-button--primary { color: #fff; background: linear-gradient(115deg, #006456, #006e65); }
 .ts-button--primary:hover:not(:disabled) { background: #00564e; }
@@ -81,12 +81,12 @@
   color: var(--ts-status-text);
   background: var(--ts-status-bg);
   border-radius: .48em;
-  font-size: .94em;
+  font-size: var(--font-caption);
   font-weight: 670;
   line-height: 1.15;
-  white-space: nowrap;
+  white-space: normal;
 }
-.ts-status svg { width: 1.35em; height: 1.35em; flex: none; color: var(--ts-status-icon); }
+.ts-status svg { width: var(--icon-status); height: var(--icon-status); flex: none; color: var(--ts-status-icon); }
 
 .ts-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
 .ts-table th { background: #d9f1ec; font-weight: 710; }
@@ -100,8 +100,8 @@
 
 @media (max-width: 767px) {
   .ts-page { gap: clamp(12px, 3.75vw, 17px); }
-  .ts-heading { margin-inline: 3px; }
-  .ts-heading h1 { font-size: clamp(23px, 6.5vw, 30px); }
+  .ts-heading { margin-inline: 0; }
+  .ts-heading h1 { font-size: var(--font-page); }
   .ts-mobile-back {
     display: inline-flex;
     min-height: 26px;
@@ -109,7 +109,7 @@
     gap: 12px;
     margin: 0 0 clamp(12px, 4.35vw, 20px);
     color: var(--muted);
-    font-size: clamp(14px, 3.8vw, 17px);
+    font-size: var(--font-caption);
   }
   .ts-mobile-role {
     display: table;
@@ -118,14 +118,14 @@
     border-radius: 999px;
     background: #d6eee8;
     color: var(--teal);
-    font-size: 12px;
+    font-size: var(--font-caption);
     font-weight: 670;
   }
   .ts-breadcrumb { display: none; }
   .ts-banner, .ts-card { border-radius: 14px; }
   .ts-banner { gap: clamp(10px, 3.45vw, 16px); padding: 12px clamp(12px, 3.4vw, 16px); }
-  .ts-banner > .ts-icon-tile { width: clamp(44px, 12.35vw, 55px); background: #d2efe8; }
+  .ts-banner > .ts-icon-tile { width: var(--tile-size); background: #d2efe8; }
   .ts-status { border-radius: 999px; }
-  .ts-button { min-height: clamp(43px, 11.2vw, 51px); font-size: clamp(14px, 3.65vw, 17px); }
+  .ts-button { min-height: var(--control-height); font-size: var(--font-body); }
   .ts-select-chevron { right: 10px; }
 }

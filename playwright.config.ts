@@ -10,6 +10,7 @@ if (!loopback.includes(target.hostname)) {
 
 export default defineConfig({
   testDir: "./e2e",
+  outputDir: "test-results/e2e",
   forbidOnly: true,
   reporter: "list",
   timeout: 40_000,

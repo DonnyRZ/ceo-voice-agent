@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Layers, LockKeyhole, Shield, ShieldCheck, UsersRound } from 'lucide-react';
-import { Link, Navigate, useLocation } from 'react-router-dom';
+import { Layers, LockKeyhole, Shield, ShieldCheck, UsersRound } from 'lucide-react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Brand } from '../../shared/brand';
 import { sessionQuery } from '../../shared/session';
 import { LoginForm } from './LoginForm';
@@ -39,7 +39,6 @@ export function SuperadminLoginPage() {
           <div className="superadmin-login-form">
             <LoginForm superadmin />
             <p className="superadmin-login-note"><LockKeyhole aria-hidden="true" />Khusus akun Superadmin.</p>
-            <Link to="/login" className="superadmin-login-back"><ArrowLeft aria-hidden="true" />Kembali ke login pengguna</Link>
           </div>
         </div>
       </section>

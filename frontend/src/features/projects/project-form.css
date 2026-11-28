@@ -11,26 +11,26 @@
   padding: 0.45rem 0.82rem;
 }
 .project-create-page .project-division .project-icon {
-  width: clamp(1.8rem, 2.8vw, 2.85rem);
+  width: var(--tile-size);
   background: transparent;
 }
 .project-create-page .project-division .project-icon svg {
-  width: 82%;
-  height: 82%;
+  width: var(--icon-feature);
+  height: var(--icon-feature);
 }
-.project-create-page .project-division strong { font-size: clamp(1.02rem, 1.74vw, 1.5rem); }
+.project-create-page .project-division strong { font-size: var(--font-card); }
 .project-create-page .project-division small {
   padding-inline-start: 0.65rem;
   border-left: 1px solid #afd5ce;
   white-space: nowrap;
   color: #37565b;
-  font-size: clamp(0.75rem, 1.12vw, 1.03rem);
+  font-size: var(--font-caption);
 }
 .project-form { background: transparent; }
 .project-create-page .project-form {
   display: flex;
   flex-direction: column;
-  min-height: min(43.2vw, 45.2rem);
+  min-height: 0;
   border-radius: 1.4rem;
   padding: clamp(1rem, 1.8vw, 1.95rem);
   background: var(--project-panel);
@@ -51,7 +51,7 @@
   gap: clamp(0.6rem, 1.15vw, 1.2rem);
 }
 .project-form-field label {
-  font-size: clamp(0.9rem, 1.42vw, 1.3rem);
+  font-size: var(--font-body);
   font-weight: 700;
 }
 .project-create-page .project-form-field label { padding-block: 0.62rem; }
@@ -60,19 +60,19 @@
   width: 100%;
   min-width: 0;
   border: 1px solid var(--project-border);
-  border-radius: 0.6rem;
+  border-radius: var(--control-radius);
   background: rgba(255, 255, 255, 0.65);
   color: inherit;
   padding: clamp(0.54rem, 0.8vw, 0.82rem) 0.83rem;
   font: inherit;
-  font-size: clamp(0.9rem, 1.38vw, 1.27rem);
+  font-size: var(--font-body);
   line-height: 1.35;
 }
 .project-form-field textarea {
   resize: vertical;
-  min-height: 4.8rem;
+  min-height: var(--textarea-height);
 }
-.project-create-page .project-form-field textarea { min-height: clamp(6rem, 9vw, 10rem); }
+.project-create-page .project-form-field textarea { min-height: var(--textarea-height); }
 .project-form-field input[readonly] {
   background: #e6eff0;
   color: #253e48;
@@ -81,7 +81,7 @@
 .project-field-error {
   margin-top: 0.38rem;
   color: #9b2a21;
-  font-size: 0.84rem;
+  font-size: var(--font-caption);
 }
 .project-form .project-error { margin-top: 1rem; }
 .project-form-actions {
@@ -109,7 +109,7 @@
   border-radius: 1rem;
   margin-bottom: clamp(0.75rem, 1.25vw, 1.28rem);
 }
-.project-edit-hero h2 { font-size: clamp(1.35rem, 2.4vw, 2.4rem); }
+.project-edit-hero h2 { font-size: var(--font-section); }
 .project-edit-page .project-form-fields {
   border-radius: 1.05rem;
   padding: clamp(0.72rem, 1.45vw, 1.42rem);
@@ -131,13 +131,13 @@
     margin-bottom: 0.82rem;
     background: #dfeaec;
   }
-  .project-create-page .project-division .project-icon { width: 2.55rem; }
-  .project-create-page .project-division strong { font-size: 1.5rem; }
+  .project-create-page .project-division .project-icon { width: var(--tile-size); }
+  .project-create-page .project-division strong { font-size: var(--font-card); }
   .project-create-page .project-division small, .project-create-page .project-division-field { display: none; }
   .project-create-page .project-form {
     display: block;
     padding: 0;
-    min-height: auto;
+    min-height: 0;
     background: transparent;
   }
   .project-edit-page .project-form-fields, .project-create-page .project-form-fields {
@@ -154,17 +154,17 @@
   .project-create-page .project-form-field.project-division-field { display: none; }
   .project-create-page .project-form-field label { padding: 0; }
   .project-form-field label {
-    font-size: 0.9rem;
+    font-size: var(--font-body);
     line-height: 1.28;
   }
   .project-form-field input, .project-form-field textarea {
-    border-radius: 0.53rem;
-    font-size: 1rem;
+    border-radius: var(--control-radius);
+    font-size: var(--font-body);
   }
   .project-create-page .project-form-field input { padding-block: 0.35rem; }
   .project-form-field textarea, .project-create-page .project-form-field textarea {
     height: 4.4rem;
-    min-height: 4.4rem;
+    min-height: var(--textarea-height);
   }
   .project-name-desktop, .project-icon-desktop { display: none; }
   .project-name-mobile, .project-icon-mobile { display: inline; }
@@ -172,7 +172,7 @@
     min-height: 4.34rem;
     margin-bottom: 1.05rem;
   }
-  .project-edit-hero h2 { font-size: 1.25rem; }
+  .project-edit-hero h2 { font-size: var(--font-section); }
   .project-create-page .project-form-actions, .project-edit-page .project-form-actions {
     display: grid;
     grid-template-columns: minmax(0, 1fr);

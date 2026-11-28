@@ -3,8 +3,8 @@
 .admin-dashboard-period input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; }
 .admin-dashboard-period:focus-within { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: var(--admin-radius); }
 .admin-dashboard-recent .admin-dashboard-link { border-top: 1px solid var(--border); padding: 8px 9px 0; }
-.admin-dashboard-link { display: flex; align-items: center; gap: clamp(9px, 1.4vw, 24px); font-size: clamp(15px, 1.52vw, 26px); font-weight: 645; overflow-wrap: anywhere; }
-.admin-dashboard-link > svg { display: none; margin-left: auto; height: 1.04em; width: 1.04em; flex: none; color: var(--muted); }
+.admin-dashboard-link { display: flex; align-items: center; gap: clamp(9px, 1.4vw, 24px); font-size: var(--font-body); font-weight: 645; overflow-wrap: anywhere; }
+.admin-dashboard-link > svg { display: none; margin-left: auto; height: var(--icon-inline); width: var(--icon-inline); flex: none; color: var(--muted); }
 .admin-dashboard-link:hover { color: var(--teal); }
 .admin-dashboard-shortcuts ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(7px, 1vw, 18px); }
 .admin-dashboard-shortcuts li { min-width: 0; }

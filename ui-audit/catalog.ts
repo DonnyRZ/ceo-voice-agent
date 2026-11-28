@@ -1,0 +1,47 @@
+import type { Role, State } from './data';
+
+export type Screen = { id: string; role: Role; path: string; states: State[] };
+const ready: State[] = ['ready'];
+const collection: State[] = ['ready', 'loading', 'error', 'empty'];
+const detail: State[] = [...collection, 'missing'];
+export const screens: Screen[] = [
+  { id: 'login', role: 'public', path: '/login', states: ready },
+  { id: 'superadmin-login', role: 'public', path: '/superadmin', states: ready },
+  { id: 'activation-missing', role: 'public', path: '/activate', states: ready },
+  { id: 'activation-form', role: 'public', path: '/activate#token=visual-fixture', states: ready },
+  { id: 'member-dashboard', role: 'member', path: '/', states: collection },
+  { id: 'member-timesheet', role: 'member', path: '/timesheet', states: collection },
+  { id: 'member-task-new', role: 'member', path: '/timesheet/new', states: collection },
+  { id: 'member-task-detail', role: 'member', path: '/timesheet/task-1', states: detail },
+  { id: 'member-task-edit', role: 'member', path: '/timesheet/task-1/edit', states: detail },
+  { id: 'member-projects', role: 'member', path: '/projects', states: collection },
+  { id: 'member-project-new', role: 'member', path: '/projects/new', states: ready },
+  { id: 'member-project-detail', role: 'member', path: '/projects/project-1', states: detail },
+  { id: 'member-project-edit', role: 'member', path: '/projects/project-1/edit', states: ['ready', 'loading', 'error', 'missing'] },
+  { id: 'member-account', role: 'member', path: '/account', states: ready },
+  { id: 'member-not-found', role: 'member', path: '/missing-page', states: ready },
+  { id: 'admin-dashboard', role: 'superadmin', path: '/admin', states: collection },
+  { id: 'admin-timesheets', role: 'superadmin', path: '/admin/timesheets', states: collection },
+  { id: 'admin-division-timesheet', role: 'superadmin', path: '/admin/timesheets/division-1', states: detail },
+  { id: 'admin-task-detail', role: 'superadmin', path: '/admin/tasks/task-1', states: detail },
+  { id: 'admin-users', role: 'superadmin', path: '/admin/users', states: collection },
+  { id: 'admin-invite', role: 'superadmin', path: '/admin/users/invite', states: ['ready', 'loading', 'error'] },
+  { id: 'admin-user-detail', role: 'superadmin', path: '/admin/users/member-1', states: ['ready', 'loading', 'error', 'missing'] },
+  { id: 'admin-divisions', role: 'superadmin', path: '/admin/divisions', states: collection },
+  { id: 'admin-division-new', role: 'superadmin', path: '/admin/divisions/new', states: ready },
+  { id: 'admin-division-detail', role: 'superadmin', path: '/admin/divisions/division-1', states: detail },
+  { id: 'admin-audit', role: 'superadmin', path: '/admin/audit', states: collection },
+  { id: 'admin-audit-detail', role: 'superadmin', path: '/admin/audit/audit-1', states: ['ready', 'loading', 'error', 'missing'] },
+  { id: 'admin-account', role: 'superadmin', path: '/admin/account', states: ready },
+  { id: 'admin-not-found', role: 'superadmin', path: '/admin/missing-page', states: ready },
+  { id: 'ceo-dashboard', role: 'ceo', path: '/ceo', states: collection },
+  { id: 'ceo-voice', role: 'ceo', path: '/ceo/voice', states: ready },
+  { id: 'ceo-divisions', role: 'ceo', path: '/ceo/divisions', states: collection },
+  { id: 'ceo-division-detail', role: 'ceo', path: '/ceo/divisions/division-1', states: detail },
+  { id: 'ceo-project-detail', role: 'ceo', path: '/ceo/projects/project-1', states: detail },
+  { id: 'ceo-task-detail', role: 'ceo', path: '/ceo/tasks/task-1', states: detail },
+  { id: 'ceo-account', role: 'ceo', path: '/ceo/account', states: ready },
+  { id: 'ceo-security', role: 'ceo', path: '/ceo/account/security', states: ready },
+  { id: 'ceo-settings', role: 'ceo', path: '/ceo/settings', states: ready },
+  { id: 'ceo-not-found', role: 'ceo', path: '/ceo/missing-page', states: ready },
+];

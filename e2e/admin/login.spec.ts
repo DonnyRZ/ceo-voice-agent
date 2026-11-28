@@ -6,7 +6,7 @@ test('portal Superadmin responsif, redirect, dan siklus masuk/keluar', async ({ 
   await page.goto('/admin/users');
   await expect(page).toHaveURL(/\/superadmin$/);
   await expect(page.getByRole('heading', { name: 'Masuk Superadmin' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Kembali ke login pengguna' })).toHaveAttribute('href', '/login');
+  await expect(page.getByRole('link', { name: 'Kembali ke login pengguna' })).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     await page.evaluate(() => innerWidth),
   );

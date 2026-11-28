@@ -1,5 +1,7 @@
 # Aturan Frontend
 
+- Untuk ukuran dan pemeriksaan lintas halaman, ikuti [Konsistensi UI](ui-consistency.md). Arahan pengguna tentang konsistensi ukuran dan penghapusan tautan kembali pada login Superadmin menggantikan bagian mockup lama yang bertentangan.
+
 - Gunakan mockup yang sudah disetujui untuk peran dan ukuran layar yang sedang dikerjakan. Untuk Anggota Divisi, ikuti [mockup desktop](../mockup/Anggota-Divisi/desktop/) dan [mockup mobile](../mockup/Anggota-Divisi/mobile/).
 - Untuk CEO, ikuti [mockup desktop](../mockup/CEO/desktop/) dan [mockup mobile](../mockup/CEO/mobile/), termasuk tujuh kondisi dalam subfolder `voice-agent/`. Dashboard adalah halaman pertama; percakapan berada di halaman Agent terpisah. Kartu fakta baru muncul setelah hasil tersedia. Jangan menambahkan input chat.
 - Login Superadmin berada di `/superadmin` dengan [mockup desktop](../mockup/Superadmin/desktop/24-login-superadmin.png) dan [mobile](../mockup/Superadmin/mobile/24-login-superadmin.png). Login umum `/login` hanya menerima Anggota Divisi dan CEO; pembatasan wajib ditegakkan di backend, bukan berdasarkan tampilan atau referrer.

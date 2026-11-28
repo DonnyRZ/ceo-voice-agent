@@ -1,0 +1,88 @@
+import { expect, test } from '@playwright/test';
+import { capture } from './capture';
+import { mockScreen } from './fixture';
+import { mutation } from './mutations';
+import { division, user } from './data';
+
+test('admin-invite__validation-send-failure-retry-success', async ({ page }, info) => {
+  await mockScreen(page, 'superadmin');
+  const write = await mutation(page, '/api/admin/invitations');
+  const retry = await mutation(page, '/api/admin/invitations/invitation-1/retry');
+  await page.goto('/admin/users/invite');
+  const send = () => page.getByRole('button', { name: 'Kirim undangan', exact: true }).click();
+  await send();
+  await expect(page.locator('[aria-invalid=true]').first()).toBeVisible();
+  await capture(page, info, 'admin-invite__validation');
+  await page.locator('#invite-email').fill('visual@example.test');
+  await page.getByRole('combobox', { name: /Divisi/ }).selectOption(division.id);
+  await send();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await capture(page, info, 'admin-invite__server-error');
+  write.set(0);
+  await send();
+  await expect(page.getByRole('button', { name: 'Mengirim…' })).toBeDisabled();
+  await capture(page, info, 'admin-invite__sending');
+  await write.release(200, { ...user, id: 'invitation-1', kind: 'invitation', status: 'failed', name: null });
+  await expect(page.getByText('Undangan gagal dikirim', { exact: true })).toBeVisible();
+  await capture(page, info, 'admin-invite__failed-delivery');
+  await page.getByRole('button', { name: 'Coba kirim lagi' }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await capture(page, info, 'admin-invite__retry-error');
+  retry.set(0);
+  await page.getByRole('button', { name: 'Coba kirim lagi' }).click();
+  await expect(page.getByRole('button', { name: 'Mengirim…' })).toBeDisabled();
+  await capture(page, info, 'admin-invite__retry-sending');
+  await retry.release(200, { ...user, id: 'invitation-1', kind: 'invitation', status: 'pending' });
+  await expect(page.getByRole('heading', { name: 'Undangan berhasil dikirim' })).toBeVisible();
+  await capture(page, info, 'admin-invite__success');
+});
+
+for (const edit of [false, true]) test(`admin-division-${edit ? 'edit' : 'new'}__form-states`, async ({ page }, info) => {
+  await mockScreen(page, 'superadmin');
+  const write = await mutation(page, edit ? '/api/admin/divisions/division-1' : '/api/admin/divisions');
+  const prefix = `admin-division-${edit ? 'edit' : 'new'}`;
+  await page.goto(edit ? '/admin/divisions/division-1' : '/admin/divisions/new');
+  const submit = () => page.getByRole('button', { name: /^(Simpan divisi|Simpan perubahan|Coba simpan lagi)$/ }).click();
+  await page.getByRole('textbox', { name: /Nama divisi/ }).fill('');
+  await submit();
+  await expect(page.locator('[aria-invalid=true]').first()).toBeVisible();
+  await capture(page, info, `${prefix}__validation`);
+  await page.getByRole('textbox', { name: /Nama divisi/ }).fill(division.name);
+  await page.getByRole('textbox', { name: /Deskripsi/ }).fill(division.description);
+  await submit();
+  await expect(page.getByText('Perubahan belum tersimpan.', { exact: true })).toBeVisible();
+  await capture(page, info, `${prefix}__save-error`);
+  write.set(400, { message: 'Periksa input.', fields: { name: 'Nama divisi sudah digunakan.' } });
+  await submit();
+  await expect(page.getByText('Nama divisi sudah digunakan.', { exact: true })).toBeVisible();
+  await capture(page, info, `${prefix}__server-validation`);
+  await page.getByRole('textbox', { name: /Nama divisi/ }).fill(division.name + ' Baru');
+  write.set(0);
+  await submit();
+  await expect(page.getByRole('button', { name: 'Menyimpan…' })).toBeDisabled();
+  await capture(page, info, `${prefix}__saving`);
+  await write.release(200, division);
+  await expect(page.getByRole('heading', { name: 'Detail dan Edit Divisi' })).toBeVisible();
+  await capture(page, info, `${prefix}__saved`);
+});
+
+for (const result of ['blocked', 'error', 'success']) test(`admin-division__archive-${result}`, async ({ page }, info) => {
+  const fixture = await mockScreen(page, 'superadmin');
+  const write = await mutation(page, '/api/admin/divisions/division-1');
+  await page.goto('/admin/divisions/division-1');
+  await page.getByRole('button', { name: 'Arsipkan divisi', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await capture(page, info, `admin-division__archive-${result}-dialog`);
+  write.set(0);
+  await dialog.getByRole('button', { name: 'Arsipkan divisi', exact: true }).click();
+  await expect(dialog.getByRole('button', { name: 'Memproses…' })).toBeDisabled();
+  await capture(page, info, `admin-division__archive-${result}-busy`);
+  const archived = { ...division, status: 'archived' };
+  if (result === 'success') fixture.overrides.set('/api/admin/divisions/division-1', archived);
+  await write.release(result === 'success' ? 200 : result === 'blocked' ? 409 : 503,
+    result === 'success' ? archived : { message: result === 'blocked' ? 'Divisi masih memiliki anggota aktif.' : 'Arsip belum berhasil.' });
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByText(result === 'success' ? 'Divisi berhasil diarsipkan.' : result === 'blocked' ? 'Divisi masih memiliki anggota aktif.' : 'Arsip belum berhasil.', { exact: true })).toBeVisible();
+  await capture(page, info, `admin-division__archive-${result}-result`);
+});
