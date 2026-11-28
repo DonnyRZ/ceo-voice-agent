@@ -18,3 +18,15 @@
   .auth-form { gap: 6px; padding: 16px; }
   .auth-input { margin-bottom: 8px; }
 }
+
+@media (max-width: 767px) { .auth-register { padding: 16px 20px 0; } }
+@media (max-height: 640px) and (max-width: 767px) {
+  .auth-shell { padding-block: 8px; }
+  .auth-shell > .brand { margin-bottom: 4px; }
+  .auth-intro { padding: 8px 16px; }
+  .auth-intro p { margin-top: 4px; }
+  .auth-form { margin-top: 8px; padding: 8px 16px; gap: 4px; }
+  .auth-input { margin-bottom: 4px; }
+  .auth-register { padding-top: 4px; }
+  .auth-register p { margin-bottom: 4px; }
+}

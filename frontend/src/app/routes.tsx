@@ -20,6 +20,11 @@ function NotFound({ home = '/' }: { home?: string }) {
 }
 
 export const router = createBrowserRouter([
+  { path: '/register', lazy: async () => ({ Component: (await import('../features/registration/RegistrationPage')).RegistrationPage }) },
+  { path: '/register/check-email', lazy: async () => ({ Component: (await import('../features/registration/EmailPages')).RegistrationEmailPage }) },
+  { path: '/register/verify', lazy: async () => ({ Component: (await import('../features/registration/EmailPages')).RegistrationVerifyPage }) },
+  { path: '/onboarding', lazy: async () => ({ Component: (await import('../features/install/OnboardingPage')).OnboardingPage }) },
+  { path: '/launch', lazy: async () => ({ Component: (await import('../features/install/LaunchPage')).LaunchPage }) },
   { path: '/login', element: <LoginPage /> },
   { path: '/superadmin', lazy: async () => ({ Component: (await import('../features/auth/SuperadminLoginPage')).SuperadminLoginPage }) },
   { path: '/activate', element: <ActivationPage /> },

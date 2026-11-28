@@ -5,6 +5,19 @@ const ready: State[] = ['ready'];
 const collection: State[] = ['ready', 'loading', 'error', 'empty'];
 const detail: State[] = [...collection, 'missing'];
 export const screens: Screen[] = [
+  { id: 'registration', role: 'public', path: '/register', states: collection },
+  { id: 'registration-email', role: 'public', path: '/register/check-email', states: collection },
+  { id: 'registration-verify-missing', role: 'public', path: '/register/verify', states: ready },
+  { id: 'registration-verify', role: 'public', path: '/register/verify#token=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', states: ready },
+  { id: 'onboarding-device', role: 'public', path: '/onboarding', states: collection },
+  { id: 'onboarding-android', role: 'public', path: '/onboarding?step=android-install', states: ready },
+  { id: 'onboarding-android-unconfirmed', role: 'public', path: '/onboarding?step=android-wait', states: ready },
+  { id: 'onboarding-iphone-share', role: 'public', path: '/onboarding?step=iphone-share', states: ready },
+  { id: 'onboarding-iphone-add', role: 'public', path: '/onboarding?step=iphone-add', states: ready },
+  { id: 'onboarding-iphone-open', role: 'public', path: '/onboarding?step=iphone-open', states: ready },
+  { id: 'onboarding-done', role: 'public', path: '/onboarding?step=done', states: ready },
+  { id: 'onboarding-launch', role: 'public', path: '/launch', states: ready },
+  { id: 'offline', role: 'public', path: '/pwa/offline.html', states: ready },
   { id: 'login', role: 'public', path: '/login', states: ready },
   { id: 'superadmin-login', role: 'public', path: '/superadmin', states: ready },
   { id: 'activation-missing', role: 'public', path: '/activate', states: ready },

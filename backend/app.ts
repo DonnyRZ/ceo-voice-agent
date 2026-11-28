@@ -4,6 +4,9 @@ import Fastify from 'fastify';
 import { Pool } from 'pg';
 import type { AppConfig } from './config.js';
 import { ApiError, installErrorHandler } from './http/api-error.js';
+import { registerManifest } from './modules/registration/manifest.js';
+import { registerRegistrationRoutes } from './modules/registration/routes.js';
+import { createRegistrationMailer, type SendRegistration } from './modules/registration/mailer.js';
 import { registerAccountRoutes } from './modules/account/routes.js';
 import { adminAccess } from './modules/admin/access.js';
 import { registerCeoVoiceRoutes, type VoiceApi } from './modules/ai/routes.js';
@@ -29,6 +32,7 @@ type Options = {
   log?: boolean;
   serveFrontend?: boolean;
   sendInvitation?: SendInvitation;
+  sendRegistration?: SendRegistration;
   voice?: VoiceApi;
   voiceAudit?: VoiceAudit;
   databasePoolMax?: number;
@@ -85,6 +89,7 @@ export async function createApp(config: AppConfig, options: Options = {}) {
   const voice = createVoiceRuntime(pool, app.log, options.voice, options.voiceAudit);
   app.addHook('preClose', voice.close);
   registerDeploymentRoutes(app, voice.service);
+  registerManifest(app, config.APP_ORIGIN);
   registerAuthRoutes(app, auth, config.APP_ORIGIN);
   app.get('/api/session', (request) => requireSession(request, async ({ actor }) => ({ user: actor })));
   registerAccountRoutes(app, requireSession, auth);
@@ -98,6 +103,7 @@ export async function createApp(config: AppConfig, options: Options = {}) {
     sendInvitation: options.sendInvitation ?? createInvitationMailer(),
   });
   registerActivationRoute(app, pool);
+  registerRegistrationRoutes(app, pool, config, options.sendRegistration ?? createRegistrationMailer());
   registerDivisionAdminRoutes(app, requireAdmin);
   registerReportAdminRoutes(app, requireAdmin);
   registerAuditAdminRoutes(app, requireAdmin);

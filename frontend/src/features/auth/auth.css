@@ -66,3 +66,8 @@
 .account-logout:hover:not(:disabled) { color: var(--teal); }
 .account-logout svg { width: var(--icon-inline); height: var(--icon-inline); flex: none; }
 .account-logout svg:last-child { margin-left: auto; color: var(--muted); }
+
+.auth-register { padding: 0 32px 24px; text-align: center; }
+.auth-register p { margin: 0 0 8px; font-size: var(--font-caption); color: var(--muted); }
+.auth-register .ui-button { width: 100%; background: transparent; border-color: var(--teal); color: var(--teal); }
+.auth-register .ui-button:hover { background: var(--mint); }

@@ -20,7 +20,7 @@ test('setiap rute React Router memiliki layar desktop/mobile pada katalog audit'
   }
   for (const pattern of patterns) {
     const expression = new RegExp(`^${pattern.replace(/:[^/]+/g, '[^/]+').replaceAll('*', '.*')}$`);
-    assert.ok(screens.some(({ path }) => expression.test(path.split('#')[0])), `Rute belum diaudit: ${pattern}`);
+    assert.ok(screens.some(({ path }) => expression.test(path.split(/[?#]/)[0])), `Rute belum diaudit: ${pattern}`);
   }
-  assert.equal(patterns.length, 38, 'Perubahan rute perlu diperiksa dan dicatat pada laporan cakupan.');
+  assert.equal(patterns.length, 43, 'Perubahan rute perlu diperiksa dan dicatat pada laporan cakupan.');
 });
