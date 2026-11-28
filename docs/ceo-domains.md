@@ -2,7 +2,7 @@
 
 DNS kedua hostname sudah terverifikasi ke `212.85.24.238`, tanpa AAAA. Inspeksi runner menemukan Nginx native aktif, Certbot tersedia, dan belum ada server block CEO. HTTPS saat inspeksi masih menampilkan situs default 7Oz Espresso Cafe. Runner tidak mempunyai sudo umum tanpa password; pemasangan Nginx/sertifikat dilakukan engineer melalui akses root yang sudah dimiliki. Tidak perlu mengubah DNS lagi.
 
-Jalankan dari checkout commit yang sudah direview. Langkah ini hanya menambah konfigurasi untuk dua hostname CEO. Jangan memasang paket, merestart PostgreSQL, mengganti nginx.conf/default site, atau mengubah konfigurasi situs lain. Kedua flags deployment tetap false selama bootstrap.
+Jalankan dari checkout commit yang sudah direview. Langkah ini hanya menambah konfigurasi untuk dua hostname CEO. Jangan memasang paket, merestart PostgreSQL, mengganti nginx.conf/default site, atau mengubah konfigurasi situs lain. Selesaikan bootstrap sebelum merge PR rilis ke branch lingkungan tersebut. Deploy dikendalikan alur PR, tanpa sakelar pengaktifan tambahan.
 
 ## 1. Pasang host HTTP untuk validasi sertifikat
 
@@ -61,4 +61,4 @@ Pada GitHub Settings → Environments, tambahkan variable `APP_URL`:
 | stage | https://ceo-stage.egiresources.com |
 | prod | https://ceo.egiresources.com |
 
-Pertahankan repository variables `STAGE_DEPLOY_ENABLED=false` dan `PROD_DEPLOY_ENABLED=false`. Setelah konfigurasi HTTPS/origin siap, pengujian deployment pertama dan aktivasi stage dilakukan bertahap; prod menunggu stage lulus. SMTP tetap konfigurasi terpisah untuk undangan/pemulihan akun.
+Setelah konfigurasi HTTPS/origin siap, merge PR ke `develop` untuk deployment pertama stage. Sesudah stage lolos pengujian, promosikan lewat PR `develop` → `main` untuk prod. Tidak perlu menambah atau mengubah variable pengaktifan deployment. SMTP tetap konfigurasi terpisah untuk undangan/pemulihan akun.

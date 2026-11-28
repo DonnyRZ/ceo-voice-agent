@@ -12,8 +12,8 @@ Inspeksi server menemukan Nginx native dan Certbot. Untuk pemasangan domain oleh
 ## Alur branch dan auto-deploy
 
 1. Buat topic branch: `feat/nama-fitur`, `fix/nama-perbaikan`, `refactor/nama-perubahan`, `perf/...`, `test/...`, `docs/...`, `chore/...`, `build/...`, `ci/...`, atau `security/...`.
-2. Buat PR topic branch → `develop`. Sesudah merge, CI membangun dan menguji image stage lalu auto-deploy jika stage sudah diaktifkan.
-3. Promosi produksi melalui PR `develop` → `main` dari repository yang sama. Gunakan merge commit, bukan squash/rebase untuk promosi ini. Sesudah merge dan CI lulus, prod auto-deploy jika sudah diaktifkan.
+2. Buat PR topic branch → `develop`. Sesudah merge, CI membangun dan menguji image stage lalu auto-deploy ke stage sesudah CI lulus.
+3. Promosi produksi melalui PR `develop` → `main` dari repository yang sama. Gunakan merge commit, bukan squash/rebase untuk promosi ini. Sesudah merge dan CI lulus, prod auto-deploy.
 
 Dilarang push langsung ke `develop`/`main` atau PR topic branch langsung ke `main`. Workflow Branch policy memeriksa metadata PR tanpa menjalankan kode PR dengan hak istimewa. Job package memeriksa lewat GitHub API bahwa SHA release berasal dari PR yang sudah di-merge dengan asal/tujuan yang sah; commit direct push ditolak.
 
@@ -91,23 +91,23 @@ Gunakan URL password yang di-URL-encode. Runtime/migrasi harus menunjuk host, po
 
 ## Aktivasi GitHub
 
-Pemilik/admin membuat Environment `stage` dan `prod`, membatasi branch masing-masing ke `develop` / `main`. Pada setiap Environment isi variable `APP_URL` HTTPS. Kedua Environment sudah ada; domain masih menunggu pemilik.
+Pemilik/admin membuat Environment `stage` dan `prod`, membatasi branch masing-masing ke `develop` / `main`. Pada setiap Environment isi variable `APP_URL` HTTPS. Kedua Environment, domain, HTTPS, APP_ORIGIN server, dan APP_URL sudah disiapkan engineer. Respons persiapan kedua domain sudah diverifikasi; deployment aplikasi dijalankan melalui merge PR.
 
 Pasang runner sekali pada VPS melalui **Settings → Actions → Runners → New self-hosted runner**, pilih Linux x64, dan jalankan instruksi GitHub di VPS dengan akun khusus. Gunakan label tambahan `ceo-agent-deploy` pada `config.sh --labels ceo-agent-deploy`, lalu instal/jalankan service runner. Token registrasi runner dari halaman tersebut hanya untuk instalasi, berbeda dengan `GH_TOKEN` otomatis tiap job; jangan simpan token registrasi dalam Git atau log/chat. Runner harus terdaftar khusus untuk repository ini; jangan mengganti atau merestart runner aplikasi lain.
 
 Repository ini publik. Batasi izin penulisan workflow, wajibkan approval untuk semua workflow dari kontributor luar, dan jangan menyetujui job PR/fork yang meminta runner VPS. Perlindungan branch dan pembatasan Environment harus terpasang sebelum aktivasi. Runner dengan akses Docker mempunyai akses istimewa ke host; kode PR/fork tidak boleh berjalan di sana. Pipeline ini menempatkan seluruh job PR, checks, package, dan regresi pada runner GitHub; runner VPS hanya dipilih untuk deploy hasil merge yang sudah diverifikasi.
 
-Sesudah runner, konfigurasi shared, database, proxy/domain, backup, dan smoke test siap, aktifkan repository variable `STAGE_DEPLOY_ENABLED=true`, uji stage, lalu `PROD_DEPLOY_ENABLED=true`. Tanpa flag tersebut, package tetap tersedia dan job VPS dilewati. Hapus kebutuhan lama `VPS_SSH_KEY`/`VPS_HOST`/`VPS_PORT`/`VPS_USER`/`VPS_KNOWN_HOSTS` dari setup; workflow tidak menggunakannya.
+Sesudah runner, konfigurasi shared, database, proxy/domain, dan backup siap, merge PR ke `develop` menjalankan CI, mengemas image terverifikasi, lalu langsung deploy stage. Promosi prod hanya melalui merge PR `develop` → `main`. Tidak ada variable pengaktifan deployment tambahan. PR yang belum di-merge tidak menjalankan deployment; commit direct push dan commit lama tetap ditolak. Untuk menahan rilis prod, jangan membuat/merge PR ke `main`.
 
-Workspace tidak perlu login lewat Cloud Browser atau memperoleh akses TCP ke VPS. Akses API integrasi untuk mengubah variables, secrets, runner, dan branch protection masih terbatas. Engineer melaporkan runner `ceo-agent-srv1667462`, service `ceo-deploy`, file shared, database, dan GitHub protections sudah disiapkan; kedua flag deployment false. Domain/origin, APP_URL, dan SMTP masih tertunda. Kesiapan server diverifikasi melalui pemeriksaan manual runner, bukan dengan menganggap file contoh sebagai konfigurasi yang sudah terpasang. Tidak ada deployment publik yang diaktifkan.
+Workspace tidak memerlukan login Cloud Browser atau akses TCP ke VPS. Akses administrasi GitHub untuk variable/runner/protection masih terbatas, tetapi rilis rutin hanya memakai token otomatis workflow. Runner, database, file shared, serta HTTPS kedua domain telah diverifikasi. SMTP masih menunggu konfigurasi untuk undangan/pemulihan akun. Jangan menganggap kesiapan infrastruktur sebagai bukti deployment aplikasi sudah berhasil; periksa run CI dan endpoint aplikasi sesudah merge.
 
 ## Pemeriksaan runner sebelum domain tersedia
 
-Sesudah perubahan workflow mencapai default branch, jalankan `checks.yml` secara manual pada `develop` atau `main` dengan input `vps_readiness=true`. Job hanya memakai runner VPS untuk memeriksa konfigurasi stage/prod sesuai branch. Tidak ada build, install paket, pull image, migrasi, perubahan data, restart, ataupun deployment. Job memerlukan kedua flag deployment `false`; pemeriksaan port kosong ini khusus tahap sebelum instalasi pertama.
+Sesudah perubahan workflow mencapai default branch, jalankan `checks.yml` secara manual pada `develop` atau `main` dengan input `vps_readiness=true`. Job hanya memakai runner VPS untuk memeriksa konfigurasi stage/prod sesuai branch. Tidak ada build, install paket, pull image, migrasi, perubahan data, restart, ataupun deployment. Pemeriksaan port kosong ini khusus tahap sebelum instalasi pertama dan tidak bergantung pada variable pengaktifan deployment.
 
 Input tambahan `inspect_ingress=true` menampilkan metadata listener, service proxy, container, routing domain, dan lokasi sertifikat yang dapat dibaca akun runner. Tidak mencetak isi file konfigurasi, private key, atau environment container. Pemeriksaan ini tidak memberi akun runner hak root atau mengubah layanan.
 
-Pemeriksaan mencakup akun runner, ownership/permission file privat, akses Docker/Compose, port, koneksi PostgreSQL owner/runtime, ekstensi, dan hak koneksi lintas database. Query memakai transaksi default baca-saja dengan batas waktu. Output hanya metadata aman; URL, password, dan pesan error mentah tidak dicetak. Pengecekan domain/origin serta SMTP tetap tertunda. Ini bukan pengganti smoke test release sesudah domain tersedia.
+Pemeriksaan mencakup akun runner, ownership/permission file privat, akses Docker/Compose, port, koneksi PostgreSQL owner/runtime, ekstensi, dan hak koneksi lintas database. Query memakai transaksi default baca-saja dengan batas waktu. Output hanya metadata aman; URL, password, dan pesan error mentah tidak dicetak. SMTP dan pengujian aplikasi setelah rilis tetap diperiksa terpisah. Ini bukan pengganti smoke test release sesudah domain tersedia.
 
 Laporan engineer 27 November 2026 menyatakan setup runner/database selesai. Engineer juga melaporkan instalasi pgvector menarik PostgreSQL 16.15 → 16.16 dan restart otomatis sekitar 8 detik. Hal ini melanggar batas tanpa restart; cluster dilaporkan kembali active. Bukti asli berada pada komputer engineer dan belum dibaca dari workspace ini. Pemeriksaan runner berikutnya tidak memasang paket atau merestart layanan. Jangan mengklaim tidak ada dampak pada aplikasi lain hanya dari status cluster active.
 

@@ -145,8 +145,7 @@ jobs:
   deploy:
     needs: package
     if: >-
-      (needs.package.outputs.environment == 'stage' && vars.STAGE_DEPLOY_ENABLED == 'true') ||
-      (needs.package.outputs.environment == 'prod' && vars.PROD_DEPLOY_ENABLED == 'true')
+      needs.package.outputs.environment == 'stage' || needs.package.outputs.environment == 'prod'
     runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
     timeout-minutes: 20
     environment: ${{ needs.package.outputs.environment }}
@@ -190,8 +189,6 @@ jobs:
       - name: Periksa konfigurasi dan koneksi tanpa mengubah layanan
         env:
           DEPLOY_ENV: ${{ github.ref_name == 'main' && 'prod' || 'stage' }}
-          STAGE_DEPLOY_ENABLED: ${{ vars.STAGE_DEPLOY_ENABLED }}
-          PROD_DEPLOY_ENABLED: ${{ vars.PROD_DEPLOY_ENABLED }}
         run: bash infra/deploy/readiness.sh
       - name: Periksa pemetaan domain dan proxy tanpa mengubah layanan
         if: inputs.inspect_ingress
