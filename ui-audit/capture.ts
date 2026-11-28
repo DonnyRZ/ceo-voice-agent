@@ -24,18 +24,18 @@ export async function capture(page: Page, info: TestInfo, name: string) {
     const measure = (selector: string) => [...document.querySelectorAll(selector)].filter(visible).map((el) => {
       const box = el.getBoundingClientRect(), style = getComputedStyle(el);
       const category = el.closest('.ceo-voice-orb') ? 'voice' : el.closest('.side-navigation, .mobile-navigation, .ceo-side-nav, .ceo-bottom-nav') ? 'nav'
-        : el.closest('.status-badge, .ts-status, .mgmt-badge, .ts-status-option') ? 'status'
+        : el.closest('.status-badge, .ts-status, .mgmt-badge, .ts-status-option, .registration-steps') ? 'status'
           : el.matches('.dashboard-stat-icon') || el.closest('.ceo-status-total, .mgmt-stat-icon, .admin-stat') ? 'stat'
-            : el.closest('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .auth-intro-icon, .superadmin-shield, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .superadmin-login-eyebrow')
-              || el.matches('.ceo-setting-heading > svg, .ceo-security-form header > svg') ? 'feature' : 'inline';
+            : el.closest('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .auth-intro-icon, .registration-intro-icon, .superadmin-shield, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .superadmin-login-eyebrow')
+              || el.matches('.ceo-setting-heading > svg, .ceo-security-form header > svg, .registration-feature-icon, .install-confirmed') || el.closest('.install-instructions, .install-platform') ? 'feature' : 'inline';
       return { text: el.textContent?.trim().slice(0, 90), class: el.getAttribute('class'), width: +box.width.toFixed(2), height: +box.height.toFixed(2), font: parseFloat(style.fontSize), cssWidth: parseFloat(style.width), cssHeight: parseFloat(style.height), category, hero: !!el.closest('.superadmin-login-intro') };
     });
     return {
       viewport: viewport ?? { width: document.documentElement.clientWidth, height: innerHeight },
       browserViewport: { innerWidth, innerHeight, clientWidth: document.documentElement.clientWidth },
       document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
-      logos: measure('.brand'), titles: measure('h1'), sections: measure('h2'),
-      tiles: measure('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .auth-intro-icon, .superadmin-shield'),
+      logos: measure('.brand'), appIcons: measure('.install-app-icon'), titles: measure('h1'), sections: measure('h2'),
+      tiles: measure('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .auth-intro-icon, .registration-intro-icon, .superadmin-shield'),
       buttons: measure('.ui-button, .ts-button, .mgmt-button, .project-button'),
       inputs: measure('input:not([type=month]):not([type=radio]):not([type=checkbox]), select'),
       badges: measure('.status-badge, .ts-status, .mgmt-badge'),
@@ -50,6 +50,7 @@ export async function capture(page: Page, info: TestInfo, name: string) {
     for (const h of metrics.titles) expect(h.font, `${name}: page title ${h.text}`).toBe(title);
     for (const h of metrics.sections) expect(h.font, `${name}: section ${h.text}`).toBe(h.hero ? title : metrics.viewport.width < 768 ? 20 : 22);
     for (const logo of metrics.logos) expect(logo.width, `${name}: logo`).toBe(metrics.viewport.width < 768 ? 180 : 220);
+    for (const icon of metrics.appIcons) { expect(icon.width).toBe(112); expect(icon.height).toBe(112); }
     for (const tile of metrics.tiles) {
       const size = metrics.viewport.width < 768 ? 48 : 56;
       expect(tile.width, `${name}: tile ${tile.class}`).toBe(size);

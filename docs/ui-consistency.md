@@ -25,7 +25,7 @@ Login umum dan Superadmin diperiksa tanpa scroll pada viewport pengujian, termas
 
 ## Cakupan yang dapat diulang
 
-- `ui-audit/catalog.ts` memetakan seluruh 38 rute yang saat ini terdaftar di React Router, termasuk wildcard per peran. Aktivasi dengan/tanpa token dicatat sebagai kondisi berbeda dari rute yang sama.
+- `ui-audit/catalog.ts` memetakan seluruh 43 rute yang saat ini terdaftar di React Router, termasuk wildcard per peran. Aktivasi dengan/tanpa token dicatat sebagai kondisi berbeda dari rute yang sama; halaman offline statis diperiksa terpisah.
 - `ui-audit/route-coverage.test.mjs` membandingkan rute sumber dengan katalog. Perubahan jumlah atau rute yang belum terpetakan menggagalkan pemeriksaan.
 - `ui-audit/screens.spec.ts` merekam hasil nyata React untuk kondisi tersedia, memuat, gagal, kosong, dan tidak ditemukan sesuai cabang yang diterapkan pada halaman.
 - Berkas skenario lain mencakup validasi, submit berjalan, error penyimpanan, konflik, undangan/aktivasi, hak akses, konfirmasi dan pembatalan, arsip/arsip terhalang, riwayat, filter, logout, pengaturan, dan seluruh kondisi tampilan Voice Agent.
@@ -67,3 +67,11 @@ Lembar review memuat seluruh bagian halaman panjang. Gambar yang identik secara 
 Temuan yang diperbaiki meliputi ukuran logo/login yang berbeda, font dan ikon antarperan, kontrol formulir yang terlalu pendek, latar ikon yang membesar di mobile, grid form yang bertumpuk saat validasi sekaligus gagal simpan, kolom deskripsi proyek yang terlalu sempit, judul dialog undangan yang tersembunyi, nama divisi/pengguna panjang yang mendesak elemen lain, dan pilihan filter Audit Log yang terpotong. Aturan CSS dan class keadaan lama yang menyebabkan konflik dihapus.
 
 Cakupan ini memverifikasi ukuran dan interaksi aplikasi pada viewport yang disebutkan, menggunakan Chromium. Respons transport suara pada audit UI disimulasikan; pemeriksaan ini tidak mengklaim menguji ulang akurasi model atau audio OpenAI nyata. Screenshot lokal dan data fixture tidak dikirim ke VPS. PR hanya ditujukan ke `develop`; proses audit ini tidak melakukan merge atau deployment.
+
+## Perluasan registrasi dan pemasangan, 28 November 2026
+
+- Matriks terbaru mencakup 43 rute React, halaman offline, serta kondisi registrasi dan pemasangan. Sebanyak 512 kasus visual unik lulus pada desktop/mobile, termasuk pemeriksaan ulang setelah perbaikan.
+- Bukti gabungan berada di `test-results/registration-complete/`: 793 capture (391 desktop, 402 mobile), dengan 718 gambar unik. Seluruh gambar dan bagian halaman panjang ditinjau secara visual; `visual-review.json` mencatat hash tiap capture, tanpa gambar final yang belum ditinjau.
+- Login tetap muat pada viewport pendek yang disebutkan di atas. Logo, judul, formulir, tombol, ikon, pilihan perangkat, kartu loading tanpa logo tambahan, dan langkah Safari diperiksa melalui render nyata. Ikon aplikasi pada panduan dan halaman pembuka dibatasi 112 px.
+- Pemeriksaan menemukan dan memperbaiki ikon yang membesar saat halaman pembuka dimuat langsung, judul menunggu yang masih tampil setelah pembatalan, serta teks filter Audit Log yang bertumpuk dengan ikon pada mobile. Pemeriksaan jarak filter meliputi kondisi tersedia, kosong, memuat, dan gagal; regresi Audit Log dijalankan ulang.
+- Bukti fungsional dan batas pemasangan perangkat asli dicatat pada [registrasi Anggota Divisi](member-registration.md). Simulasi event pemasangan dalam audit UI tidak dianggap sebagai bukti pemasangan Android/iPhone asli.

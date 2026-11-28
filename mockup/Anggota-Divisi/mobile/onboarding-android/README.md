@@ -1,6 +1,6 @@
-# Usulan onboarding Android — menunggu review
+# Onboarding Android — disetujui
 
-Enam gambar terpisah dibuat menggunakan OpenAI ImageGen pada 28 November 2026. Satu gambar berisi satu mockup, bukan gabungan layar. Belum ada implementasi aplikasi. Desktop tetap memakai [rancangan sebelumnya](../../desktop/15-registrasi.png).
+Enam gambar terpisah dibuat menggunakan OpenAI ImageGen pada 28 November 2026. Satu gambar berisi satu mockup, bukan gabungan layar. Disetujui pemilik pada 28 November 2026; lihat [implementasi registrasi](../../../../docs/member-registration.md). Desktop tetap memakai [rancangan sebelumnya](../../desktop/15-registrasi.png).
 
 | Urutan | Layar | Gambar |
 | --- | --- | --- |
@@ -11,7 +11,7 @@ Enam gambar terpisah dibuat menggunakan OpenAI ImageGen pada 28 November 2026. S
 | 4 | Menunggu hasil pemasangan | [Menunggu pemasangan](04-menunggu-pemasangan.png) |
 | 5 | Terpasang, buka aplikasi dan petunjuk alternatif | [Aplikasi terpasang](05-aplikasi-terpasang.png) |
 
-Alur usulan: Login → Daftar Anggota Divisi → Simpan dan lanjut → pilih Android → Lanjutkan → Pasang aplikasi → konfirmasi browser → menunggu hasil → buka aplikasi. Tombol Sebelumnya mengembalikan pengguna ke langkah sebelumnya dengan data tetap dipertahankan. Perubahan fungsi tersebut belum dibuat; gambar merupakan proposal interaksi.
+Alur yang disetujui: Login → Daftar Anggota Divisi → Simpan dan lanjut → pilih Android → Lanjutkan → Pasang aplikasi → konfirmasi browser → menunggu hasil → buka aplikasi. Tombol Sebelumnya mengembalikan pengguna ke langkah sebelumnya dengan data tetap dipertahankan. Kata sandi tidak dipersistenkan di penyimpanan browser.
 
 Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Divisi. Pada data akun, pengguna yang sudah punya akun tetap bisa memilih Masuk. Indikator onboarding memakai tiga langkah: Data akun, Perangkat, Pasang; pemasangan memiliki kondisi siap, menunggu, dan selesai.
 
@@ -24,6 +24,6 @@ Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Div
 - Tombol Buka Ruang Kerja merupakan usulan tindakan yang perlu diverifikasi per browser Android. Halaman web tidak dapat menjamin navigasi selalu beralih ke jendela PWA terpasang. Jika dukungan pembukaan langsung tidak tersedia atau pengguna masih berada di browser, tampilkan petunjuk membuka ikon Ruang Kerja dari layar utama, seperti pada mockup selesai.
 - Pembatalan pemasangan, browser tidak mendukung, dan kegagalan memerlukan penanganan saat alur implementasi ditentukan. Jangan menahan pengguna pada loading tanpa jalan kembali.
 - Rangkaian khusus iPhone kini tersedia dalam [dokumentasi onboarding iPhone](../onboarding-iphone/README.md). Jalur Android pada folder ini tetap dipertahankan.
-- Verifikasi email dan penetapan akses divisi belum diputuskan lengkap; penyimpanan data akun tidak sama dengan pemberian akses divisi.
+- Akun aktif setelah verifikasi email egiresources.com pada divisi yang dipilih. Pemasangan sendiri tidak memberi akses.
 
-Warna, ikon, dan tipografi mengikuti bahasa desain Ruang Kerja. Ukuran implementasi nantinya mengikuti [standar UI](../../../../docs/ui-consistency.md); ukuran raster ImageGen bukan hasil pengukuran CSS. Tidak ada perubahan pada frontend, backend, database, login produksi, atau fitur PWA dalam revisi dokumentasi ini.
+Warna, ikon, dan tipografi mengikuti bahasa desain Ruang Kerja. Ukuran implementasi nantinya mengikuti [standar UI](../../../../docs/ui-consistency.md); ukuran raster ImageGen bukan hasil pengukuran CSS. Status pengujian dan batas browser dicatat pada dokumentasi implementasi.

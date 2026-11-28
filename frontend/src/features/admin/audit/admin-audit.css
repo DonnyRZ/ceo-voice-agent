@@ -37,7 +37,7 @@
   .admin-audit-desktop, .admin-audit-lead, .admin-audit-filters h2, .audit-desktop-subject { display: none; }
   .admin-audit-filters { background: #e0f1ee; }
   .admin-audit-filters .admin-filter { gap: 5px; }
-  .admin-audit-filters select { padding-left: 33px; }
+  .admin-audit-filters .admin-filter select { padding-left: 42px; }
   .admin-audit-filters .admin-filter-control-icon { position: absolute; display: block; left: 10px; top: calc(50% - 10px); width: var(--icon-inline); height: var(--icon-inline); color: var(--teal); pointer-events: none; }
   .admin-audit-page-no-results .admin-audit-filters { padding: 0; background: transparent; }
   .admin-audit-page-no-results .admin-audit-filter-division,

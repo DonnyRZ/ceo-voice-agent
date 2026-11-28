@@ -2,9 +2,9 @@
 
 Satu file gambar memuat satu mockup layar. Versi desktop dan mobile disimpan terpisah. Logo aplikasi berada di [folder logo](../logo/).
 
-## Registrasi Anggota Divisi — menunggu review
+## Registrasi Anggota Divisi — disetujui
 
-Dibuat dengan OpenAI ImageGen pada 28 November 2026. Seluruh gambar merupakan usulan desain untuk ditinjau pemilik, **belum persetujuan implementasi**. Perubahan ini hanya menambah gambar dan dokumentasi; tidak menambah halaman, endpoint, database, atau alur registrasi aplikasi.
+Dibuat dengan OpenAI ImageGen pada 28 November 2026. Seluruh rangkaian desktop, Android, dan iPhone telah disetujui pemilik pada 28 November 2026. Implementasi dan batas platform dicatat pada [dokumentasi registrasi](../docs/member-registration.md).
 
 | Versi | Gambar |
 | --- | --- |
@@ -16,7 +16,7 @@ Isi data akun: nama lengkap, email perusahaan, pilihan divisi, kata sandi, dan k
 
 Gaya mengikuti login terbaru: teal/mint, latar terang, ikon sederhana, dan tipografi yang tenang. Ukuran implementasi nantinya tetap mengikuti [standar konsistensi UI](../docs/ui-consistency.md), bukan mengambil ukuran piksel mentah dari gambar ImageGen.
 
-Mockup mobile formulir tunggal terdahulu digantikan oleh alur onboarding Android/iPhone; riwayatnya tetap tersedia melalui Git. Desktop tidak diubah pada revisi ini. Tahap verifikasi email dan konfirmasi keanggotaan divisi masih perlu diputuskan lebih lanjut. Ketentuan pemasangan browser dijelaskan pada dokumentasi tiap platform. Semua mockup onboarding masih menunggu review, belum persetujuan implementasi.
+Mockup mobile formulir tunggal terdahulu digantikan oleh alur onboarding Android/iPhone; riwayatnya tetap tersedia melalui Git. Desktop tidak diubah pada revisi ini. Akun langsung aktif setelah verifikasi email perusahaan pada divisi yang dipilih; domain awal adalah egiresources.com. Ketentuan pemasangan browser dijelaskan pada dokumentasi tiap platform. Mockup menjadi referensi implementasi yang sudah disetujui.
 
 ## Login Superadmin — dokumentasi yang sudah tersedia
 

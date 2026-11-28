@@ -6,6 +6,7 @@ import { mockScreen } from './fixture';
 for (const screen of screens) for (const state of screen.states) {
   test(`${screen.id}__${state}`, async ({ page }, info) => {
     const fixture = await mockScreen(page, screen.role, state);
+    if (screen.id === 'registration') fixture.overrides.set('/api/registration/status', { registration: null });
     await page.goto(screen.path);
     await expect(page.locator('h1')).toBeVisible();
     if (state !== 'loading') await expect.poll(async () =>

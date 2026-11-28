@@ -17,6 +17,13 @@ export function identity(role: Role) {
 }
 
 export function responseFor(path: string, state: State) {
+  if (path === '/api/registration/status') return { registration: state === 'empty' ? null : {
+    name: 'Anggota QA', email: 'anggota@egiresources.com', division_id: 'division-1', verified: true, delivery: 'sent',
+  } };
+  if (path === '/api/registration/divisions') return {
+    divisions: state === 'empty' ? [] : [{ id: 'division-1', name: 'IT' }, { id: 'division-2', name: 'Finance' }],
+    emailDomains: ['egiresources.com'],
+  };
   const empty = state === 'empty';
   const list = empty ? [] : tasks;
   if (path.endsWith('/history')) return empty ? [] : history;

@@ -8,6 +8,8 @@ const environment = z.object({
   APP_ORIGIN: applicationOrigin,
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   HOST: z.string().default('127.0.0.1'),
+  REGISTRATION_EMAIL_DOMAINS: z.string().default('egiresources.com').transform((value) =>
+    value.split(',').map((domain) => domain.trim().toLowerCase()).filter(Boolean)),
 });
 
 export function readConfig(source: NodeJS.ProcessEnv = process.env) {

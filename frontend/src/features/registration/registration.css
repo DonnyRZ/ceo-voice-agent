@@ -1,0 +1,61 @@
+.registration-shell { min-height: 100svh; padding: 32px; background: linear-gradient(135deg,#f1f5f4,#ebf3f3); }
+.registration-shell > .brand { display: block; width: var(--brand-width); margin: 0 auto 24px; }
+.registration-content { max-width: 620px; margin: 0 auto; }
+.registration-shell--form .registration-content { max-width: 480px; }
+.registration-steps { display: flex; justify-content: space-between; gap: 12px; padding: 0; margin: 0 0 24px; list-style: none; font-size: var(--font-caption); color: var(--muted); }
+.registration-steps li { display: flex; gap: 8px; align-items: center; }
+.registration-steps li.active { color: var(--teal); font-weight: 700; }
+.registration-steps li > span { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid; border-radius: 50%; flex: none; }
+.registration-steps li.active > span { background: var(--teal); color: #fff; border-color: var(--teal); }
+.registration-steps svg { width: var(--icon-status); height: var(--icon-status); }
+.registration-intro { padding: 24px; border-radius: 18px; background: #dcefeb; }
+.registration-intro-icon { display: none; }
+.registration-intro h1 { margin: 0; font-size: var(--font-page); }
+.registration-intro p { margin: 8px 0 0; color: var(--muted); font-size: var(--font-body); }
+.registration-card { margin-top: 16px; padding: 24px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.registration-card > p { color: var(--muted); margin-block: 0 20px; overflow-wrap: anywhere; }
+.registration-form { display: grid; gap: 18px; }
+.registration-field { display: grid; gap: 8px; }
+.registration-field label { font-weight: 680; font-size: var(--font-body); }
+.registration-input { display: flex; position: relative; align-items: center; }
+.registration-input > svg { position: absolute; left: 14px; color: var(--muted); pointer-events: none; }
+.registration-input input, .registration-input select { width: 100%; min-width: 0; padding: 10px 14px 10px 46px; border: 1px solid #adc1c7; border-radius: var(--control-radius); background: #fff; color: var(--ink); }
+.registration-input input[type=password], .registration-input input[autocomplete=new-password] { padding-right: 46px; }
+.registration-input input::placeholder { color: #50656d; opacity: 1; }
+.registration-input button { position: absolute; right: 2px; width: 44px; height: 44px; display: grid; place-items: center; color: var(--muted); }
+.registration-field small, .registration-caption { font-size: var(--font-caption); color: var(--muted); }
+.registration-submit { width: 100%; }
+.registration-login { margin: 0 !important; text-align: center; }
+.registration-login a, .registration-card a:not(.ui-button), .registration-text-action { color: var(--teal); font-weight: 650; }
+.registration-text-action { padding: 8px; min-height: 44px; text-decoration: underline; }
+.registration-note { padding: 12px; border-radius: 12px; background: var(--mint); font-size: var(--font-caption); }
+.registration-actions { display: flex; gap: 12px; margin-top: 24px; }
+.registration-actions .ui-button { flex: 1; }
+.registration-feature-icon { width: var(--icon-feature); height: var(--icon-feature); color: var(--teal); margin-bottom: 20px; }
+.registration-mobile-label { display: none; }
+.ui-button--outline { color: var(--teal); border-color: var(--teal); background: transparent; }
+.ui-button--outline:hover:not(:disabled) { color: var(--teal); background: var(--mint); }
+@media (min-width: 768px) {
+  .registration-shell--form { padding-block: 88px 24px; }
+  .registration-shell--form .registration-content { border: 1px solid var(--border); border-radius: 20px; background: var(--surface); box-shadow: 0 5px 16px #163f4010; }
+  .registration-shell--form .registration-intro { display: flex; gap: 16px; align-items: center; border-radius: 20px 20px 0 0; }
+  .registration-intro-icon { display: grid; flex: none; place-items: center; width: var(--tile-size); height: var(--tile-size); border-radius: 12px; color: var(--teal); background: #c9e8e1; }
+  .registration-intro-icon svg { width: var(--icon-feature); height: var(--icon-feature); }
+  .registration-form { gap: 12px; margin-top: 0; border: 0; background: transparent; }
+  .registration-shell--form > .brand { position: absolute; top: 24px; left: 32px; }
+  .registration-shell--form .registration-steps { display: none; }
+}
+@media (max-width: 767px) {
+  .registration-shell { padding: 24px 16px; }
+  .registration-intro, .registration-card { padding: 20px; }
+  .registration-desktop-label { display: none; }
+  .registration-mobile-label { display: inline; }
+  .registration-steps { gap: 8px; }
+  .registration-steps li { gap: 6px; }
+}
+@media (max-width: 359px) {
+  .registration-card, .registration-intro { padding: 16px; }
+  .registration-steps li { gap: 4px; }
+  .registration-steps li > span { width: 24px; height: 24px; }
+  .registration-actions { flex-direction: column; }
+}

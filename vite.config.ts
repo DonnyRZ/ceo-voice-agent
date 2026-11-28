@@ -13,6 +13,7 @@ export default defineConfig({
     strictPort: true,
     fs: { allow: [workspace] },
     proxy: {
+      "/manifest.webmanifest": `http://127.0.0.1:${process.env.API_PORT || 3000}`,
       "/api": `http://127.0.0.1:${process.env.API_PORT || 3000}`,
     },
   },

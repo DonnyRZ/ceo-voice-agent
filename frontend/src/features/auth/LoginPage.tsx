@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { BriefcaseBusiness } from 'lucide-react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { Brand } from '../../shared/brand';
 import { sessionQuery } from '../../shared/session';
 import { LoginForm } from './LoginForm';
@@ -25,6 +25,7 @@ export function LoginPage() {
           </div>
         </header>
         <LoginForm />
+        <div className="auth-register"><p>Belum punya akun?</p><Link className="ui-button ui-button--outline" to="/register">Daftar Anggota Divisi</Link></div>
       </section>
     </main>
   );

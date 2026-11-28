@@ -6,7 +6,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(74);
+SELECT plan(85);
 
 INSERT INTO public."user" (id, name, email) VALUES
     ('pgtap-member-it', 'Anggota IT pgTAP', 'pgtap-it@example.test'),
@@ -308,6 +308,34 @@ SELECT is((SELECT count(*) FROM public.claim_work_search_embeddings('pgtap-model
     0::bigint, 'Worker tidak mengulang model dan teks yang sudah diindeks');
 SELECT is((SELECT count(*) FROM public.claim_work_search_embeddings('pgtap-model-next', 1)),
     1::bigint, 'Perubahan model menjadwalkan ulang dokumen');
+
+
+-- Public registration exposes only capability-bound operations, never pending credentials.
+RESET ROLE;
+SET ROLE :"app_role";
+SELECT throws_ok('SELECT * FROM app_private.member_registrations', '42501', NULL,
+    'Runtime tidak dapat membaca kata sandi atau token registrasi');
+SELECT throws_ok('SELECT * FROM app_private.registration_limits', '42501', NULL,
+    'Runtime tidak dapat memodifikasi bucket pembatasan secara langsung');
+SELECT ok(NOT has_function_privilege('public', 'public.verify_member_registration(text,text,text)', 'EXECUTE'),
+    'Fungsi aktivasi bukan hak PUBLIC');
+SELECT ok(public.save_member_registration('pgtap-register@egiresources.com', 'Registrasi pgTAP',
+    '10000000-0000-4000-8000-000000000001', 'test-only-credential-hash', repeat('a',64), repeat('b',64)) IS NOT NULL,
+    'Pendaftaran hanya menyimpan permintaan sampai email diverifikasi');
+SELECT ok(public.registration_rate_allowed(repeat('c',64), 1, 600), 'Percobaan pertama diizinkan');
+SELECT ok(NOT public.registration_rate_allowed(repeat('c',64), 1, 600), 'Bucket bersama membatasi percobaan berikutnya');
+SELECT is(public.verify_member_registration(repeat('a',64), 'pgtap-self-register', 'pgtap-self-credential'),
+    'pgtap-register@egiresources.com', 'Verifikasi mengaktifkan akun');
+SELECT is(public.verify_member_registration(repeat('a',64), 'pgtap-replay', 'pgtap-replay-credential'),
+    NULL::text, 'Tautan yang dikonsumsi tidak dapat diputar ulang');
+RESET ROLE;
+SELECT is((SELECT role::text FROM account_access WHERE user_id='pgtap-self-register'),
+    'member', 'Registrasi publik selalu menghasilkan Anggota Divisi');
+SELECT is((SELECT "emailVerified" FROM "user" WHERE id='pgtap-self-register'),
+    true, 'Akun aktif memiliki email yang terverifikasi');
+SELECT ok(NOT EXISTS(SELECT FROM app_private.member_registrations
+    WHERE email='pgtap-register@egiresources.com' AND (credential_hash IS NOT NULL OR token_hash IS NOT NULL)),
+    'Kredensial sementara dan token dibersihkan setelah aktivasi');
 
 SELECT * FROM finish(true);
 ROLLBACK;
