@@ -10,12 +10,13 @@ Dibuat dengan OpenAI ImageGen pada 28 November 2026. Seluruh gambar merupakan us
 | --- | --- |
 | Desktop | [Registrasi Anggota Divisi](Anggota-Divisi/desktop/15-registrasi.png) |
 | Mobile Android | [Alur login, registrasi, dan pemasangan](Anggota-Divisi/mobile/onboarding-android/README.md) |
+| Mobile iPhone | [Pilihan perangkat, panduan Safari, dan membuka aplikasi](Anggota-Divisi/mobile/onboarding-iphone/README.md) |
 
 Isi data akun: nama lengkap, email perusahaan, pilihan divisi, kata sandi, dan konfirmasi kata sandi. Desktop mempertahankan tombol Daftar. Mobile direvisi menjadi flow dengan tombol Simpan dan lanjut, pilihan Android/iPhone, serta jalur pemasangan Android. Pilihan divisi direncanakan mengikuti divisi yang dikelola Superadmin. Registrasi mandiri hanya untuk Anggota Divisi; CEO dan Superadmin tetap melalui undangan.
 
 Gaya mengikuti login terbaru: teal/mint, latar terang, ikon sederhana, dan tipografi yang tenang. Ukuran implementasi nantinya tetap mengikuti [standar konsistensi UI](../docs/ui-consistency.md), bukan mengambil ukuran piksel mentah dari gambar ImageGen.
 
-Mockup mobile formulir tunggal terdahulu digantikan oleh alur Android; riwayatnya tetap tersedia melalui Git. Desktop tidak diubah pada revisi ini. Tahap verifikasi email, konfirmasi keanggotaan divisi, dan detail panduan iPhone masih perlu diputuskan lebih lanjut. Ketentuan pemasangan browser dijelaskan pada dokumentasi alur Android.
+Mockup mobile formulir tunggal terdahulu digantikan oleh alur onboarding Android/iPhone; riwayatnya tetap tersedia melalui Git. Desktop tidak diubah pada revisi ini. Tahap verifikasi email dan konfirmasi keanggotaan divisi masih perlu diputuskan lebih lanjut. Ketentuan pemasangan browser dijelaskan pada dokumentasi tiap platform. Semua mockup onboarding masih menunggu review, belum persetujuan implementasi.
 
 ## Login Superadmin — dokumentasi yang sudah tersedia
 

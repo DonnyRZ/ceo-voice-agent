@@ -23,7 +23,7 @@ Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Div
 - Status selesai hanya boleh ditampilkan berdasarkan bukti pemasangan yang tersedia. Perilaku dan event aktual browser perlu diuji saat implementasi; gambar tidak membuktikan dukungan browser tersebut.
 - Tombol Buka Ruang Kerja merupakan usulan tindakan yang perlu diverifikasi per browser Android. Halaman web tidak dapat menjamin navigasi selalu beralih ke jendela PWA terpasang. Jika dukungan pembukaan langsung tidak tersedia atau pengguna masih berada di browser, tampilkan petunjuk membuka ikon Ruang Kerja dari layar utama, seperti pada mockup selesai.
 - Pembatalan pemasangan, browser tidak mendukung, dan kegagalan memerlukan penanganan saat alur implementasi ditentukan. Jangan menahan pengguna pada loading tanpa jalan kembali.
-- Pilihan iPhone ditampilkan sebagai pilihan perangkat, tetapi rangkaian panduan iPhone belum digambar pada revisi khusus Android ini.
+- Rangkaian khusus iPhone kini tersedia dalam [dokumentasi onboarding iPhone](../onboarding-iphone/README.md). Jalur Android pada folder ini tetap dipertahankan.
 - Verifikasi email dan penetapan akses divisi belum diputuskan lengkap; penyimpanan data akun tidak sama dengan pemberian akses divisi.
 
 Warna, ikon, dan tipografi mengikuti bahasa desain Ruang Kerja. Ukuran implementasi nantinya mengikuti [standar UI](../../../../docs/ui-consistency.md); ukuran raster ImageGen bukan hasil pengukuran CSS. Tidak ada perubahan pada frontend, backend, database, login produksi, atau fitur PWA dalam revisi dokumentasi ini.
