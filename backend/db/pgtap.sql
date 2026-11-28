@@ -6,7 +6,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(108);
+SELECT plan(112);
 
 INSERT INTO public."user" (id, name, email) VALUES
     ('pgtap-member-it', 'Anggota IT pgTAP', 'pgtap-it@example.test'),
@@ -403,5 +403,13 @@ SELECT set_config('app.user_id','pgtap-context-user',true),set_config('app.divis
 SELECT is(app_private.member_division_id(),'10000000-0000-4000-8000-000000000001'::uuid,
     'Scope divisi tersedia setelah registrasi selesai');
 RESET ROLE;
+SELECT ok(NOT has_function_privilege('public','public.registration_verification_context(text,text)','EXECUTE'),
+    'Konteks token verifikasi bukan hak PUBLIC');
+SELECT ok(NOT has_function_privilege('public','public.confirm_registration_with_password(text,text,text,text,text)','EXECUTE'),
+    'Konfirmasi bukti sandi bukan hak PUBLIC');
+SELECT ok(has_function_privilege(:'app_role','public.registration_verification_context(text,text)','EXECUTE'),
+    'Runtime dapat memeriksa konteks verifikasi');
+SELECT ok(has_function_privilege(:'app_role','public.confirm_registration_with_password(text,text,text,text,text)','EXECUTE'),
+    'Runtime dapat mengonfirmasi bukti pemulihan');
 SELECT * FROM finish(true);
 ROLLBACK;

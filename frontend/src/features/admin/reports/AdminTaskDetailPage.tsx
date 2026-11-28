@@ -28,7 +28,7 @@ export function AdminTaskDetailPage() {
   return (
     <div className="admin-page admin-task-page">
       <AdminPageHeader title="Detail Tugas" breadcrumbs={[{ label: 'Timesheet', to: back }, { label: 'Detail Tugas' }]} />
-      {task.isPending ? <p role="status">Memuat tugas…</p>
+      {task.isPending ? <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat tugas</span></p>
         : task.isError ? <LoadProblem title="Tugas belum dapat dimuat." retry={() => void task.refetch()} />
         : entry && rows && <>
           <section className="admin-surface admin-task-information" aria-label="Informasi tugas">

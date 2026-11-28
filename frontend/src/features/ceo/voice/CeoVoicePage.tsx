@@ -16,7 +16,7 @@ export function CeoVoicePage() {
     standby: 'Mikrofon aktif', closed: 'Sesi selesai', unavailable: 'Koneksi terputus',
   };
   const hints: Record<string, string> = {
-    idle: 'Mikrofon belum aktif', connecting: 'Menyiapkan sesi suara Anda…',
+    idle: 'Mikrofon belum aktif', connecting: 'Menyiapkan sesi suara Anda',
     listening: 'Silakan tanyakan progres pekerjaan.', searching: 'Memeriksa catatan timesheet.',
     answering: 'Sesi voice agent sedang berlangsung.', muted: 'Aktifkan mikrofon untuk berbicara.',
     standby: view.micMuted ? 'Aktifkan mikrofon untuk melanjutkan.' : 'Bicara untuk melanjutkan',

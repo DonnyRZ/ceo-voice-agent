@@ -19,3 +19,5 @@ Form awal tetap berisi nama, email, divisi, kata sandi, dan konfirmasi. Simpan d
 Ukuran kode mengikuti standar CSS aplikasi, bukan ukuran piksel raster. Nomor dan tanda centang menandai tahap aktif/selesai; verifikasi email berbeda dari penyelesaian pemasangan.
 
 Revisi navigasi disetujui pemilik pada 28 November 2026: Sebelumnya di kiri dan Lanjutkan/Pasang aplikasi di kanan dalam satu baris horizontal, lebar serta tinggi setara. Gambar terkait telah diganti; versi bertumpuk tidak lagi menjadi referensi aktif. Kirim ulang email dan status tetap berada di luar pasangan navigasi.
+
+Revisi verifikasi lintas browser dan loading: [Konfirmasi kata sandi pendaftaran](confirm-password.png) dan [Verifikasi sedang berjalan](verifying.png), dibuat memakai ImageGen pada 28 November 2026. Pemilik mengizinkan mockup dilanjutkan ke implementasi pada tugas sembilan langkah. Konfirmasi sandi hanya untuk pemulihan akun lama tanpa bukti browser asal; bukan sandi baru. Spinner menggantikan indikator teks bertitik.

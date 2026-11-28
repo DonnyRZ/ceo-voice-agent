@@ -17,7 +17,7 @@ export function CeoDivisionPage() {
   return <div className="ceo-page ceo-division-detail">
     <CeoPageHeader title="Detail Divisi" back={withPeriod('/ceo/divisions', month)} backLabel="Divisi" />
     <CeoVoiceSourceNote />
-    {division.isPending ? <CeoEmpty>Memuat detail divisi…</CeoEmpty>
+    {division.isPending ? <CeoEmpty><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat detail divisi</span></CeoEmpty>
       : division.isError ? <CeoQueryProblem error={division.error} name="Divisi" retry={() => void division.refetch()} />
         : data && <>
           <section className="ceo-banner" aria-label={`Divisi ${data.name}`}>

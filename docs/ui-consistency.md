@@ -43,7 +43,7 @@ node --import tsx --test ui-audit/route-coverage.test.mjs
 npm run test:ui-audit
 ```
 
-Audit ini menjalankan Vite pada loopback port 5174 dengan `vite.ui-audit.config.ts` dan cache dependency tersendiri. Dua server tidak boleh berbagi cache optimasi karena dapat menghasilkan `504 Outdated Optimize Dep` saat pengujian bersamaan. Respons API dikendalikan oleh fixture untuk membuka cabang UI secara deterministik; tampilan yang direkam tetap komponen aplikasi sebenarnya. Kondisi suara dipicu melalui transport uji browser, tanpa API OpenAI berbayar. Regresi interaksi terhadap backend dan PostgreSQL tetap dijalankan melalui `npm run test:e2e` pada port pengembangan normal.
+Audit visual membangun aplikasi sekali lalu menjalankan preview build produksi pada loopback port 5174. Preview tidak memakai HMR atau cache optimasi server pengembangan, sehingga hasil render tetap stabil selama pemeriksaan seluruh halaman. Server audit dimiliki proses pengujian dan tidak memakai ulang server yang tidak diketahui versinya. Respons API dikendalikan oleh fixture untuk membuka cabang UI secara deterministik; tampilan yang direkam tetap komponen aplikasi sebenarnya. Kondisi suara dipicu melalui transport uji browser, tanpa API OpenAI berbayar. Regresi interaksi terhadap backend dan PostgreSQL tetap dijalankan melalui `npm run test:e2e` pada port pengembangan normal.
 
 Workflow `Regresi mendalam terpisah` menjalankan audit dalam job `ui-consistency` tersendiri, paralel dengan regresi fungsional. Artifact `ui-consistency-<SHA>` berisi screenshot, pengukuran, dan hasil pengujian selama tiga hari. Job deployment tidak bergantung pada job browser ini.
 
@@ -95,4 +95,12 @@ Cakupan ini memverifikasi ukuran dan interaksi aplikasi pada viewport yang diseb
 
 ## Pemulihan akun legacy melalui email
 
-Perubahan ini memakai frontend yang sama: formulir, verifikasi email, kondisi gagal, dan panduan pemasangan tetap sesuai rancangan yang sudah tersedia. Delapan belas capture dari empat skenario browser pada build produksi (desktop/mobile, asal tidak tercatat atau mobile diketahui) diperiksa beserta ukuran komponennya. Seluruh gambar baru dan potongan halaman panjang ditinjau. Pemulihan membuka tahap server yang tersimpan; penolakan browser berbeda memakai slot pesan gagal verifikasi yang sudah ada, tanpa mengonsumsi token. Bukti privat lokal berada di `test-results/recovery-production/`; audit dan regresi lintas peran tetap terpisah dari deployment.
+Perubahan ini memakai frontend yang sama: formulir, verifikasi email, kondisi gagal, dan panduan pemasangan tetap sesuai rancangan yang sudah tersedia. Delapan belas capture dari empat skenario browser pada build produksi (desktop/mobile, asal tidak tercatat atau mobile diketahui) diperiksa beserta ukuran komponennya. Seluruh gambar baru dan potongan halaman panjang ditinjau. Pemulihan membuka tahap server yang tersimpan. Pembatasan browser pada versi tersebut sudah digantikan oleh konfirmasi kata sandi lintas browser di revisi berikut, tanpa mengonsumsi token ketika bukti belum cocok. Bukti privat lokal berada di `test-results/recovery-production/`; audit dan regresi lintas peran tetap terpisah dari deployment.
+
+
+## Verifikasi lintas browser dan seluruh loading, 28 November 2026
+
+- Seluruh 43 pola rute diperiksa melalui 52 layar katalog, 141 kondisi dasar, dan 536 skenario unik UI desktop/mobile. Setelah dua temuan loading undangan diperbaiki, semua skenario lulus; pengujian ulang memakai build produksi.
+- Sebanyak 893 capture (435 desktop, 458 mobile), 775 gambar unik, dan seluruh potongan halaman panjang sudah ditinjau; tidak ada gambar final yang belum direview. Bukti konsolidasi: `test-results/crossbrowser-verification-loading-complete/visual-review.json`. Review terdahulu hanya diwarisi melalui SHA-256 gambar yang identik.
+- Animasi inline 20 px dan sesi 32 px; teks loading bertitik dihapus di seluruh sumber frontend. Pemeriksaan tambahan 320/390 px membuktikan kedua tombol navigasi tetap sejajar saat penyimpanan pending.
+- Rincian kontrak verifikasi, hasil backend/database/integrasi, dan batas pengujian ada di [verifikasi lintas browser dan loading](cross-browser-verification-and-loading.md).

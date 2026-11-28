@@ -76,7 +76,7 @@ export function AdminReportsPage() {
       {empty && <div className="admin-report-empty-banner"><AdminBanner icon={CalendarDays} title="Semua Divisi" /></div>}
       <AdminStatusSummary counts={countStatuses(tasks.data)} />
       <section className="admin-surface admin-report-content" aria-label="Timesheet per divisi">
-        {tasks.isPending || divisions.isPending || unfiltered.isPending ? <p role="status">Memuat timesheet…</p>
+        {tasks.isPending || divisions.isPending || unfiltered.isPending ? <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat timesheet</span></p>
           : tasks.isError || divisions.isError || unfiltered.isError
             ? <LoadProblem title="Timesheet belum dapat dimuat." retry={() => {
               void tasks.refetch();

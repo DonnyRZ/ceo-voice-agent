@@ -34,6 +34,11 @@ export async function capture(page: Page, info: TestInfo, name: string) {
       viewport: viewport ?? { width: document.documentElement.clientWidth, height: innerHeight },
       browserViewport: { innerWidth, innerHeight, clientWidth: document.documentElement.clientWidth },
       document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
+      loadingDots: [...document.querySelectorAll('[role="status"], button, option')].filter(visible)
+        .map(el => el.textContent ?? '').filter(text => /(?:…|\.{3})/.test(text)
+          && /memuat|memeriksa|memverifikasi|menyimpan|mengirim|memproses|mengaktifkan|menyiapkan|membuka|sedang (masuk|keluar)|loading/i.test(text)),
+      spinners: [...document.querySelectorAll('.ui-spinner, .install-spinner, .ceo-voice-spin')].filter(visible)
+        .map(el => ({ animation: getComputedStyle(el).animationName, width: el.getBoundingClientRect().width })),
       logos: measure('.brand'), appIcons: measure('.install-app-icon'), titles: measure('h1'), sections: measure('h2'),
       tiles: measure('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .auth-intro-icon, .registration-intro-icon, .registration-status-icon, .superadmin-shield'),
       buttons: measure('.ui-button, .ts-button, .mgmt-button, .project-button'),
@@ -45,6 +50,8 @@ export async function capture(page: Page, info: TestInfo, name: string) {
   await page.screenshot({ path: info.outputPath(`${name}.png`), fullPage: true, animations: 'disabled' });
   await writeFile(info.outputPath(`${name}.json`), JSON.stringify(metrics, null, 2));
   if (process.env.UI_AUDIT_PHASE !== 'before') {
+    expect(metrics.loadingDots, `${name}: replaced loading labels`).toEqual([]);
+    for (const spinner of metrics.spinners) expect(spinner.animation, `${name}: spinner animation`).not.toBe('none');
     expect(metrics.document.width, `${name}: horizontal overflow`).toBeLessThanOrEqual(metrics.viewport.width);
     const title = metrics.viewport.width < 768 ? 28 : 32;
     for (const h of metrics.titles) expect(h.font, `${name}: page title ${h.text}`).toBe(title);

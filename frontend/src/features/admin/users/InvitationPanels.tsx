@@ -46,7 +46,7 @@ export function InvitationFailure({ invitation, counts, busy, error, onRetry }: 
       <ManagementTaskStats counts={counts} variant="mgmt-invite-result-stats" />
       <div className="mgmt-actions">
         <button className="mgmt-button mgmt-primary" type="button" disabled={busy} onClick={onRetry}>
-          {busy ? 'Mengirim…' : 'Coba kirim lagi'}
+          {busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Mengirim</span> : 'Coba kirim lagi'}
         </button>
         <Link className="mgmt-button mgmt-outline" to="/admin/users">Batal</Link>
       </div>
@@ -54,7 +54,7 @@ export function InvitationFailure({ invitation, counts, busy, error, onRetry }: 
   );
 }
 
-export function RecentInvitations({ users }: { users: AdminUser[] }) {
+export function RecentInvitations({ users, pending, error, onRetry }: { users: AdminUser[]; pending: boolean; error: boolean; onRetry: () => void }) {
   const invited = users.filter((user) => user.kind === 'invitation')
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).slice(0, 6);
   return (
@@ -62,7 +62,9 @@ export function RecentInvitations({ users }: { users: AdminUser[] }) {
       <table aria-label="Undangan terbaru">
         <thead><tr><th>Email perusahaan</th><th>Peran</th><th>Divisi</th><th>Status</th></tr></thead>
         <tbody>
-          {invited.map((user) => (
+          {pending ? <tr><td colSpan={4}><p className="loading-inline" role="status"><span className="ui-spinner" aria-hidden="true" />Memuat undangan</p></td></tr>
+            : error ? <tr><td colSpan={4}><p role="alert">Undangan belum dapat dimuat. <button className="mgmt-text-action" type="button" onClick={onRetry}>Coba lagi</button></p></td></tr>
+              : invited.map((user) => (
             <tr key={user.id}>
               <td><Link to={`/admin/users/${user.id}`}>{user.email}</Link></td>
               <td>{roleNames[user.role]}</td><td>{user.divisionName ?? '—'}</td><td><AccountBadge status={user.status} /></td>
@@ -70,7 +72,7 @@ export function RecentInvitations({ users }: { users: AdminUser[] }) {
           ))}
         </tbody>
       </table>
-      {invited.length === 0 && <p>Belum ada undangan.</p>}
+      {!pending && !error && invited.length === 0 && <p>Belum ada undangan.</p>}
     </div>
   );
 }

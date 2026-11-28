@@ -73,7 +73,7 @@ export function AdminUsersPage() {
       </div>
       <section className="mgmt-panel mgmt-users-table" aria-label="Pengguna">
         <div className="mgmt-user-head" aria-hidden="true"><span>Nama</span><span>Divisi</span><span>Peran</span><span>Status akun</span></div>
-        {users.isPending && <p role="status">Memuat pengguna…</p>}
+        {users.isPending && <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat pengguna</span></p>}
         {users.isError && <ManagementAlert><p>Daftar pengguna belum berhasil dimuat.</p><button type="button" className="mgmt-button mgmt-outline" onClick={() => void users.refetch()}>Coba lagi</button></ManagementAlert>}
         {users.data?.length === 0 && (
           <ManagementEmpty title={filtered ? 'Tidak ada hasil' : 'Belum ada pengguna'} filtered={filtered} onClear={filtered ? () => setParams({}, { replace: true }) : undefined} />

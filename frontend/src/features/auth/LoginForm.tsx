@@ -54,7 +54,7 @@ export function LoginForm({ superadmin = false }: { superadmin?: boolean }) {
       </div>
       {login.error && <p className="auth-error" role="alert">{message}</p>}
       <button type="submit" className="ui-button" disabled={login.isPending}>
-        {login.isPending ? 'Sedang masuk…' : 'Masuk'}
+        {login.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Sedang masuk</span> : 'Masuk'}
         {superadmin && <ArrowRight aria-hidden="true" />}
       </button>
     </form>

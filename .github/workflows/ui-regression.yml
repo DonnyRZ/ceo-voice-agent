@@ -62,7 +62,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Periksa cakupan rute dan konsistensi seluruh kondisi UI tanpa database atau API berbayar
         run: |
-          node --import tsx --test ui-audit/route-coverage.test.mjs
+          node --import tsx --test ui-audit/*.test.mjs
           npm run test:ui-audit -- --workers=2
       - name: Simpan screenshot dan ukuran hasil render untuk review
         if: always()

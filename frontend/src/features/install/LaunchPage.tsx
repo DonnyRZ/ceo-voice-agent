@@ -1,3 +1,4 @@
+import { Brand } from '../../shared/brand';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate } from 'react-router-dom';
 import { sessionQuery } from '../../shared/session';
@@ -13,7 +14,7 @@ export function LaunchPage() {
   const session = useQuery({ ...sessionQuery, enabled: standalone });
   const needsProgress = standalone && session.isSuccess && !session.data;
   const progress = useQuery({ ...registrationQuery, enabled: needsProgress });
-  if (standalone && (session.isPending || (needsProgress && progress.isPending))) return <main className="session-status" role="status">Membuka Ruang Kerja…</main>;
+  if (standalone && (session.isPending || (needsProgress && progress.isPending))) return <main className="session-status session-status--loading"><Brand to="/login" /><span className="loading-inline loading-inline--page" role="status"><span className="ui-spinner" aria-hidden="true" />Membuka Ruang Kerja</span></main>;
   if (standalone && (session.error || (needsProgress && progress.error))) return <main className="session-status"><section className="load-problem">
     <h1>Sesi tidak dapat diperiksa</h1><p>Periksa koneksi internet, lalu coba lagi.</p>
     <button className="ui-button" onClick={() => { if (session.error) void session.refetch(); else void progress.refetch(); }}>Coba lagi</button>

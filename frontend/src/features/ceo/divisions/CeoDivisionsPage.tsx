@@ -34,7 +34,7 @@ export function CeoDivisionsPage() {
       </label>
     </div>
     {month && <CeoPeriodPicker month={month} onChange={(value) => change('month', value)} allTime />}
-    {divisions.isPending ? <CeoEmpty>Memuat divisi…</CeoEmpty>
+    {divisions.isPending ? <CeoEmpty><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat divisi</span></CeoEmpty>
       : divisions.isError ? <CeoQueryProblem error={divisions.error} name="Daftar divisi" retry={() => void divisions.refetch()} />
         : !divisions.data.length ? <CeoEmpty>{search ? 'Tidak ada divisi yang sesuai dengan pencarian.' : 'Belum ada divisi tercatat.'}</CeoEmpty>
           : <ul className="ceo-list ceo-division-list">

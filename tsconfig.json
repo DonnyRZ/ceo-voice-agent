@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "types": ["node", "vite/client"]
   },
-  "include": ["backend/**/*.ts", "frontend/src", "e2e", "ui-audit", "vite.config.ts", "vite.ui-audit.config.ts", "playwright.config.ts", "playwright.ui-audit.config.ts"]
+  "include": ["backend/**/*.ts", "frontend/src", "e2e", "ui-audit", "vite.config.ts", "playwright.config.ts", "playwright.ui-audit.config.ts"]
 }

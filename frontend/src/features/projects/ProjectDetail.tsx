@@ -46,7 +46,7 @@ export function ProjectDetail() {
   return (
     <div className="project-page project-detail-page">
       <ProjectHeading title="Detail Proyek" section="Proyek" context={record?.name ?? 'Detail Proyek'} parentPath="/projects" />
-      {project.isPending && <p className="project-message" role="status">Memuat proyek…</p>}
+      {project.isPending && <p className="project-message" role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat proyek</span></p>}
       {project.isError && <ProjectError retry={missing ? undefined : () => void project.refetch()}>{missing ? 'Proyek tidak ditemukan.' : 'Detail proyek belum berhasil dimuat.'}</ProjectError>}
       {record && (
         <>
@@ -64,7 +64,7 @@ export function ProjectDetail() {
           </div>
           <section className="project-panel project-task-panel" aria-labelledby="project-tasks-heading">
             <h2 id="project-tasks-heading">Daftar tugas</h2>
-            {tasks.isPending && <p className="project-message" role="status">Memuat tugas…</p>}
+            {tasks.isPending && <p className="project-message" role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat tugas</span></p>}
             {tasks.isError && <ProjectError retry={() => void tasks.refetch()}>Tugas proyek belum berhasil dimuat.</ProjectError>}
             {tasks.data?.length === 0 && <p className="project-message">Belum ada tugas untuk proyek ini.</p>}
             {!!tasks.data?.length && <ProjectTaskTable tasks={tasks.data} />}

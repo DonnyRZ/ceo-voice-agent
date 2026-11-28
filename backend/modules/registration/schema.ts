@@ -8,7 +8,8 @@ export const registrationInput = z.object({
   originDevice: z.enum(['mobile', 'desktop']),
 }).strict();
 
-export const verificationInput = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
+export const verificationInput = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/),
+  password: z.string().min(8).max(128).optional() }).strict();
 export const progressInput = z.object({ step: z.enum(['device','android-install','android-wait','iphone-share','iphone-add','iphone-open']) }).strict();
 export const completionInput = z.object({ method: z.enum(['android-installed','standalone','iphone-confirmed']) }).strict();
 export type RegistrationStatus = { name: string; email: string; division_id: string; verified: boolean; delivery: string;

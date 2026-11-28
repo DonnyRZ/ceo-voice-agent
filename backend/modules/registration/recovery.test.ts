@@ -63,16 +63,41 @@ describe('legacy registration recovery with fresh email proof',()=>{
   },15000);
   it('requires proof after invalidating a legacy browser claim, without exposing saved progress',async()=>{
     const old=await legacy();
-    const pending=await save(old.email,randomUUID(),old.original);
+    const password=randomUUID();
+    const pending=await save(old.email,password,old.original);
     expect(pending.statusCode).toBe(201);
     expect(pending.json().registration).toMatchObject({verified:false,step:'verify'});
     expect(await progress(old.original)).toMatchObject({verified:false,step:'verify'});
     const claim=cookie(pending),token=await send(claim);
     const fromOtherBrowser=await post('/verify','',{token});
-    expect(fromOtherBrowser.statusCode).toBe(403);
+    expect(fromOtherBrowser.statusCode).toBe(428);
+    expect(fromOtherBrowser.json()).toMatchObject({fields:{password:'required'}});
+    expect(fromOtherBrowser.json()).not.toHaveProperty('email');
+    expect(await progress(claim)).toMatchObject({verified:false,step:'verify'});
+    const wrong=await post('/verify','',{token,password:randomUUID()});
+    expect(wrong.statusCode).toBe(403);
+    const confirmed=await post('/verify','',{token,password});
+    expect(confirmed.statusCode).toBe(200);
+    expect(confirmed.json()).toMatchObject({same_browser:false,registration:null,origin_device:'mobile'});
+    expect(confirmed.headers['set-cookie']).toBeUndefined();
+    expect(await progress(claim)).toMatchObject({verified:true,step:'iphone-add'});
+    expect((await post('/verify','',{token,password})).statusCode).toBe(400);
+  });
+  it('limits password attempts per link and does not consume it on a failed proof',async()=>{
+    const old=await legacy(),password=randomUUID();
+    const claim=cookie(await save(old.email,password)),token=await send(claim);
+    for(let attempt=0;attempt<5;attempt++) expect((await post('/verify','',{token,password:randomUUID()})).statusCode).toBe(403);
+    expect((await post('/verify','',{token,password})).statusCode).toBe(429);
     expect(await progress(claim)).toMatchObject({verified:false,step:'verify'});
     expect((await post('/verify',claim,{token})).statusCode).toBe(200);
-    expect(await progress(claim)).toMatchObject({verified:true,step:'iphone-add'});
+  });
+  it('consumes a cross-browser recovery token only once under concurrent confirmation',async()=>{
+    const old=await legacy(),password=randomUUID();
+    const claim=cookie(await save(old.email,password)),token=await send(claim);
+    const responses=await Promise.all([post('/verify','',{token,password}),post('/verify','',{token,password})]);
+    expect(responses.map(r=>r.statusCode).sort()).toEqual([200,400]);
+    expect(await progress(claim)).toMatchObject({verified:true,step:'iphone-add',completed:false});
+    expect((await f.db.query('SELECT registration_complete FROM account_access WHERE user_id=$1',[old.id])).rows[0].registration_complete).toBe(false);
   });
   it('recovers expired legacy progress without deleting its canonical record',async()=>{
     const old=await legacy();

@@ -39,7 +39,7 @@ export function AdminUserDetailPage() {
   return (
     <div className="mgmt-page mgmt-user-detail">
       <ManagementHeading title="Detail Pengguna dan Hak Akses" section="Pengguna" context="Detail" back="/admin/users" />
-      {user.isPending && <p role="status">Memuat pengguna…</p>}
+      {user.isPending && <p role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat pengguna</span></p>}
       {user.isError && (
         <ManagementAlert>
           <p>{missing ? 'Pengguna tidak ditemukan.' : 'Detail pengguna belum berhasil dimuat.'}</p>

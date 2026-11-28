@@ -27,7 +27,7 @@ export function CeoTaskPage() {
   return <div className="ceo-page ceo-task-page">
     <CeoPageHeader title="Detail Tugas" back={back} backLabel={data?.projectName || 'Divisi'} />
     <CeoVoiceSourceNote />
-    {task.isPending ? <CeoEmpty>Memuat detail tugas…</CeoEmpty>
+    {task.isPending ? <CeoEmpty><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat detail tugas</span></CeoEmpty>
       : task.isError ? <CeoQueryProblem error={task.error} name="Tugas" retry={() => void task.refetch()} />
         : data && fields && <div className="ceo-task-grid">
           <section className="ceo-surface ceo-task-information" aria-label="Informasi tugas">

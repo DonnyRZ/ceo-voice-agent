@@ -81,7 +81,7 @@ export function ActivationPage() {
               onChange={(event) => setConfirmation(event.target.value)} disabled={request.isPending} />
             {error && <p className="auth-error" role="alert">{error}</p>}
             <button className="ui-button" type="submit" disabled={request.isPending}>
-              {request.isPending ? 'Mengaktifkan…' : 'Aktifkan akun'}
+              {request.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Mengaktifkan</span> : 'Aktifkan akun'}
             </button>
           </form>
         )}

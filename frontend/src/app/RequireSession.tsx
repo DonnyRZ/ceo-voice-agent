@@ -1,3 +1,4 @@
+import { Brand } from '../shared/brand';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
@@ -14,7 +15,7 @@ export function RequireSession({ role }: { role: SessionUser['role'] }) {
   }, [location.pathname]);
 
   if (session.isPending) {
-    return <main className="session-status" role="status">Memeriksa sesi…</main>;
+    return <main className="session-status session-status--loading"><Brand to="/login" /><span className="loading-inline loading-inline--page" role="status"><span className="ui-spinner" aria-hidden="true" />Memeriksa sesi</span></main>;
   }
   if (session.isError) {
     return (

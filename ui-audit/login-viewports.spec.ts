@@ -22,7 +22,7 @@ for (const portal of ['login', 'superadmin']) test(`${portal}__short-and-wide-vi
     }
     write.set(0);
     await page.getByRole('button', { name: 'Masuk', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Sedang masuk…' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Sedang masuk' })).toBeDisabled();
     await capture(page, info, `${portal}__${width}x${height}-submitting`);
     await write.release(401, { message: 'Kredensial tidak sesuai.' });
     await expect(page.getByRole('alert')).toBeVisible();

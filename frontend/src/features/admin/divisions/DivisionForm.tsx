@@ -78,7 +78,7 @@ export function DivisionForm({ division, onArchive }: { division?: AdminDivision
       {!archived && (
         <div className="mgmt-actions">
           <button className="mgmt-button mgmt-primary" type="submit" disabled={mutation.isPending}>
-            {mutation.isPending ? 'Menyimpan…' : saveFailed ? 'Coba simpan lagi' : division ? 'Simpan perubahan' : 'Simpan divisi'}
+            {mutation.isPending ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Menyimpan</span> : saveFailed ? 'Coba simpan lagi' : division ? 'Simpan perubahan' : 'Simpan divisi'}
           </button>
           {!division ? <Link className="mgmt-button mgmt-outline" to="/admin/divisions">Batal</Link> : saveFailed ? (
             <button className="mgmt-button mgmt-outline" type="button" onClick={reset}>Batal</button>

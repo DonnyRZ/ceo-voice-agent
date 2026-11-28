@@ -60,6 +60,8 @@ try {
             public.retire_registration_draft(text),
             public.registration_rejection_reason(text, uuid, text),
             public.registration_requires_original_browser(text, text),
+            public.registration_verification_context(text, text),
+            public.confirm_registration_with_password(text, text, text, text, text),
             public.complete_member_registration(text, text, text), public.registration_resume_candidates(text),
             public.resume_member_registration(uuid, text, text, text), public.registration_onboarding(text),
             public.save_registration_step(text, text),

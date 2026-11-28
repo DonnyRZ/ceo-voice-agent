@@ -27,10 +27,16 @@ for(const knownMobile of [false,true]) test(`unfinished legacy account recovers 
     const link=await verificationLink(old.email);
     await page.goto(link);
     await page.getByRole('button',{name:'Verifikasi email',exact:true}).click();
-    await expect(page.getByRole('alert')).toContainText('browser tempat Anda meminta pemulihan');
-    await capture(page,info,'legacy-recovery__other-browser-blocked');
-    await claimant.goto(link);
-    await claimant.getByRole('button',{name:'Verifikasi email',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'Konfirmasi pendaftaran',exact:true})).toBeVisible();
+    await capture(page,info,'legacy-recovery__cross-browser-password');
+    await page.getByLabel('Kata sandi pendaftaran',{exact:true}).fill('wrong-recovery-password');
+    await page.getByRole('button',{name:'Verifikasi dan lanjutkan',exact:true}).click();
+    await expect(page.getByRole('alert')).toContainText('Kata sandi pendaftaran belum cocok');
+    await page.getByLabel('Kata sandi pendaftaran',{exact:true}).fill(newPassword);
+    await page.getByRole('button',{name:'Verifikasi dan lanjutkan',exact:true}).click();
+    await expect(page.getByRole('heading',{name:/^(Email terverifikasi|Registrasi selesai)$/})).toBeVisible();
+    await capture(page,info,'legacy-recovery__cross-browser-verified');
+    await claimant.goto(new URL('/register/check-email',base).href);
     const mobile=knownMobile||info.project.name==='mobile';
     if(mobile) {
       await expect(claimant.getByRole('heading',{name:'Email Anda sudah terverifikasi.',exact:true})).toBeVisible();

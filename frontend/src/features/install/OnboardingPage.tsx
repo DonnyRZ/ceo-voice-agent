@@ -45,14 +45,14 @@ export function OnboardingPage() {
   return <RegistrationShell step={registration?.completed ? 5 : step === 'device' ? 3 : 4} flow="mobile" title={title}
     subtitle={step === 'device' ? 'Di perangkat apa Anda akan menggunakan Ruang Kerja?'
       : android && installation.phase === 'installed' ? 'Ruang Kerja terpasang di perangkat Anda.' : step === 'android-wait' && !waiting ? 'Periksa hasil pemasangan atau kembali ke panduan.' : iphone ? 'Ikuti panduan melalui Safari.' : step === 'done' ? 'Buka Ruang Kerja melalui ikon aplikasi.' : 'Selesaikan konfirmasi di browser Anda.'}>
-    {current.isPending ? <section className="registration-card" role="status">Memeriksa pendaftaran…</section>
+    {current.isPending ? <section className="registration-card" role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memeriksa pendaftaran</span></section>
       : current.error ? <section className="registration-card" role="alert">Pendaftaran belum dapat diperiksa.
         <button className="registration-text-action" onClick={() => void current.refetch()}>Coba lagi</button></section>
         : !registration ? <section className="registration-card"><p>Selesaikan data akun terlebih dahulu pada browser ini.</p>
           <Link className="ui-button" to="/register">Data akun</Link></section> : <>
           {isStandalone() ? <section className="registration-card"><h2>Aplikasi sudah terbuka</h2>
             <p>Anda menggunakan Ruang Kerja sebagai aplikasi.</p><button className="ui-button" disabled={progress.busy}
-              onClick={() => void progress.complete.mutateAsync('standalone').then(() => { window.location.href='/login'; }).catch(() => {})}>Lanjutkan ke Masuk</button></section>
+              onClick={() => void progress.complete.mutateAsync('standalone').then(() => { window.location.href='/login'; }).catch(() => {})}>{progress.busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Menyelesaikan</span> : 'Lanjutkan ke Masuk'}</button></section>
             : step === 'device' ? <section className="registration-card">
               <div className="install-platforms" role="radiogroup" aria-label="Perangkat">
                 {['Android', 'iPhone'].map((name) => <label key={name}
@@ -64,7 +64,7 @@ export function OnboardingPage() {
               </div>
               <p className="registration-note">Email Anda sudah terverifikasi.</p>
               <div className="registration-actions"><Link className="ui-button ui-button--outline" to="/register/check-email"><ArrowLeft /> Sebelumnya</Link>
-                <button className="ui-button" disabled={!platform || progress.busy} onClick={() => void go(platform === 'Android' ? 'android-install' : 'iphone-share')}>Lanjutkan <ArrowRight /></button></div>
+                <button className="ui-button" disabled={!platform || progress.busy} onClick={() => void go(platform === 'Android' ? 'android-install' : 'iphone-share')}>{progress.busy ? <span className="loading-inline" aria-live="polite"><span className="ui-spinner" aria-hidden="true" />Tunggu</span> : <>Lanjutkan <ArrowRight /></>}</button></div>
             </section> : android ? <AndroidInstall step={step} go={go} complete={() => progress.complete.mutateAsync('android-installed')} busy={progress.busy} />
               : iphone ? <IphoneGuide step={step} go={go} busy={progress.busy} />
                 : <section className="registration-card"><h2>Buka melalui ikon Ruang Kerja</h2>

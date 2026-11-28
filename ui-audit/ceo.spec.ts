@@ -25,7 +25,7 @@ test('ceo-security__validation-server-pending-success', async ({ page }, info) =
   await capture(page, info, 'ceo-security__server-error');
   write.set(0);
   await page.getByRole('button', { name: 'Simpan kata sandi' }).click();
-  await expect(page.getByRole('button', { name: 'Menyimpan…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Menyimpan' })).toBeDisabled();
   await capture(page, info, 'ceo-security__saving');
   await write.release(200, { success: true });
   await expect(page.getByText('Kata sandi berhasil diperbarui. Sesi lain telah dikeluarkan.')).toBeVisible();

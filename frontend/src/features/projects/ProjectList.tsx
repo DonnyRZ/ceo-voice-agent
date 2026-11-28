@@ -35,7 +35,7 @@ export function ProjectList() {
       </div>
       <section className="project-panel project-list" aria-label="Proyek divisi">
         <div className="project-list-title" aria-hidden="true">Proyek</div>
-        {projects.isPending && <p className="project-message" role="status">Memuat proyek…</p>}
+        {projects.isPending && <p className="project-message" role="status"><span className="loading-inline"><span className="ui-spinner" aria-hidden="true" />Memuat proyek</span></p>}
         {projects.isError && <ProjectError retry={() => void projects.refetch()}>Daftar proyek belum berhasil dimuat.</ProjectError>}
         {projects.isSuccess && visibleProjects?.length === 0 && (
           <p className="project-message" role="status">{filter ? 'Proyek tidak ditemukan' : 'Belum ada proyek di divisi ini.'}</p>

@@ -1,0 +1,9 @@
+.loading-inline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; vertical-align: middle; }
+.ui-spinner { display: inline-block; width: 20px; height: 20px; flex: none; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: ui-loading-spin .8s linear infinite; }
+.loading-inline--page { flex-direction: column; gap: 16px; }
+.loading-inline--page .ui-spinner { width: 32px; height: 32px; border-width: 3px; color: var(--teal); }
+.session-status--loading { position: relative; }
+.session-status--loading > .brand { position: absolute; top: 24px; left: 32px; width: var(--brand-width); }
+@media (max-width: 767px) { .session-status--loading > .brand { left: 50%; transform: translateX(-50%); } }
+@keyframes ui-loading-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ui-spinner { animation-duration: 2s; } }

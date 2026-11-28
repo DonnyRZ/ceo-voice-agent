@@ -32,7 +32,7 @@ test('registration__validation-submit-error-and-navigation', async ({ page }, in
   }
   save.set(0);
   await page.getByRole('button', { name: 'Simpan dan lanjut', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Menyimpan…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Menyimpan' })).toBeDisabled();
   await capture(page, info, 'registration__submitting');
   fixture.overrides.set('/api/registration/status', { registration });
   await save.release(201, { registration: { ...registration, delivery: 'not_sent', origin_device: info.project.name === 'mobile' ? 'mobile' : 'desktop' } });
@@ -52,7 +52,7 @@ test('registration__email-pending-delivery-failed-resend-and-verified', async ({
   await capture(page, info, 'registration__resend-throttled');
   resend.set(0);
   await page.getByRole('button', { name: 'Kirim ulang email' }).click();
-  await expect(page.getByRole('button', { name: 'Mengirim…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Mengirim' })).toBeDisabled();
   await capture(page, info, 'registration__resending');
   fixture.overrides.set('/api/registration/status', { registration });
   await resend.release(200, { delivery: 'sent', registration });
@@ -68,7 +68,7 @@ test('registration__verify-error-pending-and-success', async ({ page }, info) =>
   await capture(page, info, 'registration__verify-error');
   verify.set(0);
   await page.getByRole('button', { name: 'Verifikasi email', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Memverifikasi…' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Memverifikasi' })).toBeDisabled();
   await capture(page, info, 'registration__verifying');
   await verify.release(200, { email: registration.email, origin_device: 'mobile', same_browser: false, registration: null });
   await expect(page.getByRole('heading', { name: 'Email terverifikasi', exact: true })).toBeVisible();

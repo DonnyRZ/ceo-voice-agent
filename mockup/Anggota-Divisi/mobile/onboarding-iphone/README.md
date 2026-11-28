@@ -23,8 +23,10 @@ Alur yang disetujui: Login → Daftar → simpan data akun → kirim/verifikasi 
 - Sudah ditambahkan adalah konfirmasi pengguna untuk melanjutkan panduan, bukan bukti teknis pemasangan. Jangan mengklaim otomatis mendeteksi sukses berdasarkan klik tersebut.
 - iPhone tidak memakai layar loading unduhan atau janji redirect otomatis. Pengguna kembali ke Layar Utama dan membuka ikon aplikasi secara manual. Jika sesi tidak terbawa, pengguna masuk kembali; rincian pemulihan sesi perlu diuji saat implementasi.
 - Tombol Selesai menutup panduan. Status aplikasi terpasang hanya boleh dipastikan melalui bukti yang tersedia, misalnya saat aplikasi benar-benar dibuka dalam mode standalone; jangan menyamakan penyelesaian panduan dengan keberhasilan pemasangan.
-- Akun aktif setelah verifikasi email perusahaan pada divisi yang dipilih. Menyelesaikan panduan pemasangan tidak memberikan akses ke data divisi.
+- Akun mobile aktif hanya setelah email perusahaan terverifikasi dan tahap akhir panduan selesai. Verifikasi email saja tidak memberikan akses data divisi.
 
 Gaya visual mengikuti teal/mint, logo, navigasi langkah, dan kategori ukuran pada rancangan Android. Ukuran implementasi mengikuti [standar UI](../../../../docs/ui-consistency.md), bukan ukuran piksel raster ImageGen. Indikator keempat tahap telah diselaraskan dengan revisi verifikasi email; isi panduan Safari tetap dipertahankan.
 
 Verifikasi email wajib diselesaikan sebelum halaman pilihan perangkat. Lihat [mockup langkah verifikasi](../registration-verification/README.md).
+
+Keadaan penyimpanan langkah memakai [spinner dan label Tunggu](06-menyimpan-langkah.png), dibuat dengan ImageGen sebelum rilis revisi loading. Navigasi tetap sejajar; label singkat tidak terbelah pada mobile kecil.
