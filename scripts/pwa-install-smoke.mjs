@@ -51,7 +51,12 @@ try {
   await app.close();
   await page.route('**/api/registration/status', (route) => route.fulfill({ json: { registration: {
     name: 'Native installation fixture', email: 'fixture@egiresources.com', division_id: 'fixture', verified: true, delivery: 'sent',
-    origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4,
+    origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4, completed: false, step: 'android-install',
+  } } }));
+  // This fixture isolates native installation/opening. Real account activation is tested end-to-end separately.
+  await page.route('**/api/registration/complete', (route) => route.fulfill({ json: { registration: {
+    name:'Native installation fixture',email:'fixture@egiresources.com',division_id:'fixture',verified:true,
+    origin_device:'mobile',retry_after_seconds:0,sends_remaining:4,completed:true,step:'done',delivery:'sent',
   } } }));
   await page.goto(origin + '/onboarding?step=android-install');
   await page.getByRole('link', { name: 'Buka Ruang Kerja', exact: true }).waitFor();

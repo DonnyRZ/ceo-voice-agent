@@ -2,7 +2,9 @@ import { ArrowLeft, Check, Download, ExternalLink, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { leaveInstallWait, requestInstall, retryInstallCheck, useInstallation } from './controller';
 
-export function AndroidInstall({ step, go }: { step: string; go: (step: string) => void }) {
+export function AndroidInstall({ step, go, complete, busy }: {
+  step: string; go: (step: string) => void; complete: () => Promise<unknown>; busy: boolean;
+}) {
   const installation = useInstallation();
   useEffect(() => () => leaveInstallWait(), []);
   const [manual, setManual] = useState(false);
@@ -10,11 +12,22 @@ export function AndroidInstall({ step, go }: { step: string; go: (step: string) 
   const installed = installation.phase === 'installed';
   const showWait = step === 'android-wait' && !installed;
   function back() { leaveInstallWait(); go('android-install'); }
+  function openInstalled(event: import('react').MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const opening = window.open('about:blank', '_blank');
+    if (opening) opening.opener = null;
+    void complete().then(() => {
+      if (opening) opening.location.replace('/launch?source=onboarding');
+      else window.location.assign('/launch?source=onboarding');
+    }).catch(() => opening?.close());
+  }
   if (installed) return <section className="registration-card install-centered">
     <div className="install-app"><img className="install-app-icon" src="/pwa/icon-512.png" alt="Ruang Kerja" />
       <Check className="install-confirmed" aria-label="Pemasangan terdeteksi" /></div>
     <h2>Ruang Kerja</h2><p>Ruang Kerja telah terdeteksi terpasang pada perangkat ini.</p>
-    <a className="ui-button install-wide" href="/launch?source=onboarding" target="_blank" rel="noopener">
+    <a className="ui-button install-wide" href="/launch?source=onboarding" target="_blank" rel="noopener" aria-disabled={busy}
+      onClick={openInstalled}>
       Buka Ruang Kerja <ExternalLink /></a>
     <p className="registration-caption">Jika tetap terbuka di browser, ketuk ikon Ruang Kerja di layar utama.</p>
     <button className="registration-text-action" onClick={() => setManual(!manual)}>Lihat cara membuka</button>

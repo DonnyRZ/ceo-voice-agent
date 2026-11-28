@@ -41,7 +41,7 @@ function VerificationForm({ token }: { token: string }) {
   const invalid = !token || (verify.error instanceof ApiError && verify.error.status === 400);
   return <RegistrationShell joined showSteps={false} icon={invalid ? CircleAlert : Mail}
     title={invalid ? 'Tautan tidak berlaku' : 'Konfirmasi email Anda'}
-    subtitle={invalid ? 'Gunakan email verifikasi terbaru.' : 'Aktifkan akun Anggota Divisi Anda.'}>
+    subtitle={invalid ? 'Gunakan email verifikasi terbaru.' : 'Verifikasi email perusahaan Anda.'}>
     <section className="registration-card registration-email-card">
       {invalid ? <><p>Tautan sudah digunakan, kedaluwarsa, atau tidak lengkap.</p>
         <p className="registration-note">Kembali ke browser tempat Anda mendaftar untuk memeriksa status atau mengirim ulang email.</p>

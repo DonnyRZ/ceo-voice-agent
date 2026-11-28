@@ -17,7 +17,7 @@ export function registrationEmail(verificationUrl: string) {
 <hr style="border:0;border-top:1px solid #cbe8e1;margin:0 0 24px">
 <h1 style="font-size:32px;line-height:1.3;margin:0 0 20px;color:#102629">Verifikasi email Anda</h1>
 <p>Terima kasih sudah mendaftar sebagai Anggota Divisi.</p>
-<p>Tekan tombol berikut untuk memverifikasi email perusahaan dan mengaktifkan akun Anda.</p>
+<p>Tekan tombol berikut untuk memverifikasi email perusahaan dan melanjutkan pendaftaran Anda.</p>
 <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:24px auto"><tr>
 <td bgcolor="#00675c" style="border-radius:10px;text-align:center"><a href="${link}" style="display:inline-block;padding:14px 28px;min-height:20px;color:#fff;text-decoration:none;font-size:16px;font-weight:bold">Verifikasi email</a></td>
 </tr></table>

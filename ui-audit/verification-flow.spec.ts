@@ -6,7 +6,7 @@ import { mockScreen } from './fixture';
 import { mutation } from './mutations';
 
 const base = { name: 'Anggota QA', email: 'anggota@egiresources.com', division_id: 'division-1',
-  verified: false, delivery: 'not_sent', retry_after_seconds: 0, sends_remaining: 5 };
+  verified: false, delivery: 'not_sent', retry_after_seconds: 0, sends_remaining: 5, completed: false, step: 'verify' };
 
 for (const origin of ['desktop', 'mobile'] as const) {
   test('verification-flow__' + origin + '-origin-states', async ({ page }, info) => {
@@ -14,7 +14,7 @@ for (const origin of ['desktop', 'mobile'] as const) {
     const registration = { ...base, origin_device: origin };
     for (const state of ['not_sent', 'sending', 'sent', 'failed', 'verified', 'limit'] as const) {
       fixture.overrides.set('/api/registration/status', { registration: { ...registration,
-        verified: state === 'verified', delivery: state === 'not_sent' ? 'not_sent' : state === 'sending' ? 'pending' : state === 'failed' ? 'failed' : 'sent',
+        verified: state === 'verified', completed: state === 'verified' && origin === 'desktop', step: state === 'verified' ? origin === 'desktop' ? 'done' : 'device' : 'verify', delivery: state === 'not_sent' ? 'not_sent' : state === 'sending' ? 'pending' : state === 'failed' ? 'failed' : 'sent',
         retry_after_seconds: ['sending', 'sent'].includes(state) ? 60 : 0, sends_remaining: state === 'limit' ? 0 : 4 } });
       await page.goto('/register/check-email');
       const heading = state === 'verified' ? origin === 'mobile' ? 'Email terverifikasi' : 'Registrasi selesai'
@@ -44,9 +44,9 @@ test('verification-flow__email-destination-and-owner-resume', async ({ page }, i
     if (origin === 'mobile') await expect(page.getByRole('link', { name: 'Masuk ke Ruang Kerja', exact: true })).toHaveCount(0);
   }
   for (const origin of ['mobile', 'desktop'] as const) {
-    fixture.overrides.set('/api/registration/status', { registration: { ...base, origin_device: origin, verified: true, delivery: 'sent' } });
+    fixture.overrides.set('/api/registration/status', { registration: { ...base, origin_device: origin, verified: true, delivery: 'sent', completed: origin === 'desktop', step: origin === 'desktop' ? 'done' : 'device' } });
     confirm.set(200, { email: base.email, origin_device: origin, same_browser: true,
-      registration: { ...base, origin_device: origin, verified: true, delivery: 'sent' } });
+      registration: { ...base, origin_device: origin, verified: true, delivery: 'sent', completed: origin === 'desktop', step: origin === 'desktop' ? 'done' : 'device' } });
     await page.goto('/register/verify#token=' + 'e'.repeat(64));
     await page.getByRole('button', { name: 'Verifikasi email', exact: true }).click();
     await expect(page).toHaveURL(/\/register\/check-email$/);

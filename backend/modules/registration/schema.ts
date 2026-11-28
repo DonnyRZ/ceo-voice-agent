@@ -9,5 +9,8 @@ export const registrationInput = z.object({
 }).strict();
 
 export const verificationInput = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
+export const progressInput = z.object({ step: z.enum(['device','android-install','android-wait','iphone-share','iphone-add','iphone-open']) }).strict();
+export const completionInput = z.object({ method: z.enum(['android-installed','standalone','iphone-confirmed']) }).strict();
 export type RegistrationStatus = { name: string; email: string; division_id: string; verified: boolean; delivery: string;
-  origin_device: 'mobile' | 'desktop' | null; resend_after: string | null; sends_remaining: number };
+  origin_device: 'mobile' | 'desktop' | null; resend_after: string | null; sends_remaining: number;
+  completed: boolean; step: string };

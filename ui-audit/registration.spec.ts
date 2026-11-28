@@ -3,7 +3,7 @@ import { capture } from './capture';
 import { mockScreen } from './fixture';
 import { mutation } from './mutations';
 
-const registration = { name: 'Anggota QA', email: 'anggota@egiresources.com', division_id: 'division-1', verified: false, delivery: 'sent', origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4 };
+const registration = { name: 'Anggota QA', email: 'anggota@egiresources.com', division_id: 'division-1', verified: false, delivery: 'sent', origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4, completed: false, step: 'verify' };
 async function fill(page: import('@playwright/test').Page) {
   await page.getByLabel('Nama lengkap', { exact: true }).fill('Anggota QA');
   await page.getByLabel('Email perusahaan', { exact: true }).fill('anggota@egiresources.com');
@@ -103,7 +103,8 @@ test('onboarding__native-event-states-and-installed-opening', async ({ page }, i
         ? [{ platform: 'webapp', url: location.origin + '/manifest.webmanifest', id: location.origin + '/' }] : [],
     });
   });
-  await mockScreen(page, 'public');
+  const fixture = await mockScreen(page, 'public');
+  fixture.overrides.set('/api/registration/status',{registration:{...registration,verified:true,step:'android-install'}});
   await page.goto('/onboarding?step=android-install');
   async function prompt(outcome: 'accepted' | 'dismissed', failure = false) {
     await page.evaluate(({ outcome, failure }) => {
@@ -141,6 +142,7 @@ test('onboarding__native-event-states-and-installed-opening', async ({ page }, i
 });
 
 test('onboarding__standalone-session-error-and-retry', async ({ page }, info) => {
+  await page.route('**/api/registration/status', (route) => route.fulfill({json:{registration:null}}));
   await page.addInitScript(() => Object.defineProperty(navigator, 'standalone', { configurable: true, value: true }));
   await page.route('**/api/session', (route) => route.fulfill({ status: 503, json: { message: 'Offline fixture' } }));
   await page.goto('/launch');

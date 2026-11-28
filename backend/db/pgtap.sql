@@ -6,7 +6,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(95);
+SELECT plan(102);
 
 INSERT INTO public."user" (id, name, email) VALUES
     ('pgtap-member-it', 'Anggota IT pgTAP', 'pgtap-it@example.test'),
@@ -322,6 +322,7 @@ SELECT ok(NOT has_function_privilege('public', 'public.verify_member_registratio
 SELECT ok(public.save_member_registration('pgtap-register@egiresources.com', 'Registrasi pgTAP',
     '10000000-0000-4000-8000-000000000001', 'test-only-credential-hash', repeat('a',64), repeat('b',64)) IS NOT NULL,
     'Pendaftaran hanya menyimpan permintaan sampai email diverifikasi');
+SELECT public.capture_registration_origin(repeat('b',64),'desktop');
 SELECT ok(public.registration_rate_allowed(repeat('c',64), 1, 600), 'Percobaan pertama diizinkan');
 SELECT ok(NOT public.registration_rate_allowed(repeat('c',64), 1, 600), 'Bucket bersama membatasi percobaan berikutnya');
 SELECT is(public.verify_member_registration(repeat('a',64), 'pgtap-self-register', 'pgtap-self-credential'),
@@ -356,6 +357,21 @@ SELECT is((SELECT same_browser FROM public.confirm_member_registration(repeat('d
     'Konfirmasi hanya mengembalikan status browser asal untuk klaim yang benar');
 SELECT is((SELECT origin_device FROM public.registration_context(repeat('e',64))), 'mobile',
     'Konteks perangkat tetap tersedia sesudah verifikasi');
+SELECT ok(NOT has_function_privilege('public','public.complete_member_registration(text,text,text)','EXECUTE'),
+    'Penyelesaian registrasi bukan hak PUBLIC');
+RESET ROLE;
+SELECT is((SELECT count(*) FROM public."user" WHERE email='pgtap-context@egiresources.com'),0::bigint,
+    'Verifikasi mobile tidak membuat akun sebelum onboarding selesai');
+SET ROLE :"app_role";
+SELECT is(public.complete_member_registration(repeat('e',64),'pgtap-context-user','pgtap-context-account'),NULL::text,
+    'Aktivasi mobile ditolak sebelum tahap akhir pemasangan');
+SELECT ok(NOT public.save_registration_step(repeat('f',64),'iphone-open'),
+    'Browser lain tidak dapat mengubah progres');
+SELECT ok(public.save_registration_step(repeat('e',64),'iphone-open'),'Tahap tersimpan pada server');
+SELECT is(public.complete_member_registration(repeat('e',64),'pgtap-context-user','pgtap-context-account'),
+    'pgtap-context@egiresources.com','Akun dibuat setelah tahap akhir selesai');
+SELECT is((SELECT completed FROM public.registration_onboarding(repeat('e',64))),true,
+    'Progres membedakan selesai dari email terverifikasi');
 SELECT ok(NOT has_function_privilege('public', 'public.retire_registration_draft(text)', 'EXECUTE'),
     'Penggantian draft bukan hak PUBLIC');
 SELECT public.retire_registration_draft(repeat('e',64));

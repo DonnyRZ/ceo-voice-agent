@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { api, ApiError } from '../../shared/api';
 import { registrationQuery, type Registration } from './api';
 import { RegistrationShell } from './RegistrationShell';
+import { clearRegistrationDraft } from './draft';
 
 export function RegistrationEmailPage() {
   const current = useQuery(registrationQuery);
@@ -17,21 +18,22 @@ export function RegistrationEmailPage() {
     onError: () => { void client.invalidateQueries({ queryKey: registrationQuery.queryKey }); },
   });
   const registration = current.data?.registration;
-  const mobile = registration?.origin_device === 'mobile';
+  const mobile = !!registration && registration.origin_device !== 'desktop';
+  const completed = registration?.completed === true;
   const verified = registration?.verified === true;
+  useEffect(() => { if (registration?.completed) clearRegistrationDraft(); }, [registration?.completed]);
   const sent = registration?.delivery === 'sent';
   const failed = registration?.delivery === 'failed';
   const seconds = Math.max(0, Math.ceil((registration?.retry_after_seconds ?? 0) - Math.max(0, now - current.dataUpdatedAt) / 1000));
   const sending = send.isPending || (registration?.delivery === 'pending' && seconds > 0);
-  const finishedDesktop = verified && registration.origin_device === 'desktop';
-  const title = finishedDesktop ? 'Registrasi selesai' : verified ? 'Email terverifikasi'
+  const title = completed ? 'Registrasi selesai' : verified ? 'Email terverifikasi'
     : failed ? 'Email belum terkirim' : sent ? 'Periksa email Anda' : 'Verifikasi email';
-  return <RegistrationShell step={verified ? 3 : 2} flow={mobile ? 'mobile' : 'desktop'} joined showSteps={!!registration?.origin_device}
+  return <RegistrationShell step={completed ? 5 : verified ? 3 : 2} flow={mobile ? 'mobile' : 'desktop'} joined showSteps={!!registration?.origin_device}
     icon={verified ? Check : Mail} title={title}
-    subtitle={finishedDesktop ? 'Email perusahaan Anda sudah terverifikasi.'
+    subtitle={completed ? 'Email perusahaan Anda sudah terverifikasi.'
       : verified ? mobile ? 'Lanjutkan untuk menyiapkan aplikasi di HP Anda.' : 'Kembali ke browser tempat Anda mendaftar.'
         : failed ? 'Data akun tersimpan. Coba kirim email kembali.'
-          : sent ? 'Tautan verifikasi sudah dikirim.' : 'Satu langkah lagi untuk mengaktifkan akun Anda.'}>
+          : sent ? 'Tautan verifikasi sudah dikirim.' : mobile ? 'Verifikasi email sebelum menyiapkan aplikasi.' : 'Satu langkah lagi untuk mengaktifkan akun Anda.'}>
     <section className="registration-card registration-email-card">
       {current.isPending ? <p role="status">Memeriksa pendaftaran…</p>
         : current.error ? <><p role="alert">Pendaftaran belum dapat diperiksa.</p>
@@ -40,11 +42,11 @@ export function RegistrationEmailPage() {
             <Link className="ui-button" to="/register">Daftar kembali</Link></>
             : verified ? <>
               <div className="registration-verified"><span className="registration-status-icon"><Check aria-hidden="true" /></span>
-                <div><h2>Akun {mobile ? 'Anda' : 'Anggota Divisi Anda'} sudah aktif.</h2>
-                  <p>{mobile ? 'Proses penyiapan aplikasi belum selesai.' : 'Masuk menggunakan email dan kata sandi yang Anda daftarkan.'}</p></div></div>
-              {mobile && <p className="registration-note"><strong>Berikutnya:</strong> pilih Android atau iPhone, lalu ikuti panduan pemasangan.</p>}
-              <Link className="ui-button registration-wide" to={mobile ? '/onboarding' : '/login'}>
-                {mobile ? <>Lanjutkan <ArrowRight /></> : 'Masuk ke Ruang Kerja'}</Link>
+                <div><h2>{completed ? 'Akun Anggota Divisi Anda sudah aktif.' : 'Email Anda sudah terverifikasi.'}</h2>
+                  <p>{completed ? 'Masuk menggunakan email dan kata sandi yang Anda daftarkan.' : 'Proses penyiapan aplikasi belum selesai.'}</p></div></div>
+              {!completed && <p className="registration-note"><strong>Berikutnya:</strong> pilih Android atau iPhone, lalu ikuti panduan pemasangan.</p>}
+              <Link className="ui-button registration-wide" to={completed ? '/login' : '/onboarding'}>
+                {completed ? 'Masuk ke Ruang Kerja' : <>Lanjutkan <ArrowRight /></>}</Link>
             </> : <>
               <div className="registration-address"><span className="registration-status-icon"><Mail aria-hidden="true" /></span>
                 <div><strong>Email perusahaan</strong><p>{registration.email}</p></div></div>
@@ -60,9 +62,9 @@ export function RegistrationEmailPage() {
                 : seconds > 0 ? `Tersedia kembali dalam ${seconds} detik.` : 'Tautan berlaku 24 jam.'}</p>
               {send.error && <p className="auth-error" role="alert">{send.error instanceof ApiError ? send.error.message : 'Koneksi gagal. Periksa status sebelum mencoba kembali.'}</p>}
               {mobile ? <><button className="ui-button registration-wide" disabled>Lanjutkan</button>
-                <p className="registration-caption registration-next">Aktif setelah email terverifikasi.</p></>
+                <p className="registration-caption registration-next">Tombol Lanjutkan aktif setelah email terverifikasi.</p></>
                 : <p className="registration-caption registration-next">Registrasi selesai setelah email terverifikasi.</p>}
-              <Link className="ui-button ui-button--outline registration-wide" to="/register">Sebelumnya</Link>
+              <Link className="ui-button ui-button--outline registration-wide" to="/register?edit=1">Sebelumnya</Link>
             </>}
     </section>
   </RegistrationShell>;
