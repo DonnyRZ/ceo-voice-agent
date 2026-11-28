@@ -21,6 +21,7 @@ function NotFound({ home = '/' }: { home?: string }) {
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  { path: '/superadmin', lazy: async () => ({ Component: (await import('../features/auth/SuperadminLoginPage')).SuperadminLoginPage }) },
   { path: '/activate', element: <ActivationPage /> },
   {
     element: <RequireSession role="ceo" />,

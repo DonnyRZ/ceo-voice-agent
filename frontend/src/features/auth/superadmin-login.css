@@ -1,0 +1,69 @@
+.superadmin-login {
+  min-height: 100svh;
+  padding: 30px clamp(24px, 4.8vw, 80px) 28px;
+  background: linear-gradient(130deg, #f1f6f5, #edf5f4);
+}
+.superadmin-login-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  max-width: 1440px;
+  margin-inline: auto;
+}
+.superadmin-login-header .brand { width: clamp(220px, 23vw, 350px); }
+.superadmin-portal { display: flex; align-items: center; gap: 13px; font-size: 20px; font-weight: 550; }
+.superadmin-portal svg { width: 32px; height: 32px; color: #075c53; stroke-width: 1.6; }
+.superadmin-login-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 1320px;
+  margin: clamp(45px, 5vw, 80px) auto 38px;
+  border-radius: 32px;
+  overflow: hidden;
+  background: white;
+}
+.superadmin-login-intro { padding: clamp(40px, 5vw, 76px) clamp(32px, 4.6vw, 70px); background: #075c53; color: white; }
+.superadmin-login-eyebrow { display: flex; align-items: center; gap: 17px; font-size: 14px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase; }
+.superadmin-login-eyebrow svg { width: 35px; height: 35px; flex: none; }
+.superadmin-login-intro h2 { margin: 28px 0 23px; font-size: clamp(32px, 3.4vw, 50px); line-height: 1.23; font-weight: 740; letter-spacing: -.03em; }
+.superadmin-login-intro > p:not(.superadmin-login-eyebrow) { font-size: 21px; line-height: 1.6; color: #e5f2ef; }
+.superadmin-login-intro ul { display: grid; gap: 27px; list-style: none; padding: 0; margin: 42px 0 12px; font-size: 21px; }
+.superadmin-login-intro li { display: flex; gap: 22px; align-items: center; }
+.superadmin-login-intro li svg { width: 34px; height: 34px; flex: none; stroke-width: 1.6; }
+.superadmin-login-content { padding: 34px clamp(30px, 4.3vw, 64px); align-self: center; }
+.superadmin-shield { display: grid; width: 76px; height: 72px; place-items: center; border-radius: 18px; color: #075c53; background: #d9f0eb; }
+.superadmin-shield svg { width: 46px; height: 46px; stroke-width: 1.6; }
+.superadmin-login-heading h1 { margin: 20px 0 8px; font-size: clamp(28px, 2.8vw, 40px); font-weight: 740; letter-spacing: -.035em; line-height: 1.2; }
+.superadmin-login-heading p { margin: 0; color: var(--muted); font-size: 17px; line-height: 1.5; }
+.superadmin-login .auth-form { padding: 0; margin-top: 30px; background: transparent; font-size: 16px; }
+.superadmin-login .auth-input { margin-bottom: 14px; }
+.superadmin-login .auth-input input { min-height: 54px; border-radius: 12px; }
+.superadmin-login .auth-form .ui-button { min-height: 54px; margin-top: 9px; background: #075c53; font-size: 19px; }
+.superadmin-login-note { display: flex; justify-content: center; align-items: center; gap: 7px; margin: 22px 0 12px; font-size: 14px; color: var(--muted); }
+.superadmin-login-note svg { width: 18px; height: 18px; }
+.superadmin-login-back { display: flex; min-height: 44px; justify-content: center; align-items: center; gap: 10px; color: #075c53; font-size: 16px; font-weight: 680; }
+.superadmin-login-back svg { width: 22px; height: 22px; }
+.superadmin-login footer { text-align: center; color: var(--muted); font-size: 15px; }
+@media (max-width: 767px) {
+  .superadmin-login { padding: 28px 20px 24px; }
+  .superadmin-login-header { flex-direction: column; gap: 19px; }
+  .superadmin-login-header .brand { width: 220px; }
+  .superadmin-portal { gap: 10px; font-size: 17px; }
+  .superadmin-portal svg { width: 28px; height: 28px; }
+  .superadmin-login-panel { display: block; max-width: 440px; margin: 28px auto; border-radius: 0; background: transparent; overflow: visible; }
+  .superadmin-login-intro { display: none; }
+  .superadmin-login-content { padding: 0; }
+  .superadmin-login-heading { padding: 20px; border-radius: 23px; background: #d9f0eb; }
+  .superadmin-shield { width: 50px; height: 48px; background: #c4e9df; border-radius: 12px; }
+  .superadmin-shield svg { width: 34px; height: 34px; }
+  .superadmin-login-heading h1 { margin: 17px 0 7px; font-size: 28px; }
+  .superadmin-login-heading p { font-size: 16px; }
+  .superadmin-login-form { margin-top: 18px; padding: 22px; background: white; border-radius: 23px; }
+  .superadmin-login .auth-form { margin: 0; padding: 0; border: 0; border-radius: 0; }
+  .superadmin-login .auth-input { margin-bottom: 15px; }
+  .superadmin-login .auth-input input { font-size: 16px; }
+  .superadmin-login-note { margin-top: 21px; }
+  .superadmin-login-back { font-size: 15px; }
+  .superadmin-login footer { font-size: 13px; }
+}
