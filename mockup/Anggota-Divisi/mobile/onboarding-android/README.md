@@ -1,6 +1,6 @@
 # Onboarding Android — disetujui
 
-Enam gambar terpisah dibuat menggunakan OpenAI ImageGen pada 28 November 2026. Satu gambar berisi satu mockup, bukan gabungan layar. Disetujui pemilik pada 28 November 2026; lihat [implementasi registrasi](../../../../docs/member-registration.md). Desktop tetap memakai [rancangan sebelumnya](../../desktop/15-registrasi.png).
+Enam gambar terpisah dibuat menggunakan OpenAI ImageGen pada 28 November 2026. Satu gambar berisi satu mockup, bukan gabungan layar. Disetujui pemilik pada 28 November 2026; lihat [implementasi registrasi](../../../../docs/member-registration.md). Desktop memakai [rancangan yang diperbarui](../../desktop/15-registrasi.png).
 
 | Urutan | Layar | Gambar |
 | --- | --- | --- |
@@ -11,9 +11,9 @@ Enam gambar terpisah dibuat menggunakan OpenAI ImageGen pada 28 November 2026. S
 | 4 | Menunggu hasil pemasangan | [Menunggu pemasangan](04-menunggu-pemasangan.png) |
 | 5 | Terpasang, buka aplikasi dan petunjuk alternatif | [Aplikasi terpasang](05-aplikasi-terpasang.png) |
 
-Alur yang disetujui: Login → Daftar Anggota Divisi → Simpan dan lanjut → pilih Android → Lanjutkan → Pasang aplikasi → konfirmasi browser → menunggu hasil → buka aplikasi. Tombol Sebelumnya mengembalikan pengguna ke langkah sebelumnya dengan data tetap dipertahankan. Kata sandi tidak dipersistenkan di penyimpanan browser.
+Alur yang disetujui: Login → Daftar Anggota Divisi → Simpan dan lanjut → kirim/verifikasi email → Lanjutkan → pilih Android → Lanjutkan → Pasang aplikasi → konfirmasi browser → menunggu hasil → buka aplikasi. Tombol Sebelumnya mengembalikan pengguna ke langkah sebelumnya dengan data tetap dipertahankan. Kata sandi tidak dipersistenkan di penyimpanan browser.
 
-Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Divisi. Pada data akun, pengguna yang sudah punya akun tetap bisa memilih Masuk. Indikator onboarding memakai tiga langkah: Data akun, Perangkat, Pasang; pemasangan memiliki kondisi siap, menunggu, dan selesai.
+Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Divisi. Pada data akun, pengguna yang sudah punya akun tetap bisa memilih Masuk. Indikator onboarding memakai empat langkah: Data akun, Verifikasi, Perangkat, Pasang; pemasangan memiliki kondisi siap, menunggu, dan selesai.
 
 ## Batas perilaku yang harus dipertahankan
 
@@ -27,3 +27,5 @@ Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Div
 - Akun aktif setelah verifikasi email egiresources.com pada divisi yang dipilih. Pemasangan sendiri tidak memberi akses.
 
 Warna, ikon, dan tipografi mengikuti bahasa desain Ruang Kerja. Ukuran implementasi nantinya mengikuti [standar UI](../../../../docs/ui-consistency.md); ukuran raster ImageGen bukan hasil pengukuran CSS. Status pengujian dan batas browser dicatat pada dokumentasi implementasi.
+
+Verifikasi email wajib diselesaikan sebelum halaman pilihan perangkat. Lihat [mockup langkah verifikasi](../registration-verification/README.md).

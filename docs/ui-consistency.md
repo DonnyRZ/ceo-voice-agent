@@ -75,3 +75,11 @@ Cakupan ini memverifikasi ukuran dan interaksi aplikasi pada viewport yang diseb
 - Login tetap muat pada viewport pendek yang disebutkan di atas. Logo, judul, formulir, tombol, ikon, pilihan perangkat, kartu loading tanpa logo tambahan, dan langkah Safari diperiksa melalui render nyata. Ikon aplikasi pada panduan dan halaman pembuka dibatasi 112 px.
 - Pemeriksaan menemukan dan memperbaiki ikon yang membesar saat halaman pembuka dimuat langsung, judul menunggu yang masih tampil setelah pembatalan, serta teks filter Audit Log yang bertumpuk dengan ikon pada mobile. Pemeriksaan jarak filter meliputi kondisi tersedia, kosong, memuat, dan gagal; regresi Audit Log dijalankan ulang.
 - Bukti fungsional dan batas pemasangan perangkat asli dicatat pada [registrasi Anggota Divisi](member-registration.md). Simulasi event pemasangan dalam audit UI tidak dianggap sebagai bukti pemasangan Android/iPhone asli.
+
+## Revisi verifikasi email, 28 November 2026
+
+- Sebanyak 28 mockup ImageGen menjadi referensi revisi formulir/progres, verifikasi, hasil lintas perangkat, email HTML, dan panduan pemasangan. Ukuran logo 220/180 px, judul 32/28 px, kontrol 48 px, serta kategori ikon tetap mengikuti token seluruh aplikasi.
+- Seluruh 43 rute tercakup dalam 522 kasus UI unik desktop/mobile yang lulus. Setelah disk workspace penuh saat build container lokal, 406 kasus yang sudah lulus dipertahankan; 119 kasus mobile dan lima skenario verifikasi desktop dijalankan kembali, termasuk pemeriksaan ulang status yang berubah. Status Mengirim tidak mengaku email sudah terkirim.
+- Bukti final `test-results/registration-verification-complete/`: 833 capture (410 desktop, 423 mobile), 742 gambar unik. Seluruh capture dan bagian halaman panjang sudah ditinjau; tidak ada hash final yang belum direview. `visual-review.json` menyimpan cakupan kasus, viewport, SHA-256, dan status review.
+- Regresi fungsional aplikasi lulus 104/104. Registrasi pada build produksi lokal lulus 14/14; dua alur email/aktivasi/login desktop/mobile diulang setelah perbaikan status pengiriman dan lulus. Backend 276/276, pgTAP 95/95, frontend 15/15, typecheck dan build lulus.
+- Pemasangan native desktop diverifikasi kembali; Android WebAPK/Safari iPhone asli tetap memerlukan pemeriksaan di staging. Bukti viewport mobile tidak dipakai untuk mengklaim pemasangan pada perangkat asli.

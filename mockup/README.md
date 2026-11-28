@@ -12,11 +12,15 @@ Dibuat dengan OpenAI ImageGen pada 28 November 2026. Seluruh rangkaian desktop, 
 | Mobile Android | [Alur login, registrasi, dan pemasangan](Anggota-Divisi/mobile/onboarding-android/README.md) |
 | Mobile iPhone | [Pilihan perangkat, panduan Safari, dan membuka aplikasi](Anggota-Divisi/mobile/onboarding-iphone/README.md) |
 
-Isi data akun: nama lengkap, email perusahaan, pilihan divisi, kata sandi, dan konfirmasi kata sandi. Desktop mempertahankan tombol Daftar. Mobile direvisi menjadi flow dengan tombol Simpan dan lanjut, pilihan Android/iPhone, serta jalur pemasangan Android. Pilihan divisi direncanakan mengikuti divisi yang dikelola Superadmin. Registrasi mandiri hanya untuk Anggota Divisi; CEO dan Superadmin tetap melalui undangan.
+Isi data akun tetap: nama lengkap, email perusahaan, divisi, kata sandi, dan konfirmasi. Kedua ukuran layar memakai Simpan dan lanjut → verifikasi email. Pengiriman dipicu tombol Kirim email verifikasi; email berisi tombol hyperlink menuju konfirmasi. Desktop selesai setelah verifikasi. HP menunggu verifikasi di browser asal sebelum memilih Android/iPhone dan memasang aplikasi.
 
-Gaya mengikuti login terbaru: teal/mint, latar terang, ikon sederhana, dan tipografi yang tenang. Ukuran implementasi nantinya tetap mengikuti [standar konsistensi UI](../docs/ui-consistency.md), bukan mengambil ukuran piksel mentah dari gambar ImageGen.
+Rancangan revisi menggunakan ImageGen, satu mockup per gambar. Pemilik secara eksplisit mengizinkan implementasi setelah mockup dibuat pada tugas ini. Versi gambar yang digantikan ditimpa pada lokasi kanonis; riwayat tersedia melalui Git.
 
-Mockup mobile formulir tunggal terdahulu digantikan oleh alur onboarding Android/iPhone; riwayatnya tetap tersedia melalui Git. Desktop tidak diubah pada revisi ini. Akun langsung aktif setelah verifikasi email perusahaan pada divisi yang dipilih; domain awal adalah egiresources.com. Ketentuan pemasangan browser dijelaskan pada dokumentasi tiap platform. Mockup menjadi referensi implementasi yang sudah disetujui.
+- [Verifikasi desktop](Anggota-Divisi/desktop/registration-verification/README.md)
+- [Verifikasi mobile dan perpindahan perangkat](Anggota-Divisi/mobile/registration-verification/README.md)
+- [Email verifikasi bertombol](Anggota-Divisi/email/README.md)
+
+Ukuran implementasi mengikuti [standar konsistensi UI](../docs/ui-consistency.md). Akun aktif setelah verifikasi perusahaan; penyelesaian pemasangan merupakan status terpisah.
 
 ## Login Superadmin — dokumentasi yang sudah tersedia
 

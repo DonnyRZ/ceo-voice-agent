@@ -3,7 +3,7 @@ import { capture } from './capture';
 import { mockScreen } from './fixture';
 import { mutation } from './mutations';
 
-const registration = { name: 'Anggota QA', email: 'anggota@egiresources.com', division_id: 'division-1', verified: false, delivery: 'sent' };
+const registration = { name: 'Anggota QA', email: 'anggota@egiresources.com', division_id: 'division-1', verified: false, delivery: 'sent', origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4 };
 async function fill(page: import('@playwright/test').Page) {
   await page.getByLabel('Nama lengkap', { exact: true }).fill('Anggota QA');
   await page.getByLabel('Email perusahaan', { exact: true }).fill('anggota@egiresources.com');
@@ -18,7 +18,7 @@ test('registration__validation-submit-error-and-navigation', async ({ page }, in
   await page.goto('/register');
   await fill(page);
   await page.getByLabel('Konfirmasi kata sandi', { exact: true }).fill('different-password');
-  await page.getByRole('button', { name: /^(Daftar|Simpan dan lanjut)$/ }).click();
+  await page.getByRole('button', { name: 'Simpan dan lanjut', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('Konfirmasi kata sandi belum sama.');
   await capture(page, info, 'registration__password-mismatch');
   await page.getByLabel('Konfirmasi kata sandi', { exact: true }).fill('visual-password-7');
@@ -26,37 +26,37 @@ test('registration__validation-submit-error-and-navigation', async ({ page }, in
   await capture(page, info, 'registration__password-visible');
   for (const status of [400, 409, 429, 503]) {
     save.set(status, { message: status === 400 ? 'Gunakan email perusahaan yang diizinkan.' : 'Pendaftaran belum dapat diproses. Coba lagi.' });
-    await page.getByRole('button', { name: /^(Daftar|Simpan dan lanjut)$/ }).click();
+    await page.getByRole('button', { name: 'Simpan dan lanjut', exact: true }).click();
     await expect(page.getByRole('alert')).toBeVisible();
     await capture(page, info, 'registration__submit-error-' + status);
   }
   save.set(0);
-  await page.getByRole('button', { name: /^(Daftar|Simpan dan lanjut)$/ }).click();
+  await page.getByRole('button', { name: 'Simpan dan lanjut', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Menyimpan…' })).toBeDisabled();
   await capture(page, info, 'registration__submitting');
   fixture.overrides.set('/api/registration/status', { registration });
-  await save.release(201, { delivery: 'sent' });
-  await expect(page).toHaveURL(info.project.name === 'mobile' ? /\/onboarding$/ : /\/register\/check-email$/);
+  await save.release(201, { registration: { ...registration, delivery: 'not_sent', origin_device: info.project.name === 'mobile' ? 'mobile' : 'desktop' } });
+  await expect(page).toHaveURL(/\/register\/check-email$/);
   await capture(page, info, 'registration__saved');
 });
 test('registration__email-pending-delivery-failed-resend-and-verified', async ({ page }, info) => {
   const fixture = await mockScreen(page, 'public');
   fixture.overrides.set('/api/registration/status', { registration: { ...registration, delivery: 'failed' } });
-  const resend = await mutation(page, '/api/registration/resend');
+  const resend = await mutation(page, '/api/registration/send-email');
   await page.goto('/register/check-email');
-  await expect(page.getByText(/Email belum terkirim/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Email belum terkirim', exact: true })).toBeVisible();
   await capture(page, info, 'registration__email-delivery-failed');
   resend.set(429, { message: 'Tunggu minimal satu menit sebelum mengirim ulang.' });
   await page.getByRole('button', { name: 'Kirim ulang email' }).click();
-  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: 'Tunggu minimal satu menit' })).toBeVisible();
   await capture(page, info, 'registration__resend-throttled');
   resend.set(0);
   await page.getByRole('button', { name: 'Kirim ulang email' }).click();
   await expect(page.getByRole('button', { name: 'Mengirim…' })).toBeDisabled();
   await capture(page, info, 'registration__resending');
   fixture.overrides.set('/api/registration/status', { registration });
-  await resend.release(200, { delivery: 'sent' });
-  await expect(page.getByText(/Periksa kotak masuk/)).toBeVisible();
+  await resend.release(200, { delivery: 'sent', registration });
+  await expect(page.getByRole('heading', { name: 'Periksa email Anda' })).toBeVisible();
   await capture(page, info, 'registration__email-pending');
 });
 test('registration__verify-error-pending-and-success', async ({ page }, info) => {
@@ -70,7 +70,7 @@ test('registration__verify-error-pending-and-success', async ({ page }, info) =>
   await page.getByRole('button', { name: 'Verifikasi email', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Memverifikasi…' })).toBeDisabled();
   await capture(page, info, 'registration__verifying');
-  await verify.release(200, { email: registration.email });
+  await verify.release(200, { email: registration.email, origin_device: 'mobile', same_browser: false, registration: null });
   await expect(page.getByRole('heading', { name: 'Email terverifikasi', exact: true })).toBeVisible();
   await capture(page, info, 'registration__verified');
 });

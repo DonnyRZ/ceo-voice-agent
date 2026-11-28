@@ -1,5 +1,7 @@
 # Aturan Frontend
 
+- Sebelum menambahkan halaman, langkah flow, dialog, atau kondisi UI baru yang belum tercakup mockup, beri tahu pemilik kebutuhan dan pengaruhnya pada alur lengkap. Buat mockup dengan ImageGen, satu mockup per gambar, lalu minta persetujuan sebelum implementasi, kecuali pemilik sudah secara eksplisit mengizinkan pembuatan mockup sekaligus implementasi dalam tugas tersebut. Jangan menambahkan UI pelengkap tanpa pemberitahuan hanya karena backend memerlukannya.
+- Untuk onboarding, petakan awal hingga selesai, termasuk pengiriman/verifikasi email, perpindahan perangkat/browser, kondisi menunggu/gagal, dan langkah pemasangan yang relevan. Bedakan email terverifikasi, akun aktif, serta onboarding selesai; jangan menyatakan seluruh alur selesai ketika masih ada langkah pengguna.
 - Untuk ukuran dan pemeriksaan lintas halaman, ikuti [Konsistensi UI](ui-consistency.md). Arahan pengguna tentang konsistensi ukuran dan penghapusan tautan kembali pada login Superadmin menggantikan bagian mockup lama yang bertentangan.
 
 - Gunakan mockup yang sudah disetujui untuk peran dan ukuran layar yang sedang dikerjakan. Untuk Anggota Divisi, ikuti [mockup desktop](../mockup/Anggota-Divisi/desktop/) dan [mockup mobile](../mockup/Anggota-Divisi/mobile/).

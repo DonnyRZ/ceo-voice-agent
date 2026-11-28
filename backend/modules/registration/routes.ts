@@ -6,7 +6,9 @@ import type { AppConfig } from '../../config.js';
 import { ApiError, parseInput } from '../../http/api-error.js';
 import { digest, limitRegistration, newSecret, readClaim, writeClaim } from './claim.js';
 import type { SendRegistration } from './mailer.js';
-import { registrationInput, verificationInput, type RegistrationStatus } from './schema.js';
+import { registrationInput, verificationInput } from './schema.js';
+import { registrationProgress } from './progress.js';
+import { prepareDraft } from './draft.js';
 
 export function registerRegistrationRoutes(
   app: FastifyInstance, pool: Pool, config: AppConfig, send: SendRegistration,
@@ -32,10 +34,7 @@ export function registerRegistrationRoutes(
   app.get('/api/registration/status', async (request) => {
     const claim = readClaim(request, config.APP_ORIGIN);
     if (!claim) return { registration: null };
-    const { rows: [registration] } = await pool.query<RegistrationStatus>(
-      'SELECT * FROM public.registration_status($1)', [digest(claim)],
-    );
-    return { registration: registration ?? null };
+    return { registration: await registrationProgress(pool, digest(claim)) };
   });
 
   app.post('/api/registration', async (request, reply) => {
@@ -46,20 +45,28 @@ export function registerRegistrationRoutes(
     }
     await limitRegistration(pool, request, config.BETTER_AUTH_SECRET, 'register');
     await limitRegistration(pool, request, config.BETTER_AUTH_SECRET, 'email', input.email);
-    const claim = readClaim(request, config.APP_ORIGIN) ?? newSecret();
-    const token = newSecret();
+    let claim = readClaim(request, config.APP_ORIGIN) ?? newSecret();
     const passwordHash = await hashPassword(input.password);
-    const { rows: [saved] } = await pool.query<{ id: string | null }>(
-      'SELECT public.save_member_registration($1, $2, $3, $4, $5, $6) AS id',
-      [input.email, input.name, input.divisionId, passwordHash, digest(token), digest(claim)],
-    );
-    if (!saved.id) throw new ApiError(409, 'Pendaftaran belum dapat diproses. Periksa divisi, gunakan tautan email yang sudah dikirim, atau masuk jika sudah memiliki akun.');
-    writeClaim(reply, claim, config.APP_ORIGIN);
-    const delivery = await deliver(saved.id, input.email, token);
-    return reply.code(201).send({ delivery });
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const draft = await prepareDraft(client, claim, input.email, input.originDevice);
+      claim = draft.claim;
+      const { rows: [saved] } = await client.query<{ id: string | null }>(
+        'SELECT public.save_member_registration($1, $2, $3, $4, $5, $6) AS id',
+        [input.email, input.name, input.divisionId, passwordHash, null, digest(claim)],
+      );
+      if (!saved.id) throw new ApiError(409, 'Pendaftaran belum dapat diproses. Periksa divisi, gunakan browser pendaftaran semula, atau masuk jika sudah memiliki akun.');
+      await client.query('SELECT public.capture_registration_origin($1, $2)', [digest(claim), draft.origin]);
+      const registration = await registrationProgress(client, digest(claim));
+      await client.query('COMMIT');
+      writeClaim(reply, claim, config.APP_ORIGIN);
+      return reply.code(201).send({ registration });
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+    finally { client.release(); }
   });
 
-  app.post('/api/registration/resend', async (request) => {
+  app.post('/api/registration/send-email', async (request) => {
     parseInput(verificationInput.pick({}).strict(), request.body ?? {});
     await limitRegistration(pool, request, config.BETTER_AUTH_SECRET, 'resend');
     const claim = readClaim(request, config.APP_ORIGIN);
@@ -69,16 +76,20 @@ export function registerRegistrationRoutes(
       'SELECT * FROM public.resend_member_registration($1, $2)', [digest(claim), digest(token)],
     );
     if (!registration) throw new ApiError(429, 'Tunggu minimal satu menit sebelum mengirim ulang. Jika tautan kedaluwarsa, daftar kembali.');
-    return { delivery: await deliver(registration.id, registration.email, token) };
+    const delivery = await deliver(registration.id, registration.email, token);
+    return { delivery, registration: await registrationProgress(pool, digest(claim)) };
   });
 
   app.post('/api/registration/verify', async (request) => {
     const { token } = parseInput(verificationInput, request.body);
     await limitRegistration(pool, request, config.BETTER_AUTH_SECRET, 'verify');
-    const { rows: [verified] } = await pool.query<{ email: string | null }>(
-      'SELECT public.verify_member_registration($1, $2, $3) AS email', [digest(token), randomUUID(), randomUUID()],
+    const claim = readClaim(request, config.APP_ORIGIN);
+    const { rows: [verified] } = await pool.query<{ email: string; origin_device: string | null; same_browser: boolean }>(
+      'SELECT * FROM public.confirm_member_registration($1, $2, $3, $4)',
+      [digest(token), randomUUID(), randomUUID(), claim ? digest(claim) : null],
     );
-    if (!verified.email) throw new ApiError(400, 'Tautan tidak berlaku atau sudah digunakan. Periksa email terbaru atau mulai pendaftaran kembali.');
-    return { email: verified.email };
+    if (!verified) throw new ApiError(400, 'Tautan tidak berlaku atau sudah digunakan. Periksa email terbaru atau mulai pendaftaran kembali.');
+    return { ...verified, registration: verified.same_browser && claim
+      ? await registrationProgress(pool, digest(claim)) : null };
   });
 }

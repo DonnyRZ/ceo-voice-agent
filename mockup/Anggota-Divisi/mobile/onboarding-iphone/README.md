@@ -13,7 +13,7 @@ Login dan data akun mengikuti rancangan bersama yang sudah tersedia; gambar yang
 | 4 | Petunjuk konfirmasi penambahan di Safari | [Tambah ke Layar Utama](04-tambah-ke-layar-utama.png) |
 | 5 | Petunjuk membuka ikon aplikasi secara manual | [Buka dari Layar Utama](05-buka-aplikasi.png) |
 
-Alur yang disetujui: Login → Daftar → simpan data akun → pilih iPhone → ikuti panduan Safari → tambahkan ke Layar Utama → buka manual melalui ikon Ruang Kerja. Tombol Sebelumnya dan Lanjutkan berpindah antarhalaman panduan; tombol tersebut tidak menekan menu Safari atau menginstal aplikasi secara otomatis.
+Alur yang disetujui: Login → Daftar → simpan data akun → kirim/verifikasi email → Lanjutkan → pilih iPhone → ikuti panduan Safari → tambahkan ke Layar Utama → buka manual melalui ikon Ruang Kerja. Tombol Sebelumnya dan Lanjutkan berpindah antarhalaman panduan; tombol tersebut tidak menekan menu Safari atau menginstal aplikasi secara otomatis.
 
 ## Perilaku pemasangan
 
@@ -25,4 +25,6 @@ Alur yang disetujui: Login → Daftar → simpan data akun → pilih iPhone → 
 - Tombol Selesai menutup panduan. Status aplikasi terpasang hanya boleh dipastikan melalui bukti yang tersedia, misalnya saat aplikasi benar-benar dibuka dalam mode standalone; jangan menyamakan penyelesaian panduan dengan keberhasilan pemasangan.
 - Akun aktif setelah verifikasi email perusahaan pada divisi yang dipilih. Menyelesaikan panduan pemasangan tidak memberikan akses ke data divisi.
 
-Gaya visual mengikuti teal/mint, logo, navigasi langkah, dan kategori ukuran pada rancangan Android. Ukuran implementasi mengikuti [standar UI](../../../../docs/ui-consistency.md), bukan ukuran piksel raster ImageGen. Mockup desktop dan gambar Android tidak diubah oleh penambahan ini.
+Gaya visual mengikuti teal/mint, logo, navigasi langkah, dan kategori ukuran pada rancangan Android. Ukuran implementasi mengikuti [standar UI](../../../../docs/ui-consistency.md), bukan ukuran piksel raster ImageGen. Indikator keempat tahap telah diselaraskan dengan revisi verifikasi email; isi panduan Safari tetap dipertahankan.
+
+Verifikasi email wajib diselesaikan sebelum halaman pilihan perangkat. Lihat [mockup langkah verifikasi](../registration-verification/README.md).

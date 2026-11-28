@@ -14,8 +14,12 @@ test('registrasi perusahaan, email nyata ke Mailpit, aktivasi, login, dan isolas
   await page.getByLabel('Divisi', { exact: true }).selectOption({ label: 'IT' });
   await page.getByLabel('Kata sandi', { exact: true }).fill(password);
   await page.getByLabel('Konfirmasi kata sandi', { exact: true }).fill(password);
-  await page.getByRole('button', { name: info.project.name === 'mobile' ? 'Simpan dan lanjut' : 'Daftar', exact: true }).click();
-  await expect(page).toHaveURL(info.project.name === 'mobile' ? /\/onboarding$/ : /\/register\/check-email$/);
+  await page.getByRole('button', { name: 'Simpan dan lanjut', exact: true }).click();
+  await expect(page).toHaveURL(/\/register\/check-email$/);
+  await expect(page.getByRole('button', { name: 'Kirim email verifikasi', exact: true })).toBeVisible();
+  if (info.project.name === 'mobile') await expect(page.getByRole('button', { name: 'Lanjutkan', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Kirim email verifikasi', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Periksa email Anda', exact: true })).toBeVisible();
   expect((await page.request.get('/api/session')).status()).toBe(401);
 
   const base = new URL(process.env.E2E_MAILPIT_URL ?? 'http://127.0.0.1:8025');
@@ -27,18 +31,27 @@ test('registrasi perusahaan, email nyata ke Mailpit, aktivasi, login, dan isolas
     messageId = data.messages?.[0]?.ID;
     return Boolean(messageId);
   }).toBe(true);
-  const message = await (await fetch(new URL('/api/v1/message/' + messageId, base))).json() as { Text: string };
+  const message = await (await fetch(new URL('/api/v1/message/' + messageId, base))).json() as { Text: string; HTML: string };
   const link = (message.Text.match(/https?:\/\/[^\s<>]+/g) ?? []).map((url) => new URL(url))
     .find((url) => url.pathname === '/register/verify');
   expect(link).toBeTruthy();
   expect(link!.origin).toBe(new URL(page.url()).origin);
 
-  const verifyPage = await page.context().newPage();
-  await verifyPage.goto(link!.href);
+  expect(message.HTML).toContain('>Verifikasi email</a>');
+  const mailContext = await browser.newContext({ viewport: info.project.name === 'mobile' ? { width: 1440, height: 900 } : { width: 390, height: 844 } });
+  const verifyPage = await mailContext.newPage();
+  await verifyPage.setContent(message.HTML);
+  await verifyPage.getByRole('link', { name: 'Verifikasi email', exact: true }).click();
   await expect(verifyPage).toHaveURL(/\/register\/verify$/); // Secret fragment is removed before interaction.
   await verifyPage.getByRole('button', { name: 'Verifikasi email', exact: true }).click();
-  await expect(verifyPage.getByRole('heading', { name: 'Email terverifikasi', exact: true })).toBeVisible();
-  await verifyPage.close();
+  await expect(verifyPage.getByRole('heading', { name: info.project.name === 'mobile' ? 'Email terverifikasi' : 'Registrasi selesai', exact: true })).toBeVisible();
+  if (info.project.name === 'mobile') await expect(verifyPage.getByRole('heading', { name: 'Kembali ke HP tempat Anda mendaftar', exact: true })).toBeVisible();
+  await mailContext.close();
+  await expect(page.getByRole('heading', { name: info.project.name === 'mobile' ? 'Email terverifikasi' : 'Registrasi selesai', exact: true })).toBeVisible();
+  if (info.project.name === 'mobile') {
+    await page.getByRole('link', { name: 'Lanjutkan', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Pilih perangkat Anda' })).toBeVisible();
+  }
   await page.goto('/login');
   await submitLogin(page, email, password);
   await expect(page.getByRole('heading', { name: 'Dashboard Divisi', exact: true })).toBeVisible();
@@ -55,7 +68,7 @@ test('registrasi perusahaan, email nyata ke Mailpit, aktivasi, login, dan isolas
 
 test('panduan iPhone berjalan berurutan tanpa klaim pemasangan otomatis', async ({ page }) => {
   await page.route('**/api/registration/status', (route) => route.fulfill({ json: { registration: {
-    name: 'Anggota QA', email: 'qa@egiresources.com', division_id: 'it', verified: true, delivery: 'sent',
+    name: 'Anggota QA', email: 'qa@egiresources.com', division_id: 'it', verified: true, delivery: 'sent', origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4,
   } } }));
   await page.goto('/onboarding');
   await page.getByRole('radio', { name: /iPhone/ }).click();

@@ -16,11 +16,11 @@ export function RegistrationPage() {
   const navigate = useNavigate();
   const [validation, setValidation] = useState('');
   const register = useMutation({
-    mutationFn: (input: typeof draft & { password: string }) =>
-      api('/api/registration', { method: 'POST', body: JSON.stringify(input) }),
-    onSuccess: async () => {
-      await client.invalidateQueries({ queryKey: registrationQuery.queryKey });
-      navigate(window.matchMedia('(max-width: 767px)').matches ? '/onboarding' : '/register/check-email');
+    mutationFn: (input: typeof draft & { password: string; originDevice: 'mobile' | 'desktop' }) =>
+      api<{ registration: import('./api').Registration }>('/api/registration', { method: 'POST', body: JSON.stringify(input) }),
+    onSuccess: (data) => {
+      client.setQueryData(registrationQuery.queryKey, data);
+      navigate('/register/check-email');
     },
   });
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -30,16 +30,14 @@ export function RegistrationPage() {
     const password = String(form.get('password'));
     if (password !== form.get('confirm')) { setValidation('Konfirmasi kata sandi belum sama.'); return; }
     draft = { name: String(form.get('name')).trim(), email: String(form.get('email')).trim(), divisionId: String(form.get('divisionId')) };
-    register.mutate({ ...draft, password });
+    register.mutate({ ...draft, password, originDevice: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop' });
   }
   const error = register.error instanceof ApiError ? register.error.message
     : register.error ? 'Koneksi terputus. Coba simpan kembali.' : validation;
   return <RegistrationShell compact title="Daftar Anggota Divisi" subtitle="Lengkapi data akun Anda.">
     <form className="registration-card registration-form" onSubmit={submit}>
       {current.data?.registration && <p className="registration-note">
-        Data akun sudah disimpan. <Link to={current.data.registration.verified ? '/login' : '/onboarding'}>
-          {current.data.registration.verified ? 'Masuk ke akun' : 'Lanjutkan pemasangan'}</Link>
-        {' · '}<Link to="/register/check-email">Verifikasi email</Link>
+        Data akun sudah disimpan. <Link to="/register/check-email">Lanjutkan verifikasi email</Link>
       </p>}
       <div className="registration-field"><label htmlFor="registration-name">Nama lengkap</label>
         <div className="registration-input"><UserRound aria-hidden="true" />
@@ -64,9 +62,9 @@ export function RegistrationPage() {
       <PasswordField disabled={register.isPending} /><PasswordField confirm disabled={register.isPending} />
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button className="ui-button registration-submit" disabled={register.isPending || !divisions.data?.divisions.length}>
-        {register.isPending ? 'Menyimpan…' : <><span className="registration-desktop-label">Daftar</span>
-          <span className="registration-mobile-label">Simpan dan lanjut</span></>}
+        {register.isPending ? 'Menyimpan…' : 'Simpan dan lanjut'}
       </button>
+      <p className="registration-caption registration-next">Berikutnya: verifikasi email perusahaan.</p>
       <p className="registration-login">Sudah punya akun? <Link to="/login">Masuk</Link></p>
     </form>
   </RegistrationShell>;
