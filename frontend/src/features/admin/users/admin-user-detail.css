@@ -1,6 +1,6 @@
 .mgmt-user-identity { margin-bottom: clamp(0.85rem, 1.6vw, 1.6rem); }
 .mgmt-user-identity > div { flex: 1; min-width: 0; }
-.mgmt-user-identity .mgmt-tile { width: clamp(2.55rem, 5.55vw, 5.35rem); }
+.mgmt-user-identity .mgmt-tile { width: var(--tile-size); }
 .mgmt-user-detail-stats { margin-bottom: clamp(0.85rem, 1.6vw, 1.6rem); }
 .mgmt-access-form h2 { margin-bottom: 0.85rem; padding-bottom: 0.95rem; border-bottom: 1px solid #e4eeef; }
 .mgmt-access-form .mgmt-field { grid-template-columns: minmax(5.8rem, 0.2fr) minmax(0, 1fr); align-items: start; gap: clamp(0.65rem, 1.25vw, 1.4rem); }
@@ -10,24 +10,22 @@
 .mgmt-invited-access { display: grid; gap: 0.9rem; }
 .mgmt-invited-assignment { display: flex; align-items: center; gap: 1.25rem; margin-top: 0.95rem; }
 .mgmt-invited-assignment > span { display: inline-flex; align-items: center; gap: 0.65rem; padding-right: 0.75rem; background: #e6f4ef; border-radius: 0.7rem; }
-.mgmt-invited-assignment .mgmt-tile { width: clamp(2rem, 3vw, 3rem); }
+.mgmt-invited-assignment .mgmt-tile { width: var(--tile-size); }
 
 @media (max-width: 767px) {
   .mgmt-user-detail-stats { display: none; }
   .mgmt-user-detail .page-title { max-width: 18rem; }
-  .mgmt-user-identity { min-height: 5.1rem; }
-  .mgmt-user-identity .mgmt-tile { width: 2.65rem; }
-  .mgmt-user-identity .mgmt-badge { font-size: clamp(0.56rem, 2.45vw, 0.76rem); }
-  .mgmt-user-identity p { font-size: 0.76rem; }
-  .mgmt-user-invited { flex-wrap: wrap; }
-  .mgmt-user-invited > .mgmt-badge { margin-left: 3.35rem; }
+  .mgmt-user-identity { display: grid; grid-template-columns: auto minmax(0, 1fr); min-height: 5.1rem; }
+  .mgmt-user-identity .mgmt-tile { width: var(--tile-size); grid-row: 1 / span 2; }
+  .mgmt-user-identity > .mgmt-badge { grid-column: 2; justify-self: start; font-size: var(--font-caption); }
+  .mgmt-user-identity p { font-size: var(--font-body); }
   .mgmt-access-form { padding: 0; background: transparent; }
   .mgmt-access-form > h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .mgmt-access-form .mgmt-form-fields { padding: 0.9rem; border-radius: 0.8rem; background: var(--mgmt-surface); gap: 1.05rem; }
   .mgmt-access-form .mgmt-field { grid-template-columns: minmax(0, 1fr); gap: 0.32rem; }
   .mgmt-access-form .mgmt-field label { padding-top: 0; }
   .mgmt-invited-access .mgmt-panel { padding: 0; background: none; }
-  .mgmt-invited-access h2 { display: none; }
+  .mgmt-invited-access > .mgmt-panel > h2 { display: none; }
   .mgmt-invited-assignment { display: grid; gap: 0.55rem; margin-top: 0; }
   .mgmt-invited-assignment > span { padding: 0.45rem 0.55rem; background: var(--mgmt-surface); }
 }

@@ -1,22 +1,23 @@
 @media (max-width: 767px) {
   .dashboard { gap: clamp(13px, 3.97vw, 18px); }
-  .dashboard-heading { padding-inline: 3px; }
-  .dashboard .page-title { font-size: clamp(25px, 6.64vw, 30px); }
+  .dashboard-heading { padding-inline: 0; }
+  .dashboard .page-title { font-size: var(--font-page); }
   .dashboard-meta {
     display: flex;
-    gap: 0;
+    gap: 8px;
+    flex-wrap: wrap;
     margin-top: clamp(7px, 1.85vw, 10px);
     color: var(--muted);
-    font-size: clamp(15px, 4.18vw, 19px);
+    font-size: var(--font-caption);
     font-weight: 530;
   }
   .dashboard-breadcrumb,
   .dashboard-period svg { display: none; }
-  .dashboard-mobile-division { display: inline; white-space: pre; }
+  .dashboard-mobile-division { display: inline; min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
   .dashboard-period {
     display: inline-flex;
     width: auto;
-    min-height: 0;
+    min-height: var(--control-height);
     padding: 0;
     background: transparent;
     border: none;
@@ -35,24 +36,24 @@
   }
   .dashboard-team-icon, .dashboard-project-icon {
     display: grid;
-    width: clamp(42px, 13.1vw, 58px);
-    aspect-ratio: 1.06;
+    width: var(--tile-size);
+    aspect-ratio: 1;
     flex: none;
     place-items: center;
     color: var(--teal);
     background: #ccece4;
     border-radius: 22%;
   }
-  .dashboard-team-icon svg, .dashboard-project-icon svg { width: 63%; height: 63%; stroke-width: 1.65; }
+  .dashboard-team-icon svg, .dashboard-project-icon svg { width: var(--icon-feature); height: var(--icon-feature); stroke-width: 1.7; }
   .dashboard-team div { display: grid; min-width: 0; gap: 2px; overflow-wrap: anywhere; }
-  .dashboard-team strong { font-size: clamp(19px, 5.45vw, 24px); line-height: 1.15; font-weight: 760; }
+  .dashboard-team strong { font-size: var(--font-card); line-height: 1.15; font-weight: 760; }
   .dashboard-team small {
     width: fit-content;
     padding: 3px 9px;
     background: #caece4;
     color: #005b51;
     border-radius: 8px;
-    font-size: clamp(11px, 2.75vw, 13px);
+    font-size: var(--font-caption);
     font-weight: 650;
   }
 
@@ -68,12 +69,12 @@
   .dashboard-stat + .dashboard-stat { border-left: 1px solid #b8d9d5; }
   .dashboard-stat-icon { display: none; }
   .dashboard-stat div { justify-items: center; gap: 5px; }
-  .dashboard-stat strong { font-size: clamp(24px, 7.55vw, 34px); }
+  .dashboard-stat strong { font-size: var(--font-metric); }
   .dashboard-stat span {
     padding: 4px clamp(7px, 3.2vw, 15px);
     color: var(--status-color);
     border-radius: 999px;
-    font-size: clamp(10px, 3.12vw, 14px);
+    font-size: var(--font-caption);
     font-weight: 680;
   }
   .dashboard-stat--pending span { background: #ffe1ac; }
@@ -93,11 +94,11 @@
   .dashboard-open strong, .dashboard-arrow, .dashboard-desktop-calendar { display: none; }
   .dashboard-mobile-calendar { display: block; }
   .dashboard-open-icon {
-    width: clamp(25px, 7.0vw, 31px);
+    width: var(--tile-size);
     background: transparent;
     color: white;
   }
-  .dashboard-open-icon svg { width: 100%; height: 100%; stroke-width: 1.7; }
+  .dashboard-open-icon svg { width: var(--icon-feature); height: var(--icon-feature); stroke-width: 1.7; }
   .dashboard-open-action {
     width: 100%;
     min-height: auto;
@@ -107,11 +108,11 @@
     padding: 0;
     background: transparent;
     border-radius: 0;
-    font-size: clamp(15px, 4.4vw, 20px);
+    font-size: var(--font-body);
     font-weight: 690;
   }
   .dashboard-open:hover .dashboard-open-action { background: transparent; }
-  .dashboard-chevron { display: block; width: 1.15em; height: 1.15em; }
+  .dashboard-chevron { display: block; width: var(--icon-inline); height: var(--icon-inline); }
 
   .dashboard-recent {
     min-height: auto;
@@ -120,7 +121,7 @@
     background: transparent;
     border-radius: 0;
   }
-  .dashboard-recent h2 { margin-bottom: clamp(11px, 4vw, 18px); font-size: clamp(20px, 5.25vw, 24px); }
+  .dashboard-recent h2 { margin-bottom: clamp(11px, 4vw, 18px); font-size: var(--font-section); }
   .desktop-recent { display: none; }
   .mobile-recent { display: block; }
   .dashboard-projects {
@@ -138,12 +139,12 @@
     align-items: center;
     gap: clamp(9px, 3.2vw, 15px);
     padding-block: 7px;
-    font-size: clamp(14px, 4.0vw, 18px);
+    font-size: var(--font-body);
     font-weight: 680;
     line-height: 1.24;
     text-decoration: none;
   }
   .dashboard-projects li a:hover { color: var(--teal); }
-  .dashboard-project-icon { background: #e1f2ee; width: clamp(38px, 12.4vw, 55px); }
-  .project-arrow { margin-left: auto; width: 19px; height: 19px; color: var(--muted); flex: none; }
+  .dashboard-project-icon { background: #e1f2ee; width: var(--tile-size); }
+  .project-arrow { margin-left: auto; width: var(--icon-inline); height: var(--icon-inline); color: var(--muted); flex: none; }
 }

@@ -7,7 +7,8 @@
 .mgmt-user-filter-control .mgmt-filter-chevron {
   position: absolute;
   right: 0.65rem;
-  width: 0.95rem;
+  width: var(--icon-inline);
+  height: var(--icon-inline);
   pointer-events: none;
   color: #365c63;
 }
@@ -15,7 +16,7 @@
   display: block;
   position: absolute;
   left: 0.72rem;
-  width: 1.2rem;
+  width: var(--icon-inline);
   pointer-events: none;
   color: #476168;
 }
@@ -39,26 +40,26 @@
   min-height: 3.7rem;
   padding: 0.55rem 0.7rem;
   border-bottom: 1px solid #e3eeef;
-  font-size: clamp(0.91rem, 1.35vw, 1.24rem);
+  font-size: var(--font-body);
 }
 .mgmt-user-row:hover { background: #ecf8f3; }
 .mgmt-user-name { display: flex; align-items: center; min-width: 0; gap: 0.72rem; }
-.mgmt-user-name .mgmt-tile { width: clamp(2.1rem, 3.1vw, 3.1rem); }
+.mgmt-user-name .mgmt-tile { width: var(--tile-size); }
 .mgmt-user-name small, .mgmt-user-chevron { display: none; }
 
 @media (max-width: 767px) {
-  .mgmt-users-back { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; color: #416068; font-size: 0.86rem; }
-  .mgmt-users-back svg { width: 1.15rem; height: 1.15rem; }
+  .mgmt-users-back { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; color: #416068; font-size: var(--font-caption); }
+  .mgmt-users-back svg { width: var(--icon-inline); height: var(--icon-inline); }
   .mgmt-user-filters { grid-template-columns: minmax(0, 1fr); padding: 0; background: none; gap: 0.65rem; }
   .mgmt-user-filter-control .mgmt-filter-icon {
     display: block;
     position: absolute;
     left: 0.72rem;
-    width: 1.2rem;
+    width: var(--icon-inline);
     pointer-events: none;
     color: #28635c;
-  }
-  .mgmt-filter-empty { display: block; position: absolute; left: 2.5rem; font-size: 0.94rem; pointer-events: none; }
+   height: var(--icon-inline);}
+  .mgmt-filter-empty { display: block; position: absolute; left: 2.5rem; font-size: var(--font-body); pointer-events: none; }
   .mgmt-user-filter-control select[data-empty='true'] { color: transparent; }
   .mgmt-user-filter-control select option { color: var(--mgmt-text); }
   .mgmt-user-filter .mgmt-filter-label {
@@ -78,9 +79,9 @@
     padding-inline: 0;
   }
   .mgmt-user-name { gap: 0.55rem; }
-  .mgmt-user-name small { display: block; color: #3c5962; font-size: 0.69rem; white-space: normal; }
-  .mgmt-user-name strong { font-size: 0.91rem; }
-  .mgmt-user-chevron { display: block; width: 0.92rem; color: #53767a; }
-  .mgmt-user-row .mgmt-badge { font-size: clamp(0.62rem, 2.7vw, 0.78rem); }
+  .mgmt-user-name small { display: block; color: #3c5962; font-size: var(--font-caption); white-space: normal; }
+  .mgmt-user-name strong { font-size: var(--font-card); }
+  .mgmt-user-chevron { display: block; width: var(--icon-inline); height: var(--icon-inline); color: #53767a; }
+  .mgmt-user-row .mgmt-badge { font-size: var(--font-caption); }
   .mgmt-users-table li:last-child .mgmt-user-row { border-bottom: 0; }
 }

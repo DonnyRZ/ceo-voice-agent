@@ -1,0 +1,51 @@
+/* Size categories are shared CSS values, not shared React components. */
+:root {
+  --font-page: 2rem;
+  --font-section: 1.375rem;
+  --font-display: 2rem;
+  --font-body: 1rem;
+  --font-card: 1.125rem;
+  --font-caption: .875rem;
+  --font-metric: 2rem;
+  --font-avatar: 1.875rem;
+  --font-nav-mobile: .75rem;
+  --control-height: 3rem;
+  --control-radius: .75rem;
+  --textarea-height: 7.5rem;
+  --icon-inline: 1.25rem;
+  --icon-status: 1.125rem;
+  --icon-nav: 1.5rem;
+  --icon-feature: 1.75rem;
+  --icon-stat: 2.25rem;
+  --tile-size: 3.5rem;
+  --brand-width: 13.75rem;
+  --sidebar-width: 16rem;
+  --page-padding: 2rem;
+  --mobile-nav-height: 4.5rem;
+  --voice-stage-height: 470px;
+  --mobile-header-height: 5.5rem;
+  --avatar-size: 4.5rem;
+  --icon-button-size: 2.75rem;
+  --action-row-height: 4rem;
+}
+body { font-size: var(--font-body); line-height: 1.5; }
+:where(svg.lucide) { width: var(--icon-inline); height: var(--icon-inline); flex-shrink: 0; stroke-width: 1.7; }
+:where(input:not([type=radio]):not([type=checkbox]):not([type=month]):not([type=hidden]), select) {
+  height: var(--control-height); min-height: var(--control-height); font-size: var(--font-body);
+}
+:where(textarea) { min-height: var(--textarea-height); font-size: var(--font-body); }
+h1 { font-size: var(--font-page); font-weight: 750; line-height: 1.2; letter-spacing: -.03em; }
+h2 { font-size: var(--font-section); font-weight: 720; line-height: 1.3; letter-spacing: -.02em; }
+@media (max-width: 767px) {
+  :root {
+    --font-page: 1.75rem;
+    --font-display: 1.75rem;
+    --font-section: 1.25rem;
+    --font-metric: 1.75rem;
+    --tile-size: 3rem;
+    --brand-width: 11.25rem;
+    --page-padding: 1rem;
+    --voice-stage-height: 350px;
+    --avatar-size: 4rem;
+  }
+}

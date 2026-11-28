@@ -2,36 +2,36 @@
   .ts-form-page { gap: clamp(10px, 2.8vw, 14px); }
   .ts-form-context { display: flex; min-height: clamp(60px, 17.2vw, 77px); }
   .ts-form-context--hidden { display: none; }
-  .ts-form-context > .ts-icon-tile { width: clamp(39px, 10.6vw, 47px); }
+  .ts-form-context > .ts-icon-tile { width: var(--tile-size); }
   .ts-form-context > div { display: grid; }
-  .ts-form-context span { color: #3e5b64; font-size: clamp(13px, 3.35vw, 15px); }
-  .ts-form-context strong { font-size: clamp(19px, 5vw, 23px); line-height: 1.1; }
+  .ts-form-context span { color: #3e5b64; font-size: var(--font-body); }
+  .ts-form-context strong { font-size: var(--font-card); line-height: 1.1; }
   .ts-form-context--new { min-height: clamp(54px, 15.2vw, 70px); }
-  .ts-form-context--new > div { display: block; font-size: clamp(16px, 4.64vw, 21px); font-weight: 720; }
-  .ts-form-context--new span, .ts-form-context--new strong { color: var(--ink); font-size: inherit; font-weight: inherit; }
+  .ts-form-context--new > div { display: block;  font-weight: 720; }
+  .ts-form-context--new span, .ts-form-context--new strong { color: var(--ink);  font-weight: inherit; }
   .ts-form { margin: 0; padding: 9px clamp(10px, 3.1vw, 14px); border: 1px solid var(--border); }
   .ts-form-card-title { display: none; }
   .ts-form .ts-form-fields { max-width: none; gap: 6px; }
   .ts-form-row { grid-template-columns: minmax(0, 1fr); gap: 3px 9px; }
-  .ts-form-row > label { font-size: clamp(13px, 3.55vw, 16px); font-weight: 690; }
+  .ts-form-row > label { font-size: var(--font-body); font-weight: 690; }
   .ts-form-row--description > label { padding-top: 0; }
   .ts-form-row--date { order: -3; }
-  .ts-form--new .ts-form-row { grid-template-columns: clamp(34px, 10.55vw, 45px) minmax(0, 1fr); }
+  .ts-form--new .ts-form-row { grid-template-columns: var(--tile-size) minmax(0, 1fr); }
   .ts-form--new .ts-form-row .ts-form-tile { display: grid; grid-row: span 2; align-self: start; width: 100%; }
   .ts-form--new .ts-form-row .ts-input-icon { display: none; }
   .ts-form--new .ts-form-row:not(.ts-form-row--date) { padding-top: 6px; border-top: 1px solid var(--border); }
   .ts-form--edit .ts-input-icon { display: block; }
   .ts-form .ts-form-row--date .ts-field-wrap { max-width: none; }
   .ts-field-wrap input:not([type='radio']), .ts-field-wrap textarea, .ts-field-wrap select {
-    min-height: clamp(33px, 8.65vw, 40px);
+    min-height: var(--control-height);
     padding: 5px 9px;
-    border-radius: 8px;
-    font-size: clamp(13px, 3.45vw, 16px);
+    border-radius: var(--control-radius);
+    font-size: var(--font-body);
   }
   .ts-field-wrap select { padding-right: 28px; }
-  .ts-date-display { left: 9px; font-size: clamp(13px, 3.45vw, 16px); }
+  .ts-date-display { left: 9px; font-size: var(--font-body); }
   .ts-form--edit .ts-date-display { left: 37px; }
-  .ts-form .ts-field-wrap textarea { min-height: clamp(51px, 14.85vw, 66px); }
+  .ts-form .ts-field-wrap textarea { min-height: var(--textarea-height); }
   .ts-form--edit .ts-form-row .ts-field-wrap input:not([type='radio']), .ts-form--edit .ts-form-row .ts-field-wrap textarea, .ts-form--edit .ts-form-row .ts-field-wrap select { padding-left: 37px; }
   .ts-form--new .ts-status-select select { padding-left: 10px; }
   .ts-form--edit .ts-form-row--description .ts-input-icon { inset-block-start: 11px; transform: none; }
@@ -42,7 +42,7 @@
   .ts-status-select select option { color: var(--ink); background: #fbfcfc; }
   .ts-status-select select:not(:focus) { color: transparent; }
   .ts-status-select select:not(:focus) + .ts-status-display { display: block; }
-  .ts-status-display { position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-size: 12px; pointer-events: none; }
+  .ts-status-display { position: absolute; top: 50%; left: 10px; transform: translateY(-50%); font-size: var(--font-caption); pointer-events: none; }
   .ts-form--edit .ts-status-display { left: 37px; }
   .ts-form--edit .ts-status-options { display: none; }
   .ts-form--new .ts-form-actions { display: grid; grid-template-columns: 32% minmax(0, 1fr); gap: 8px; margin-top: 10px; padding-top: 0; border: none; }
@@ -51,22 +51,9 @@
   .ts-form--edit .ts-form-actions { flex-direction: column-reverse; gap: 8px; border-top: 0; }
   .ts-form--edit .ts-cancel-button { background: #d9f1ec; border-color: transparent; }
   .ts-form--edit .ts-save-icon { display: block; }
-  .ts-form--edit .ts-form-actions .ts-button { min-height: clamp(41px, 9.8vw, 48px); }
+  .ts-form--edit .ts-form-actions .ts-button { min-height: var(--control-height); }
   .ts-form--edit { display: grid; gap: clamp(10px, 2.8vw, 14px); padding: 0; border: 0; background: transparent; }
   .ts-form--edit .ts-form-fields { padding: 9px clamp(10px, 3.1vw, 14px); border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
   .ts-form--edit .ts-form-actions { margin: 0; padding: 0; }
   .ts-form--edit .ts-field-error { grid-column: 1; }
-  .ts-form--new.ts-form--invalid .ts-form-row, .ts-form--failed .ts-form-row { grid-template-columns: minmax(0, 1fr); }
-  .ts-form--new.ts-form--invalid .ts-form-tile { display: none; }
-  .ts-form--new.ts-form--invalid .ts-field-error, .ts-form--failed .ts-field-error { grid-column: 1; }
-  .ts-form--new.ts-form--invalid .ts-status-select { display: none; }
-  .ts-form--new.ts-form--invalid .ts-status-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
-  .ts-form--new.ts-form--invalid .ts-status-option { flex-direction: row-reverse; justify-content: center; }
-  .ts-form--new.ts-form--invalid .ts-status-option svg { display: none; }
-  .ts-form--new.ts-form--invalid .ts-status-option input { margin-left: 0; }
-  .ts-form--new.ts-form--invalid .ts-form-actions { grid-template-columns: minmax(0, 1fr); }
-  .ts-form--new.ts-form--invalid .ts-form-actions .ts-button--primary { order: -1; }
-  .ts-form--failed .ts-form-row--date { order: 0; }
-  .ts-form--failed .ts-form-row--title { order: -2; }
-  .ts-form--failed .ts-form-row--description { order: -1; }
 }

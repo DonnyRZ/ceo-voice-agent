@@ -1,7 +1,7 @@
 .mgmt-division-create-banner, .mgmt-division-summary, .mgmt-division-create-stats { margin-bottom: clamp(0.8rem, 1.48vw, 1.48rem); }
 .mgmt-division-summary { display: grid; gap: clamp(0.72rem, 1.4vw, 1.4rem); }
 .mgmt-division-identity > div { display: flex; align-items: center; flex: 1; min-width: 0; gap: 0.72rem; }
-.mgmt-division-identity .mgmt-tile { width: clamp(2.4rem, 4.7vw, 4.75rem); }
+.mgmt-division-identity .mgmt-tile { width: var(--tile-size); }
 .mgmt-division-create .mgmt-stats { align-items: stretch; }
 .mgmt-division-create-form .mgmt-actions {
   flex-direction: row-reverse;
@@ -9,7 +9,7 @@
   padding-top: 1rem;
   border-top: 1px solid #e4eeef;
 }
-.mgmt-division-identity h2 { font-size: clamp(1.36rem, 2.4vw, 2.25rem); }
+.mgmt-division-identity h2 { font-size: var(--font-section); }
 .mgmt-division-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: clamp(0.72rem, 1.42vw, 1.48rem); }
 .mgmt-division-detail .mgmt-alert { margin-bottom: 0.85rem; }
 .mgmt-division-detail .mgmt-division-saved { margin: 0.75rem 0; color: #155d36; font-weight: 620; }
@@ -36,14 +36,14 @@
 .mgmt-member-name { display: flex; align-items: center; flex: 1; min-width: 0; gap: 0.66rem; }
 .mgmt-member-name:hover { color: var(--mgmt-teal); }
 .mgmt-member-name > svg { display: none; }
-.mgmt-member-name .mgmt-tile { width: clamp(2rem, 3.15vw, 3.25rem); }
-.mgmt-member-timesheet { min-height: 2.25rem; padding: 0.26rem 0.56rem; font-size: clamp(0.77rem, 1vw, 1rem); }
+.mgmt-member-name .mgmt-tile { width: var(--tile-size); }
+.mgmt-member-timesheet { min-height: var(--control-height); padding: 10px 16px; font-size: var(--font-body); }
 .mgmt-members-none { padding: 0.8rem 0.3rem; color: #425e62; }
 .mgmt-view-members { margin-top: 0.72rem; }
 .mgmt-mobile-division-timesheet { display: none; }
 
 @media (min-width: 768px) {
-  .mgmt-division-create-form textarea { min-height: 6.75rem; }
+  .mgmt-division-create-form textarea { min-height: var(--textarea-height); }
   .mgmt-division-form :is(input, textarea)::placeholder { color: transparent; }
 }
 
@@ -55,7 +55,7 @@
   .mgmt-division-form .mgmt-actions .mgmt-button { width: 100%; }
   .mgmt-division-detail-grid { grid-template-columns: minmax(0, 1fr); }
   .mgmt-division-summary {
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.8fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     gap: 0.35rem;
     padding-inline: 0.42rem;
@@ -66,17 +66,17 @@
   .mgmt-division-summary-blocked { display: block; padding: 0 0.45rem; }
   .mgmt-division-summary-blocked .mgmt-stats { display: none; }
   .mgmt-division-identity > div { display: grid; justify-items: start; gap: 0.22rem; }
-  .mgmt-division-identity h2 { font-size: 1.24rem; }
-  .mgmt-division-identity .mgmt-tile { width: clamp(1.65rem, 8.5vw, 2.6rem); }
-  .mgmt-division-identity .mgmt-badge { font-size: clamp(0.55rem, 2.35vw, 0.7rem); padding-inline: 0.38rem; }
+  .mgmt-division-identity h2 { font-size: var(--font-section); }
+  .mgmt-division-identity .mgmt-tile { width: var(--tile-size); }
+  .mgmt-division-identity .mgmt-badge { font-size: var(--font-caption); padding-inline: 0.38rem; }
   .mgmt-division-summary .mgmt-stats { padding: 0.3rem 0; gap: 0.14rem; background: none; }
   .mgmt-division-summary .mgmt-stat { padding: 0; }
-  .mgmt-division-summary .mgmt-stat strong { font-size: 1.13rem; }
-  .mgmt-division-summary .mgmt-stat div span { padding-inline: 0.21rem; font-size: clamp(0.51rem, 2vw, 0.69rem); }
+  .mgmt-division-summary .mgmt-stat strong { font-size: var(--font-metric); }
+  .mgmt-division-summary .mgmt-stat div span { padding-inline: 0.21rem; font-size: var(--font-caption); }
   .mgmt-division-edit-form .mgmt-actions svg { display: block; }
   .mgmt-members-label, .mgmt-member-timesheet { display: none; }
   .mgmt-member-row { min-height: 3.2rem; padding-inline: 0; }
-  .mgmt-member-name > svg { display: block; width: 1rem; margin-left: auto; color: #41676c; }
+  .mgmt-member-name > svg { display: block; width: var(--icon-inline); margin-left: auto; color: #41676c; }
   .mgmt-member-row:last-child { border-bottom: 0; }
   .mgmt-mobile-division-timesheet {
     display: flex;
@@ -84,8 +84,8 @@
     gap: 0.62rem;
     margin-top: 0.72rem;
   }
-  .mgmt-mobile-division-timesheet > svg { width: 1rem; margin-left: auto; color: #41676c; }
-  .mgmt-mobile-division-timesheet .mgmt-tile { width: 2rem; }
+  .mgmt-mobile-division-timesheet > svg { width: var(--icon-inline); margin-left: auto; color: #41676c; }
+  .mgmt-mobile-division-timesheet .mgmt-tile { width: var(--tile-size); }
   .mgmt-division-invite { width: 100%; }
   .mgmt-archive-disabled { width: 100%; }
   .mgmt-division-detail:has(.mgmt-division-save-error) { display: flex; flex-direction: column; }

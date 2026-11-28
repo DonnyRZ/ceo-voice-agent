@@ -78,7 +78,7 @@ export function TaskForm({ task, projects, members, divisionName }: TaskFormProp
         <div><span>Anggota Divisi</span>{' '}<strong>{divisionName}</strong></div>
       </div>
       {failed && <div className="ts-save-warning" role="alert"><TriangleAlert aria-hidden="true" />Perubahan belum tersimpan.</div>}
-      <form onSubmit={submit} noValidate className={`ts-card ts-form ${editing ? 'ts-form--edit' : 'ts-form--new'}${failed ? ' ts-form--failed' : ''}${invalid ? ' ts-form--invalid' : ''}`}>
+      <form onSubmit={submit} noValidate className={`ts-card ts-form ${editing ? 'ts-form--edit' : 'ts-form--new'}`}>
         {!editing && !failed && <p className="ts-form-card-title">{title}</p>}
         <TaskFields editing={editing} values={values} errors={errors} onChange={change} projects={projects} members={members} />
         <div className="ts-form-actions">

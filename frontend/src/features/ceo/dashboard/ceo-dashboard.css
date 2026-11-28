@@ -1,17 +1,17 @@
 .ceo-dashboard-page { gap: 20px; }
 .ceo-dashboard-page .ceo-period-control { margin-top: 3px; }
 .ceo-dashboard-page .ceo-status-summary { min-height: 124px; }
-.ceo-dashboard-voice { flex: none; min-height: 47px; padding-inline: 17px; white-space: nowrap; }
+.ceo-dashboard-voice { flex: none; min-height: var(--control-height); padding-inline: 17px; white-space: nowrap; }
 .ceo-dashboard-updates { min-height: 245px; }
 .ceo-dashboard-updates .ceo-record-link { padding-block: 17px; }
-.ceo-dashboard-updates .ceo-record-copy > strong { font-size: 19px; }
-.ceo-dashboard-updates .ceo-record-copy .status-badge { font-size: 12px; }
+.ceo-dashboard-updates .ceo-record-copy > strong { font-size: var(--font-card); }
+.ceo-dashboard-updates .ceo-record-copy .status-badge { font-size: var(--font-caption); }
 
 @media (min-width: 1100px) {
   .ceo-dashboard-page .ceo-status-total { grid-template-columns: 34px auto auto; gap: 3px 8px; }
-  .ceo-dashboard-page .ceo-status-total > strong { font-size: 30px; }
-  .ceo-dashboard-page .ceo-status-name { grid-column: 3; padding: 3px 7px; font-size: 12px; border-radius: 7px; width: fit-content; }
-  .ceo-dashboard-page .ceo-status-total small { display: block; grid-column: 2 / 4; font-size: 11px; color: #405e63; }
+  .ceo-dashboard-page .ceo-status-total > strong { font-size: var(--font-metric); }
+  .ceo-dashboard-page .ceo-status-name { grid-column: 3; padding: 3px 7px; font-size: var(--font-caption); border-radius: 7px; width: fit-content; }
+  .ceo-dashboard-page .ceo-status-total small { display: block; grid-column: 2 / 4; font-size: var(--font-caption); color: #405e63; }
   .ceo-dashboard-page .ceo-status-total--pending .ceo-status-name { background: #ffe5b9; color: #874500; }
   .ceo-dashboard-page .ceo-status-total--on_progress .ceo-status-name { background: #cde6ff; color: #00559d; }
   .ceo-dashboard-page .ceo-status-total--done .ceo-status-name { background: #d2f0d6; color: #116c30; }
@@ -20,18 +20,18 @@
 @media (max-width: 767px) {
   .ceo-dashboard-page { gap: 20px; }
   .ceo-dashboard-page .ceo-period-control { margin-top: -14px; }
-  .ceo-dashboard-page .ceo-period-picker { color: #536e6c; font-size: 18px; }
+  .ceo-dashboard-page .ceo-period-picker { color: #536e6c; font-size: var(--font-body); }
   .ceo-dashboard-page .ceo-period-picker > svg:first-child { display: none; }
   .ceo-dashboard-page .ceo-status-summary { position: relative; margin-bottom: 74px; padding: 17px 12px; }
   .ceo-dashboard-page .ceo-status-grid { gap: 10px; }
   .ceo-dashboard-page .ceo-status-total { padding: 14px 3px; border: 0; border-radius: 17px; background: #f1faf6b5; }
-  .ceo-dashboard-page .ceo-status-total > strong { font-size: 30px; }
-  .ceo-dashboard-page .ceo-status-name { font-size: 13px; }
-  .ceo-dashboard-voice { position: absolute; top: calc(100% + 20px); left: 0; width: 100%; min-height: 55px; font-size: 18px; border-radius: 11px; }
-  .ceo-dashboard-voice svg { width: 27px; height: 27px; }
+  .ceo-dashboard-page .ceo-status-total > strong { font-size: var(--font-metric); }
+  .ceo-dashboard-page .ceo-status-name { font-size: var(--font-caption); }
+  .ceo-dashboard-voice { position: absolute; top: calc(100% + 20px); left: 0; width: 100%; min-height: var(--control-height); font-size: var(--font-body); border-radius: 11px; }
+  .ceo-dashboard-voice svg { width: var(--icon-inline); height: var(--icon-inline); }
   .ceo-dashboard-updates { background: #e2f1ed; padding: 16px 12px 0; border: 0; }
   .ceo-dashboard-updates .ceo-section-title { display: block; }
   .ceo-dashboard-updates .ceo-inline-link { margin-top: 7px; }
   .ceo-dashboard-updates .ceo-list { margin: 0 -12px; padding: 0 13px; background: #fff; border-radius: 17px; }
-  .ceo-dashboard-updates .ceo-record-copy > strong { font-size: 17px; }
+  .ceo-dashboard-updates .ceo-record-copy > strong { font-size: var(--font-card); }
 }

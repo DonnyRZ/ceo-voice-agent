@@ -8,12 +8,14 @@
   border-radius: 0.95rem;
   background: var(--project-tint);
 }
-.project-detail-summary .project-hero .project-icon { width: clamp(2.7rem, 4.65vw, 4.7rem); }
+.project-detail-summary .project-hero .project-icon { width: var(--tile-size); }
+.project-detail-summary .project-hero h2 { flex: 1 1 0; min-width: 0; }
 .project-hero-description {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   border-left: 1px solid #afd5ce;
   padding-inline-start: clamp(0.55rem, 1.4vw, 1.5rem);
-  font-size: clamp(0.86rem, 1.2vw, 1.15rem);
+  font-size: var(--font-body);
   color: #27484f;
 }
 .project-edit-link {
@@ -23,8 +25,8 @@
 .project-task-panel { margin-top: clamp(0.95rem, 1.6vw, 1.65rem); }
 .project-task-panel h2 {
   margin-bottom: 0.7rem;
-  font-size: clamp(1.15rem, 1.85vw, 1.75rem);
-  font-weight: 750;
+  font-size: var(--font-section);
+  font-weight: 720;
 }
 .project-task-table {
   width: 100%;
@@ -34,10 +36,10 @@
 }
 .project-task-table tr { position: relative; }
 .project-task-table th {
-  padding: 0.57rem 0.85rem;
+  padding: 12px 16px;
   background: var(--project-tint);
   text-align: start;
-  font-size: clamp(0.88rem, 1.22vw, 1.2rem);
+  font-size: var(--font-body);
 }
 .project-task-table th:first-child {
   width: 31%;
@@ -48,9 +50,9 @@
   border-radius: 0 0.6rem 0.6rem 0;
 }
 .project-task-table td {
-  padding: 1.17rem 0.85rem;
+  padding: 12px 16px;
   border-bottom: 1px solid #e7eef0;
-  font-size: clamp(0.9rem, 1.4vw, 1.28rem);
+  font-size: var(--font-body);
 }
 .project-task-title { font-weight: 700; }
 .project-task-title a:hover { text-decoration: underline; }
@@ -61,7 +63,7 @@
   border-radius: 0.54rem;
   justify-content: flex-start;
   padding: 0.32rem 0.62rem;
-  font-size: 0.96em;
+  font-size: var(--font-caption);
   font-weight: 650;
 }
 
@@ -85,9 +87,9 @@
     border-radius: 0.85rem;
     background: var(--project-panel);
   }
-  .project-mobile-description strong { font-size: 0.9rem; }
+  .project-mobile-description strong { font-size: var(--font-card); }
   .project-mobile-description p {
-    font-size: 0.84rem;
+    font-size: var(--font-body);
     color: #3b565c;
     line-height: 1.43;
   }
@@ -99,7 +101,7 @@
   }
   .project-task-panel h2 {
     margin: 0 0 0.7rem;
-    font-size: 1.22rem;
+    font-size: var(--font-section);
   }
   .project-task-table {
     display: block;
@@ -128,12 +130,12 @@
   }
   .project-task-table tbody tr:last-child { border-bottom: 0; }
   .project-task-table td {
-    padding: 0;
+    padding: 12px 16px;
     border: 0;
   }
   .project-task-table .project-task-title {
     grid-area: title;
-    font-size: 0.91rem;
+    font-size: var(--font-body);
   }
   .project-task-title a::after {
     position: absolute;
@@ -142,7 +144,7 @@
   }
   .project-task-table .project-task-description {
     grid-area: desc;
-    font-size: 0.78rem;
+    font-size: var(--font-body);
     line-height: 1.3;
   }
   .project-task-table .project-task-status {
@@ -153,14 +155,15 @@
   }
   .project-task-chevron {
     display: block;
-    width: 1.02rem;
+    width: var(--icon-inline);
+    height: var(--icon-inline);
   }
   .project-task-status .status-badge {
     min-width: 4.5em;
     justify-content: center;
     border-radius: 2rem;
     padding: 0.2rem 0.62rem;
-    font-size: 0.72rem;
+    font-size: var(--font-caption);
   }
   .project-task-status .status-badge svg { display: none; }
 }

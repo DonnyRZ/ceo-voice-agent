@@ -25,6 +25,7 @@
     "test:pilot-tools": "node --import tsx --test scripts/ceo-voice-*.test.mjs",
     "test:browser-tools": "node --import tsx --test scripts/browser-tests/*.test.mjs",
     "test:e2e": "node --env-file-if-exists=.env node_modules/@playwright/test/cli.js test",
+    "test:ui-audit": "node --env-file-if-exists=.env node_modules/@playwright/test/cli.js test --config playwright.ui-audit.config.ts",
     "test:voice:pilot": "node --use-env-proxy --env-file=.env --import tsx scripts/ceo-voice-pilot.mjs",
     "test:voice:fixtures": "node scripts/ceo-voice-pilot-fixtures.mjs",
     "test:voice:luna": "node --use-env-proxy --env-file=.env --import tsx scripts/ceo-voice-luna-pilot.mjs",

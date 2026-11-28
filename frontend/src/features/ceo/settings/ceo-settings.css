@@ -19,13 +19,13 @@
 .ceo-setting:first-child { border-radius: 20px 20px 0 0; }
 .ceo-setting + .ceo-setting { border-top: 1px solid var(--border); }
 .ceo-setting-heading { display: flex; gap: 28px; align-items: center; }
-.ceo-setting-heading > svg { flex: none; width: 44px; height: 44px; color: #174d4d; stroke-width: 1.6; }
-.ceo-setting-heading h2 { margin: 0; font-size: clamp(23px, 1.9vw, 30px); font-weight: 690; }
-.ceo-setting-heading p { margin: 6px 0 0; color: var(--muted); font-size: 17px; }
-.ceo-setting-control { display: flex; align-items: center; gap: 22px; font-size: 18px; }
+.ceo-setting-heading > svg { flex: none; width: var(--icon-feature); height: var(--icon-feature); color: #174d4d; stroke-width: 1.7; }
+.ceo-setting-heading h2 { margin: 0; font-size: var(--font-section); font-weight: 720; }
+.ceo-setting-heading p { margin: 6px 0 0; color: var(--muted); font-size: var(--font-body); }
+.ceo-setting-control { display: flex; align-items: center; gap: 22px; font-size: var(--font-body); }
 .ceo-language-control { display: block; min-width: 240px; padding: 12px 18px; border: 1px solid #c8d8db; border-radius: 10px; }
 .ceo-language-control p { margin: 0; }
-.ceo-language-control span { display: block; margin-top: 4px; font-size: 13px; color: var(--muted); }
+.ceo-language-control span { display: block; margin-top: 4px; font-size: var(--font-body); color: var(--muted); }
 .ceo-setting-switch {
   position: relative;
   width: 66px;
@@ -39,7 +39,7 @@
 .ceo-setting-switch span { display: block; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px #123a3a20; }
 .ceo-setting-switch[aria-checked=true] { background: #007467; border-color: #007467; }
 .ceo-setting-switch[aria-checked=true] span { transform: translateX(28px); }
-.ceo-settings-note { max-width: 720px; margin: 20px 0 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+.ceo-settings-note { max-width: 720px; margin: 20px 0 0; color: var(--muted); font-size: var(--font-caption); line-height: 1.6; }
 @media (max-width: 1023px) and (min-width: 768px) {
   .ceo-setting { align-items: flex-start; flex-direction: column; }
   .ceo-setting-control { margin-left: 72px; }
@@ -52,14 +52,14 @@
   .ceo-setting:first-child { border-radius: 16px; }
   .ceo-setting + .ceo-setting { margin-top: 18px; }
   .ceo-setting-heading { gap: 14px; min-height: 62px; padding: 14px 18px; background: #e0f0ec; }
-  .ceo-setting-heading > svg { width: 30px; height: 30px; }
-  .ceo-setting-heading h2 { font-size: 21px; }
+  .ceo-setting-heading > svg { width: var(--icon-feature); height: var(--icon-feature); }
+  .ceo-setting-heading h2 { font-size: var(--font-section); }
   .ceo-setting-heading p { display: none; }
-  .ceo-setting-control { justify-content: space-between; min-height: 64px; gap: 12px; padding: 18px 16px; font-size: 17px; }
+  .ceo-setting-control { justify-content: space-between; min-height: 64px; gap: 12px; padding: 18px 16px; font-size: var(--font-body); }
   .ceo-language-control { min-width: 0; border: 0; }
   .ceo-language-control span { margin-top: 6px; }
   .ceo-setting-switch { width: 56px; height: 34px; padding: 3px; }
   .ceo-setting-switch span { width: 26px; height: 26px; }
   .ceo-setting-switch[aria-checked=true] span { transform: translateX(22px); }
-  .ceo-settings-note { font-size: 14px; }
+  .ceo-settings-note { font-size: var(--font-caption); }
 }

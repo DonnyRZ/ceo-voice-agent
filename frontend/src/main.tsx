@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 import '@fontsource-variable/inter';
 import { router } from './app/routes';
 import './styles/base.css';
+import './styles/sizes.css';
 import './styles/shell.css';
 
 const queryClient = new QueryClient({
