@@ -77,10 +77,14 @@ export async function prepareAdminFixture(options: AppOptions = {}) {
     app = await createApp(config, options);
     db = new Pool({ connectionString: environment.DATABASE_ADMIN_URL, connectionTimeoutMillis: 5_000 });
     const service = app;
+    const databaseClient = db;
     async function login(email: string, secret = password) {
+      const { rows: [identity] } = await databaseClient.query<{ role: string }>(
+        'SELECT access.role FROM account_access access JOIN "user" profile ON profile.id = access.user_id WHERE lower(profile.email) = lower($1)', [email],
+      );
       const response = await service.inject({
         method: 'POST',
-        url: '/api/auth/sign-in/email',
+        url: identity?.role === 'superadmin' ? '/api/superadmin/auth/sign-in/email' : '/api/auth/sign-in/email',
         headers: { origin: config.APP_ORIGIN },
         payload: { email, password: secret },
       });

@@ -23,7 +23,7 @@ export function RequireSession({ role }: { role: SessionUser['role'] }) {
       </main>
     );
   }
-  if (!session.data) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!session.data) return <Navigate to={role === 'superadmin' ? '/superadmin' : '/login'} state={{ from: location }} replace />;
   if (session.data.role !== role) return <Navigate to={sessionHome(session.data.role)} replace />;
 
   return (
