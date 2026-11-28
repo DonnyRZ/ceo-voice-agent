@@ -1,4 +1,13 @@
 -- Up Migration
+-- Acquire application locks before the DDL lock, matching live auth/registration requests.
+SELECT pg_advisory_xact_lock(20261126,1);
+DO $$ DECLARE pending_email text; BEGIN
+    FOR pending_email IN SELECT DISTINCT email FROM app_private.member_registrations
+        WHERE legacy_user_id IS NOT NULL AND completed_at IS NULL ORDER BY email
+    LOOP
+        PERFORM pg_advisory_xact_lock(hashtextextended(pending_email,20261128));
+    END LOOP;
+END $$;
 ALTER TABLE public.account_access ADD COLUMN registration_complete boolean NOT NULL DEFAULT true;
 
 CREATE FUNCTION app_private.reconcile_incomplete_registrations() RETURNS integer
