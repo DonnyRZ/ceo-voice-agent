@@ -5,7 +5,7 @@ write_gateway() {
   local output=$1 slot port
   {
     printf '{\n admin off\n auto_https off\n persist_config off\n}\n'
-    printf 'http://127.0.0.1:%s {\n bind 127.0.0.1\n route {\n' "$GATEWAY_PORT"
+    printf 'http://:%s {\n bind 127.0.0.1\n route {\n' "$GATEWAY_PORT"
     printf ' @internal path /internal/*\n respond @internal 404\n'
     for slot in blue green; do
       port=$(proxy_port "$slot")

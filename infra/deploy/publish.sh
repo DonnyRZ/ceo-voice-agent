@@ -39,9 +39,8 @@ latest=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$RELEASE_BRANCH" --jq '.
 rm -rf -- "$DOCKER_CONFIG"; unset DOCKER_CONFIG GH_TOKEN
 release="$site/releases/$RELEASE_ID"
 mkdir -p "$release"
-for file in compose.yaml gateway.compose.yaml deploy.sh gateway.sh database.sh cleanup.sh assets.sh assets-cleanup.py config.sh; do
+for file in compose.yaml gateway.compose.yaml deploy.sh gateway.sh database.sh cleanup.sh assets.sh assets-cleanup.py config.sh public-smoke.py; do
   install -m 600 "infra/deploy/$file" "$release/$file"
 done
 # FD 8 stays locked throughout deploy; deploy.sh reuses it rather than relocking.
 CEO_DEPLOY_LOCK_HELD=true bash "$release/deploy.sh" "$RELEASE_ENV" "$RELEASE_IMAGE" "$RELEASE_IMAGE_ID"
-curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-connrefused --max-time 10 "${PUBLIC_APP_URL%/}/api/health"

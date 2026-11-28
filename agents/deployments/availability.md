@@ -1,6 +1,7 @@
 # Menjaga layanan ketika rilis
 
 - Gunakan blue-green: jalankan kandidat pada slot kosong dan periksa kesehatan/UI sebelum trafik baru dialihkan. Jangan stop/recreate slot aktif untuk mengganti versi.
+- Gateway harus menerima Host publik yang diteruskan Nginx sambil tetap bind loopback. Smoke test publik wajib memvalidasi JSON health, HTML aplikasi, serta aset JS/CSS; HTTP 200 kosong adalah kegagalan.
 - Gateway lokal tetap hidup dengan konfigurasi tetap. Alihkan satu symlink rute secara atomik; dilarang reload/restart proxy pada rilis aplikasi rutin. Jika kandidat atau switch gagal, pertahankan/pulihkan pointer versi lama. Perubahan konfigurasi gateway memerlukan upgrade terencana tersendiri.
 - Sesi suara yang sudah ada tetap menuju slot asal melalui cookie sesi suara. Sesi baru menuju slot baru. Jangan putus sesi suara lama untuk mempercepat deploy.
 - Setelah trafik dialihkan, drain slot lama sampai sesi selesai, kemudian hapus container lamanya. Jika drain tertahan, pertahankan kedua slot dan gagalkan upaya memakai slot sibuk pada deploy berikutnya.

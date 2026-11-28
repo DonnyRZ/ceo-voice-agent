@@ -5,6 +5,8 @@ build/
 coverage/
 .vite/
 *.tsbuildinfo
+__pycache__/
+*.py[cod]
 /.cache/
 /tmp/
 

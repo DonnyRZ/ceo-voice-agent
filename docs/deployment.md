@@ -107,6 +107,12 @@ Sesudah perubahan workflow mencapai default branch, jalankan `checks.yml` secara
 
 Input tambahan `inspect_ingress=true` menampilkan metadata listener, service proxy, container, routing domain, dan lokasi sertifikat yang dapat dibaca akun runner. Tidak mencetak isi file konfigurasi, private key, atau environment container. Pemeriksaan ini tidak memberi akun runner hak root atau mengubah layanan.
 
+### Perbaikan terencana gateway awal stage
+
+Gateway awal pernah mengembalikan HTTP 200 kosong untuk Host domain publik karena alamat situs Caddy juga membatasi Host ke loopback. Konfigurasi baru memakai alamat tanpa matcher Host dengan `bind 127.0.0.1` tetap berlaku. Uji gateway kini meneruskan Host publik, termasuk HTTP/SSE dan pin sesi; smoke publik memvalidasi isi JSON, HTML, dan aset, bukan status saja.
+
+Untuk konfigurasi stage lama yang sudah terpasang, jalankan `checks.yml` pada `develop` dengan input `repair_stage_gateway=true`. Ini merupakan maintenance bootstrap terpisah, bukan langkah rilis rutin. Job mengunci stage, menolak jika ada sesi suara aktif atau perubahan konfigurasi yang tidak dikenal, memvalidasi penghapusan batas Host yang spesifik, lalu merestart container gateway stage saja. Backend, database, Nginx, dan prod tidak diganti. Jika verifikasi gagal, konfigurasi lama dipulihkan; penerimaan sesi dilanjutkan kembali. Setelah perbaikan, rilis rutin kembali hanya mengganti pointer blue/green tanpa restart gateway.
+
 Pemeriksaan mencakup akun runner, ownership/permission file privat, akses Docker/Compose, port, koneksi PostgreSQL owner/runtime, ekstensi, dan hak koneksi lintas database. Query memakai transaksi default baca-saja dengan batas waktu. Output hanya metadata aman; URL, password, dan pesan error mentah tidak dicetak. SMTP dan pengujian aplikasi setelah rilis tetap diperiksa terpisah. Ini bukan pengganti smoke test release sesudah domain tersedia.
 
 Laporan engineer 27 November 2026 menyatakan setup runner/database selesai. Engineer juga melaporkan instalasi pgvector menarik PostgreSQL 16.15 → 16.16 dan restart otomatis sekitar 8 detik. Hal ini melanggar batas tanpa restart; cluster dilaporkan kembali active. Bukti asli berada pada komputer engineer dan belum dibaca dari workspace ini. Pemeriksaan runner berikutnya tidak memasang paket atau merestart layanan. Jangan mengklaim tidak ada dampak pada aplikasi lain hanya dari status cluster active.

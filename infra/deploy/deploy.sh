@@ -106,6 +106,9 @@ for attempt in {1..30}; do
   sleep 1
 done
 $gateway_ready || exit 69
+# Published releases validate the public Host and bundles before committing or draining.
+# Local disposable rollout tests do not have a public HTTPS origin.
+if [[ -n "${PUBLIC_APP_URL:-}" ]]; then python3 "$ops/public-smoke.py" "$PUBLIC_APP_URL"; fi
 [[ -z "$previous" ]] || {
   printf '%s\n' "$previous" > "$site/rollback-image"
   cp "$site/active-commit" "$site/rollback-commit"

@@ -22,6 +22,10 @@ function fixture(mode = 'success') {
   if (mode === 'changed-gateway') writeFileSync(join(site, 'gateway/active.Caddyfile'), 'must-not-reload');
   function executable(name, body) { writeFileSync(join(bin, name), `#!/bin/bash\nset -eu\n${body}\n`, { mode: 0o700 }); }
   executable('sleep', ':');
+  executable('python3', `
+if [[ "$1" == */public-smoke.py ]]; then
+  echo public-check >> "$TRACE"; [[ "$MODE" != public-failure ]]
+else exec /usr/bin/python3 "$@"; fi`);
   executable('mv', `
 if [[ "$*" == *gateway/current.next* ]]; then
   echo switch >> "$TRACE"
@@ -65,10 +69,10 @@ elif [[ "$*" != *'/api/health'* ]]; then echo '<!doctype html>'
 fi`);
   return { root, bin, site, mode, close: () => rmSync(root, { recursive: true, force: true }) };
 }
-function run(f, stage = 'stage', image = release) {
+function run(f, stage = 'stage', image = release, extra = {}) {
   return spawnSync('bash', ['infra/deploy/deploy.sh', stage, image, id], { encoding: 'utf8', timeout: 10_000,
     env: { ...process.env, PATH: `${f.bin}:${process.env.PATH}`, CEO_DEPLOY_ROOT: f.root,
-      ROOT: f.root, TRACE: join(f.root, 'trace'), MODE: f.mode } });
+      ROOT: f.root, TRACE: join(f.root, 'trace'), MODE: f.mode, ...extra } });
 }
 const traceOf = (f) => readFileSync(join(f.root, 'trace'), 'utf8');
 for (const mode of ['success', 'active-voice']) test(`${mode}: prepare candidate before switching, drain old after switching`, () => {
@@ -148,5 +152,17 @@ test('claiming a publisher lock without the correct descriptor is rejected befor
     assert.notEqual(result.status, 0);
     assert.equal(existsSync(join(f.root, 'trace')), false);
     assert.equal(readFileSync(join(f.site, 'active-slot'), 'utf8').trim(), 'blue');
+  } finally { f.close(); }
+});
+test('public body/asset failure restores the old route before draining its process', () => {
+  const f = fixture('public-failure');
+  try {
+    const result = run(f, 'stage', release, { PUBLIC_APP_URL: 'https://stage.example.test' });
+    assert.notEqual(result.status, 0);
+    assert.match(traceOf(f), /public-check/);
+    assert.doesNotMatch(traceOf(f), /ceo-stage-blue.*(?:stop|rm)/);
+    assert.doesNotMatch(traceOf(f), /drain .*4321/);
+    assert.equal(readlinkSync(join(f.site, 'gateway/current')), 'routes/blue');
+    assert.equal(readFileSync(join(f.site, 'active-image'), 'utf8').trim(), previous);
   } finally { f.close(); }
 });

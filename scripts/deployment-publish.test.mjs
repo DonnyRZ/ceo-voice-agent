@@ -28,7 +28,6 @@ if [[ "$1" == */deploy.sh ]]; then
   echo "deploy $*" >> "$ROOT/trace"
 else echo cleanup >> "$ROOT/trace"; fi\n`);
         bin('ssh', 'echo UNEXPECTED_SSH >> "$ROOT/trace"; exit 1\n');
-        bin('curl', 'echo health >> "$ROOT/trace"\n');
         const env = { ...process.env, PATH: `${root}/bin:${process.env.PATH}`, ROOT: root,
           MODE: mode, TARGET: target, CEO_DEPLOY_ROOT: root, RUNNER_TEMP: join(root, 'runner'),
           PUBLIC_APP_URL: `https://${target}.example.com`, RELEASE_ENV: target,
@@ -43,7 +42,7 @@ else echo cleanup >> "$ROOT/trace"; fi\n`);
         assert.equal(result.status, mode === 'success' ? 0 : mode === 'busy' ? 75 : 1, result.stderr);
         const trace = existsSync(join(root, 'trace')) ? readFileSync(join(root, 'trace'), 'utf8') : '';
         if (mode === 'success') {
-          assert.match(trace, /docker pull[^]*deploy[^]*health/);
+          assert.match(trace, /docker pull[^]*deploy/);
           assert.ok(trace.includes(`${target}/releases/${sha}/deploy.sh`));
           assert.equal(readFileSync(join(root, `${target}/releases/${sha}/compose.yaml`), 'utf8'), readFileSync('infra/deploy/compose.yaml', 'utf8'));
         } else assert.doesNotMatch(trace, /deploy |health/);
