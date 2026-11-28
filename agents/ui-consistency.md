@@ -5,5 +5,6 @@
 - Ukuran boleh berubah pada breakpoint yang terdokumentasi, tetapi tidak boleh berbeda hanya karena peran, halaman, kondisi kosong, error, atau dialog.
 - Login umum dan Superadmin harus muat satu layar pada viewport pengujian normal tanpa scroll atau konten terpotong. Jangan menyembunyikan overflow untuk menutupi masalah; akses saat zoom/keyboard juga harus tetap tersedia.
 - Login Superadmin tidak menampilkan panah maupun teks kembali ke login pengguna.
+- Pasangan navigasi tahap selalu sejajar horizontal: Sebelumnya di kiri, Lanjutkan atau tindakan tahap berikutnya di kanan. Lebar dan tinggi setara, jarak 12 px, tetap sejajar pada mobile kecil. Label panjang boleh membungkus tanpa mengecilkan teks/area ketuk; status, bantuan, dan kirim ulang email berada di luar baris navigasi.
 - Sebelum membuka PR ke `develop`, selesaikan matriks seluruh rute/kondisi desktop dan mobile, periksa screenshot secara visual serta ukuran hasil render, perbaiki semua temuan, dan jalankan regresi interaksi. Cantumkan cakupan dan batas pengujian; jangan menyebut halaman diperiksa hanya karena memakai CSS/komponen yang sama.
 - Bersihkan aturan ukuran lama yang sudah digantikan; jangan menumpuk override untuk menyamarkan konflik. Pengujian visual tetap terpisah dari jalur deploy.

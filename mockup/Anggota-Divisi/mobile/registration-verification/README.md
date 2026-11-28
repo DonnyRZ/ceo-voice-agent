@@ -17,3 +17,5 @@ Dibuat dengan OpenAI ImageGen pada 28 November 2026, satu layar per gambar. Pemi
 Form awal tetap berisi nama, email, divisi, kata sandi, dan konfirmasi. Simpan dan lanjut membuka verifikasi; pengiriman email dipicu tombol tersendiri. Jenis alur disimpan saat pendaftaran: desktop selesai setelah verifikasi; HP melanjutkan pilihan perangkat sesudah verifikasi. Membuka email di perangkat lain tidak mengubah alur asal.
 
 Ukuran kode mengikuti standar CSS aplikasi, bukan ukuran piksel raster. Nomor dan tanda centang menandai tahap aktif/selesai; verifikasi email berbeda dari penyelesaian pemasangan.
+
+Revisi navigasi disetujui pemilik pada 28 November 2026: Sebelumnya di kiri dan Lanjutkan/Pasang aplikasi di kanan dalam satu baris horizontal, lebar serta tinggi setara. Gambar terkait telah diganti; versi bertumpuk tidak lagi menjadi referensi aktif. Kirim ulang email dan status tetap berada di luar pasangan navigasi.

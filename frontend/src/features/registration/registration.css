@@ -30,14 +30,17 @@
 .registration-login a, .registration-card a:not(.ui-button), .registration-text-action { color: var(--teal); font-weight: 650; }
 .registration-text-action { padding: 8px; min-height: 44px; text-decoration: underline; }
 .registration-note { padding: 12px; border-radius: 12px; background: var(--mint); font-size: var(--font-caption); }
-.registration-actions { display: flex; gap: 12px; margin-top: 24px; }
-.registration-actions .ui-button { flex: 1; }
+.registration-actions { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; width: 100%; margin-top: 24px; }
+.registration-actions .ui-button { width: 100%; min-width: 0; padding-inline: 8px; text-align: center; overflow-wrap: anywhere; }
+.registration-actions .ui-button svg { flex-shrink: 0; }
+.registration-actions .ui-button:disabled { background: #e4e8ec; color: #627080; opacity: 1; }
 .registration-feature-icon { width: var(--icon-feature); height: var(--icon-feature); color: var(--teal); margin-bottom: 20px; }
 .registration-mobile-label { display: none; }
 .registration-next { text-align: center; margin: 12px 0 20px !important; }
 .registration-wide + .registration-wide { margin-top: 16px; }
 .registration-email-card { display: grid; gap: 20px; }
 .registration-email-card > p { margin: 0; }
+.registration-email-card .registration-actions { margin-top: 0; }
 .registration-email-card .registration-next { margin: -8px 0 0 !important; }
 .registration-address, .registration-verified { display: flex; align-items: center; gap: 16px; min-width: 0; }
 .registration-address p, .registration-verified p { margin: 4px 0 0; color: var(--muted); overflow-wrap: anywhere; }
@@ -78,5 +81,5 @@
   .registration-card, .registration-intro { padding: 16px; }
   .registration-steps { gap: 4px; }
   .registration-steps li > span { width: 24px; height: 24px; }
-  .registration-actions { flex-direction: column; }
+  .registration-actions .ui-button svg { display: none; }
 }

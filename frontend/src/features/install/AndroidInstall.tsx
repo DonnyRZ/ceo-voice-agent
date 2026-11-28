@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Download, ExternalLink, Info } from 'lucide-react';
+import { ArrowLeft, Check, ExternalLink, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { leaveInstallWait, requestInstall, retryInstallCheck, useInstallation } from './controller';
 
@@ -48,14 +48,16 @@ export function AndroidInstall({ step, go, complete, busy }: {
   return <section className="registration-card install-centered">
     <img className="install-app-icon" src="/pwa/icon-512.png" alt="Ikon Ruang Kerja" /><h2>Ruang Kerja</h2>
     <p>Akses pekerjaan langsung dari layar utama, tanpa mencari tab browser.</p>
-    <button className="ui-button install-wide" disabled={!installation.nativeAvailable} onClick={() => { requestInstall(); go('android-wait'); }}>
-      <Download /> Pasang aplikasi</button>
     {!installation.nativeAvailable && <p className="registration-caption">Tombol pemasangan belum tersedia pada browser ini.
       Gunakan Chrome Android terbaru atau panduan menu browser.</p>}
     <button className="registration-text-action" onClick={() => setManual(!manual)}>Panduan pemasangan manual</button>
     {manual && <div className="registration-note"><p>Buka menu Chrome (tiga titik), pilih Tambahkan ke layar utama atau Instal aplikasi, lalu setujui konfirmasi browser.</p>
       <button className="registration-text-action" onClick={() => { retryInstallCheck(); go('android-wait'); }}>Periksa setelah memasang</button></div>}
     <p className="registration-caption">Pemasangan selalu memerlukan persetujuan Anda di browser.</p>
-    <button className="ui-button ui-button--outline install-wide" onClick={() => go('device')}><ArrowLeft /> Sebelumnya</button>
+    <div className="registration-actions">
+      <button className="ui-button ui-button--outline" onClick={() => go('device')}><ArrowLeft /> Sebelumnya</button>
+      <button className="ui-button" disabled={!installation.nativeAvailable} onClick={() => { requestInstall(); go('android-wait'); }}>
+        Pasang aplikasi</button>
+    </div>
   </section>;
 }

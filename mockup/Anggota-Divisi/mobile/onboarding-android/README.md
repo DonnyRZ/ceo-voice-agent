@@ -29,3 +29,5 @@ Pada login, pengguna yang belum punya akun mendapatkan tombol Daftar Anggota Div
 Warna, ikon, dan tipografi mengikuti bahasa desain Ruang Kerja. Ukuran implementasi nantinya mengikuti [standar UI](../../../../docs/ui-consistency.md); ukuran raster ImageGen bukan hasil pengukuran CSS. Status pengujian dan batas browser dicatat pada dokumentasi implementasi.
 
 Verifikasi email wajib diselesaikan sebelum halaman pilihan perangkat. Lihat [mockup langkah verifikasi](../registration-verification/README.md).
+
+Revisi navigasi disetujui pemilik pada 28 November 2026: Sebelumnya di kiri dan Lanjutkan/Pasang aplikasi di kanan dalam satu baris horizontal, lebar serta tinggi setara. Gambar terkait telah diganti; versi bertumpuk tidak lagi menjadi referensi aktif. Kirim ulang email dan status tetap berada di luar pasangan navigasi.

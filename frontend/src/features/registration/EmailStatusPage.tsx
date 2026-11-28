@@ -61,10 +61,12 @@ export function RegistrationEmailPage() {
               <p className="registration-caption registration-next" role="status">{registration.sends_remaining === 0 ? 'Batas pengiriman tercapai. Gunakan email terbaru atau daftar kembali setelah tautan kedaluwarsa.'
                 : seconds > 0 ? `Tersedia kembali dalam ${seconds} detik.` : 'Tautan berlaku 24 jam.'}</p>
               {send.error && <p className="auth-error" role="alert">{send.error instanceof ApiError ? send.error.message : 'Koneksi gagal. Periksa status sebelum mencoba kembali.'}</p>}
-              {mobile ? <><button className="ui-button registration-wide" disabled>Lanjutkan</button>
-                <p className="registration-caption registration-next">Tombol Lanjutkan aktif setelah email terverifikasi.</p></>
-                : <p className="registration-caption registration-next">Registrasi selesai setelah email terverifikasi.</p>}
-              <Link className="ui-button ui-button--outline registration-wide" to="/register?edit=1">Sebelumnya</Link>
+              <p className="registration-caption registration-next">{mobile
+                ? 'Tombol Lanjutkan aktif setelah email terverifikasi.' : 'Registrasi selesai setelah email terverifikasi.'}</p>
+              <div className="registration-actions">
+                <Link className="ui-button ui-button--outline" to="/register?edit=1">Sebelumnya</Link>
+                {mobile && <button className="ui-button" disabled>Lanjutkan</button>}
+              </div>
             </>}
     </section>
   </RegistrationShell>;
