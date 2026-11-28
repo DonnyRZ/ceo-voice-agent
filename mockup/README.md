@@ -4,18 +4,18 @@ Satu file gambar memuat satu mockup layar. Versi desktop dan mobile disimpan ter
 
 ## Registrasi Anggota Divisi — menunggu review
 
-Dibuat dengan OpenAI ImageGen pada 28 November 2026. Kedua gambar merupakan usulan desain untuk ditinjau pemilik, **belum persetujuan implementasi**. Perubahan ini hanya menambah gambar dan dokumentasi; tidak menambah halaman, endpoint, database, atau alur registrasi aplikasi.
+Dibuat dengan OpenAI ImageGen pada 28 November 2026. Seluruh gambar merupakan usulan desain untuk ditinjau pemilik, **belum persetujuan implementasi**. Perubahan ini hanya menambah gambar dan dokumentasi; tidak menambah halaman, endpoint, database, atau alur registrasi aplikasi.
 
 | Versi | Gambar |
 | --- | --- |
 | Desktop | [Registrasi Anggota Divisi](Anggota-Divisi/desktop/15-registrasi.png) |
-| Mobile | [Registrasi Anggota Divisi](Anggota-Divisi/mobile/15-registrasi.png) |
+| Mobile Android | [Alur login, registrasi, dan pemasangan](Anggota-Divisi/mobile/onboarding-android/README.md) |
 
-Isi rancangan: nama lengkap, email perusahaan, pilihan divisi, kata sandi, konfirmasi kata sandi, tombol Daftar, dan tautan Masuk. Pilihan divisi direncanakan mengikuti divisi yang dikelola Superadmin. Registrasi mandiri hanya untuk Anggota Divisi; CEO dan Superadmin tetap melalui undangan.
+Isi data akun: nama lengkap, email perusahaan, pilihan divisi, kata sandi, dan konfirmasi kata sandi. Desktop mempertahankan tombol Daftar. Mobile direvisi menjadi flow dengan tombol Simpan dan lanjut, pilihan Android/iPhone, serta jalur pemasangan Android. Pilihan divisi direncanakan mengikuti divisi yang dikelola Superadmin. Registrasi mandiri hanya untuk Anggota Divisi; CEO dan Superadmin tetap melalui undangan.
 
 Gaya mengikuti login terbaru: teal/mint, latar terang, ikon sederhana, dan tipografi yang tenang. Ukuran implementasi nantinya tetap mengikuti [standar konsistensi UI](../docs/ui-consistency.md), bukan mengambil ukuran piksel mentah dari gambar ImageGen.
 
-Tahap verifikasi email, konfirmasi keanggotaan divisi, dan panduan pemasangan aplikasi masih perlu diputuskan lebih lanjut. Gambar ini hanya menampilkan halaman awal registrasi, bukan keseluruhan onboarding.
+Mockup mobile formulir tunggal terdahulu digantikan oleh alur Android; riwayatnya tetap tersedia melalui Git. Desktop tidak diubah pada revisi ini. Tahap verifikasi email, konfirmasi keanggotaan divisi, dan detail panduan iPhone masih perlu diputuskan lebih lanjut. Ketentuan pemasangan browser dijelaskan pada dokumentasi alur Android.
 
 ## Login Superadmin — dokumentasi yang sudah tersedia
 
