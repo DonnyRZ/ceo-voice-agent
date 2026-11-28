@@ -15,13 +15,17 @@ on:
         description: Tambahkan inspeksi proxy/HTTPS baca-saja pada pemeriksaan VPS
         type: boolean
         default: false
+      repair_stage_gateway:
+        description: Perbaikan terencana Host gateway stage; memerlukan nol sesi suara
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
   checks:
-    if: github.event_name != 'workflow_dispatch' || !inputs.vps_readiness
+    if: github.event_name != 'workflow_dispatch' || (!inputs.vps_readiness && !inputs.repair_stage_gateway)
     concurrency:
       group: checks-${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -193,3 +197,22 @@ jobs:
       - name: Periksa pemetaan domain dan proxy tanpa mengubah layanan
         if: inputs.inspect_ingress
         run: python3 infra/deploy/inspect-ingress.py
+
+  repair-stage-gateway:
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.repair_stage_gateway &&
+      github.repository == 'DonnyRZ/ceo-voice-agent' && github.ref_name == 'develop'
+    runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
+    timeout-minutes: 3
+    environment: stage
+    concurrency:
+      group: deploy-stage
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Perbaiki gateway stage tanpa menyentuh Nginx atau PostgreSQL
+        env:
+          PUBLIC_APP_URL: ${{ vars.APP_URL }}
+        run: bash infra/deploy/repair-stage-gateway.sh
