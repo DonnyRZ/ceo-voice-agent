@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, Smartphone } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { registrationQuery } from '../registration/api';
 import { RegistrationShell } from '../registration/RegistrationShell';
 import { AndroidInstall } from './AndroidInstall';
@@ -25,7 +25,10 @@ export function OnboardingPage() {
   const waiting = ['prompting', 'waiting'].includes(installation.phase);
   const title = android && installation.phase === 'installed' ? 'Aplikasi siap dibuka' : step === 'device' ? 'Pilih perangkat Anda' : iphone ? 'Pasang di iPhone'
     : step === 'android-wait' ? waiting ? 'Menunggu pemasangan' : 'Pemasangan Android' : step === 'done' ? 'Panduan selesai' : 'Pasang di Android';
-  return <RegistrationShell step={step === 'device' ? 2 : 3} title={title}
+  if (registration && (!registration.verified || registration.origin_device !== 'mobile')) {
+    return <Navigate to="/register/check-email" replace />;
+  }
+  return <RegistrationShell step={step === 'device' ? 3 : 4} flow="mobile" title={title}
     subtitle={step === 'device' ? 'Di perangkat apa Anda akan menggunakan Ruang Kerja?'
       : android && installation.phase === 'installed' ? 'Ruang Kerja terpasang di perangkat Anda.' : step === 'android-wait' && !waiting ? 'Periksa hasil pemasangan atau kembali ke panduan.' : iphone ? 'Ikuti panduan melalui Safari.' : step === 'done' ? 'Buka Ruang Kerja melalui ikon aplikasi.' : 'Selesaikan konfirmasi di browser Anda.'}>
     {current.isPending ? <section className="registration-card" role="status">Memeriksa pendaftaran…</section>
@@ -33,8 +36,6 @@ export function OnboardingPage() {
         <button className="registration-text-action" onClick={() => void current.refetch()}>Coba lagi</button></section>
         : !registration ? <section className="registration-card"><p>Selesaikan data akun terlebih dahulu pada browser ini.</p>
           <Link className="ui-button" to="/register">Data akun</Link></section> : <>
-          {!registration.verified && <p className="registration-note">Akun belum aktif. <Link to="/register/check-email">
-            {registration.delivery === 'failed' ? 'Coba kirim ulang email verifikasi.' : 'Verifikasi email perusahaan Anda.'}</Link></p>}
           {isStandalone() ? <section className="registration-card"><h2>Aplikasi sudah terbuka</h2>
             <p>Anda menggunakan Ruang Kerja sebagai aplikasi.</p><Link className="ui-button" to="/login">Lanjutkan ke Masuk</Link></section>
             : step === 'device' ? <section className="registration-card">
@@ -46,7 +47,8 @@ export function OnboardingPage() {
                   <span>{name === 'Android' ? 'Pasang lewat browser' : 'Panduan melalui Safari'}</span>
                   </label>)}
               </div>
-              <div className="registration-actions"><Link className="ui-button ui-button--outline" to="/register"><ArrowLeft /> Sebelumnya</Link>
+              <p className="registration-note">Email Anda sudah terverifikasi.</p>
+              <div className="registration-actions"><Link className="ui-button ui-button--outline" to="/register/check-email"><ArrowLeft /> Sebelumnya</Link>
                 <button className="ui-button" disabled={!platform} onClick={() => go(platform === 'Android' ? 'android-install' : 'iphone-share')}>Lanjutkan <ArrowRight /></button></div>
             </section> : android ? <AndroidInstall step={step} go={go} />
               : iphone ? <IphoneGuide step={step} go={go} />

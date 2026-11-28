@@ -6,7 +6,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(85);
+SELECT plan(95);
 
 INSERT INTO public."user" (id, name, email) VALUES
     ('pgtap-member-it', 'Anggota IT pgTAP', 'pgtap-it@example.test'),
@@ -336,6 +336,37 @@ SELECT is((SELECT "emailVerified" FROM "user" WHERE id='pgtap-self-register'),
 SELECT ok(NOT EXISTS(SELECT FROM app_private.member_registrations
     WHERE email='pgtap-register@egiresources.com' AND (credential_hash IS NOT NULL OR token_hash IS NOT NULL)),
     'Kredensial sementara dan token dibersihkan setelah aktivasi');
+
+SET ROLE :"app_role";
+SELECT ok(public.save_member_registration('pgtap-context@egiresources.com', 'Konteks pgTAP',
+    '10000000-0000-4000-8000-000000000001', 'test-only-hash', repeat('d',64), repeat('e',64)) IS NOT NULL,
+    'Pendaftaran baru dapat menyimpan konteks sebelum email dikirim');
+SELECT public.capture_registration_origin(repeat('e',64), 'mobile');
+SELECT is((SELECT origin_device FROM public.registration_context(repeat('e',64))), 'mobile',
+    'Perangkat awal tersimpan pada klaim browser asal');
+SELECT public.capture_registration_origin(repeat('e',64), 'desktop');
+SELECT is((SELECT origin_device FROM public.registration_context(repeat('e',64))), 'mobile',
+    'Perangkat awal tidak berubah saat form diedit');
+SELECT is((SELECT count(*) FROM public.registration_context(repeat('f',64))), 0::bigint,
+    'Browser lain tidak dapat membaca konteks pendaftaran');
+SELECT ok(NOT has_function_privilege('public', 'public.confirm_member_registration(text,text,text,text)', 'EXECUTE'),
+    'Konfirmasi dengan konteks bukan hak PUBLIC');
+SELECT is((SELECT same_browser FROM public.confirm_member_registration(repeat('d',64),
+    'pgtap-context-user', 'pgtap-context-account', repeat('e',64))), true,
+    'Konfirmasi hanya mengembalikan status browser asal untuk klaim yang benar');
+SELECT is((SELECT origin_device FROM public.registration_context(repeat('e',64))), 'mobile',
+    'Konteks perangkat tetap tersedia sesudah verifikasi');
+SELECT ok(NOT has_function_privilege('public', 'public.retire_registration_draft(text)', 'EXECUTE'),
+    'Penggantian draft bukan hak PUBLIC');
+SELECT public.retire_registration_draft(repeat('e',64));
+SELECT is((SELECT count(*) FROM public.registration_status(repeat('e',64))), 1::bigint,
+    'Penggantian draft tidak membatalkan akun yang sudah aktif');
+SELECT public.save_member_registration('pgtap-edit@egiresources.com', 'Draft pgTAP',
+    '10000000-0000-4000-8000-000000000001', 'test-only-hash', repeat('7',64), repeat('8',64));
+SELECT public.retire_registration_draft(repeat('8',64));
+SELECT is((SELECT count(*) FROM public.registration_status(repeat('8',64))), 0::bigint,
+    'Draft lama tidak dapat dilanjutkan setelah digantikan');
+RESET ROLE;
 
 SELECT * FROM finish(true);
 ROLLBACK;

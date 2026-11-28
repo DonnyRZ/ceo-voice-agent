@@ -26,7 +26,7 @@ export async function capture(page: Page, info: TestInfo, name: string) {
       const category = el.closest('.ceo-voice-orb') ? 'voice' : el.closest('.side-navigation, .mobile-navigation, .ceo-side-nav, .ceo-bottom-nav') ? 'nav'
         : el.closest('.status-badge, .ts-status, .mgmt-badge, .ts-status-option, .registration-steps') ? 'status'
           : el.matches('.dashboard-stat-icon') || el.closest('.ceo-status-total, .mgmt-stat-icon, .admin-stat') ? 'stat'
-            : el.closest('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .auth-intro-icon, .registration-intro-icon, .superadmin-shield, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .superadmin-login-eyebrow')
+            : el.closest('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .auth-intro-icon, .registration-intro-icon, .registration-status-icon, .superadmin-shield, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .superadmin-login-eyebrow')
               || el.matches('.ceo-setting-heading > svg, .ceo-security-form header > svg, .registration-feature-icon, .install-confirmed') || el.closest('.install-instructions, .install-platform') ? 'feature' : 'inline';
       return { text: el.textContent?.trim().slice(0, 90), class: el.getAttribute('class'), width: +box.width.toFixed(2), height: +box.height.toFixed(2), font: parseFloat(style.fontSize), cssWidth: parseFloat(style.width), cssHeight: parseFloat(style.height), category, hero: !!el.closest('.superadmin-login-intro') };
     });
@@ -35,7 +35,7 @@ export async function capture(page: Page, info: TestInfo, name: string) {
       browserViewport: { innerWidth, innerHeight, clientWidth: document.documentElement.clientWidth },
       document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
       logos: measure('.brand'), appIcons: measure('.install-app-icon'), titles: measure('h1'), sections: measure('h2'),
-      tiles: measure('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .auth-intro-icon, .registration-intro-icon, .superadmin-shield'),
+      tiles: measure('.mgmt-tile, .admin-tile, .ts-icon-tile, .project-icon, .ceo-icon-tile, .dashboard-team-icon, .dashboard-project-icon, .dashboard-open-icon, .auth-intro-icon, .registration-intro-icon, .registration-status-icon, .superadmin-shield'),
       buttons: measure('.ui-button, .ts-button, .mgmt-button, .project-button'),
       inputs: measure('input:not([type=month]):not([type=radio]):not([type=checkbox]), select'),
       badges: measure('.status-badge, .ts-status, .mgmt-badge'),

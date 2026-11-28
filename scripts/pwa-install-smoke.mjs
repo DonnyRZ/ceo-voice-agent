@@ -51,6 +51,7 @@ try {
   await app.close();
   await page.route('**/api/registration/status', (route) => route.fulfill({ json: { registration: {
     name: 'Native installation fixture', email: 'fixture@egiresources.com', division_id: 'fixture', verified: true, delivery: 'sent',
+    origin_device: 'mobile', retry_after_seconds: 0, sends_remaining: 4,
   } } }));
   await page.goto(origin + '/onboarding?step=android-install');
   await page.getByRole('link', { name: 'Buka Ruang Kerja', exact: true }).waitFor();
