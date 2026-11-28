@@ -91,3 +91,8 @@ Cakupan ini memverifikasi ukuran dan interaksi aplikasi pada viewport yang diseb
 - Bukti akhir: `test-results/registration-resume-complete/`, 851 capture (419 desktop, 432 mobile), 754 gambar unik. Seluruh gambar dan bagian halaman panjang telah dilihat; `visual-review.json` mencatat hash, viewport, hasil 530 kasus, dan nol gambar yang belum ditinjau. Bukti yang identik hanya diwarisi bila SHA-256 cocok persis.
 - Halaman dan ukuran komponen yang sudah disetujui dipertahankan. Teks status mengikuti keputusan terbaru: email mobile yang terverifikasi belum berarti akun aktif. Membuka panduan lagi sesudah selesai tidak menurunkan status registrasi; URL tab lama tidak boleh mengganti progres server.
 - Service worker diblokir hanya pada audit dengan respons API yang dikendalikan agar skenario gagal benar-benar mencapai interceptor. Pemeriksaan cache, navigasi offline, serta pemasangan native tetap memakai worker asli pada rangkaian terpisah. Tidak ada perubahan pipeline deployment.
+
+
+## Pemulihan akun legacy melalui email
+
+Perubahan ini memakai frontend yang sama: formulir, verifikasi email, kondisi gagal, dan panduan pemasangan tetap sesuai rancangan yang sudah tersedia. Delapan belas capture dari empat skenario browser pada build produksi (desktop/mobile, asal tidak tercatat atau mobile diketahui) diperiksa beserta ukuran komponennya. Seluruh gambar baru dan potongan halaman panjang ditinjau. Pemulihan membuka tahap server yang tersimpan; penolakan browser berbeda memakai slot pesan gagal verifikasi yang sudah ada, tanpa mengonsumsi token. Bukti privat lokal berada di `test-results/recovery-production/`; audit dan regresi lintas peran tetap terpisah dari deployment.

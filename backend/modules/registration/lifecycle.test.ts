@@ -83,9 +83,10 @@ describe('resumable registration and final activation', () => {
     await verify(original);
     const user=(await f.db.query('SELECT id FROM "user" WHERE email=$1',[email])).rows[0];
     await f.db.query("UPDATE app_private.member_registrations SET origin_device=NULL,completed_at=NULL,onboarding_step='device',legacy_user_id=$2 WHERE email=$1",[email,user.id]);
+    await f.db.query('SELECT app_private.reconcile_incomplete_registrations()');
     const wrong=await save(email,undefined,password+'wrong');
-    expect(wrong.statusCode).toBe(409);
-    expect(wrong.json().message).toContain('belum selesai');
+    expect(wrong.statusCode).toBe(201);
+    expect(wrong.json().registration).toMatchObject({verified:false,completed:false,step:'verify'});
     const resumed=await save(email);
     expect(resumed.statusCode).toBe(201);
     expect(resumed.json().registration).toMatchObject({completed:false,origin_device:'mobile',step:'device'});
@@ -117,13 +118,17 @@ describe('resumable registration and final activation', () => {
       await verify(original);
       const user=(await f.db.query('SELECT id FROM "user" WHERE email=$1',[email])).rows[0];
       await f.db.query("UPDATE app_private.member_registrations SET origin_device=NULL,completed_at=NULL,onboarding_step='device',legacy_user_id=$2 WHERE email=$1",[email,user.id]);
+      await f.db.query('SELECT app_private.reconcile_incomplete_registrations()');
       if(blocked) {
         const archived=(await f.db.query("INSERT INTO divisions(name,status) VALUES ('Bekas divisi pendaftaran','archived') RETURNING id")).rows[0];
         await f.db.query('UPDATE app_private.member_registrations SET division_id=$2 WHERE email=$1',[email,archived.id]);
       }
       const response=await save(email,undefined,password,'desktop');
       expect(response.statusCode).toBe(blocked?409:201);
-      if(blocked) expect(await status(original)).toMatchObject({completed:false,origin_device:null});
+      if(blocked) {
+        expect(await status(original)).toBeNull();
+        expect((await f.db.query('SELECT origin_device,completed_at FROM app_private.member_registrations WHERE legacy_user_id=$1',[user.id])).rows[0]).toMatchObject({origin_device:null,completed_at:null});
+      }
       else expect(response.json().registration).toMatchObject({completed:true,origin_device:'desktop',step:'done'});
       expect(await accountCount(email)).toBe(1);
     }

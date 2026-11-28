@@ -191,8 +191,9 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' && inputs.registration_audit &&
       github.repository == 'DonnyRZ/ceo-voice-agent' && github.actor == github.repository_owner &&
-      (github.ref_name == 'develop' || github.ref_name == 'fix/registration-root-cause-audit')
+      github.ref_name == 'develop'
     runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
+    environment: stage
     timeout-minutes: 3
     permissions:
       contents: read
@@ -221,7 +222,7 @@ jobs:
 
   vps-readiness:
     if: >-
-      github.event_name == 'workflow_dispatch' && inputs.vps_readiness &&
+      github.event_name == 'workflow_dispatch' && inputs.vps_readiness && !inputs.registration_audit &&
       github.repository == 'DonnyRZ/ceo-voice-agent' &&
       (github.ref_name == 'develop' || github.ref_name == 'main')
     runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
@@ -244,7 +245,7 @@ jobs:
 
   repair-stage-gateway:
     if: >-
-      github.event_name == 'workflow_dispatch' && inputs.repair_stage_gateway &&
+      github.event_name == 'workflow_dispatch' && inputs.repair_stage_gateway && !inputs.registration_audit &&
       github.repository == 'DonnyRZ/ceo-voice-agent' && github.ref_name == 'develop'
     runs-on: [self-hosted, Linux, X64, ceo-agent-deploy]
     timeout-minutes: 3

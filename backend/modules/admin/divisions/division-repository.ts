@@ -16,7 +16,7 @@ export type DivisionMember = { id: string; name: string; email: string };
 const divisionSelect = `
   SELECT d.id, d.name, d.code, d.description, d.status, d.version, d.updated_at AS "updatedAt",
     (SELECT count(*)::integer FROM account_access a
-     WHERE a.division_id = d.id AND a.role = 'member' AND a.state = 'active') AS "memberCount"
+     WHERE a.division_id = d.id AND a.role = 'member' AND a.state = 'active' AND a.registration_complete) AS "memberCount"
   FROM divisions d
 `;
 
@@ -40,7 +40,7 @@ export async function listDivisionMembers(db: PoolClient, id: string) {
   const { rows } = await db.query<DivisionMember>(`
     SELECT u.id, u.name, u.email FROM account_access a
     JOIN "user" u ON u.id = a.user_id
-    WHERE a.division_id = $1 AND a.role = 'member' AND a.state = 'active'
+    WHERE a.division_id = $1 AND a.role = 'member' AND a.state = 'active' AND a.registration_complete
     ORDER BY lower(u.name), u.id
   `, [id]);
   return rows;

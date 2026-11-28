@@ -7,10 +7,11 @@ import { ApiError } from '../../http/api-error.js';
 
 export async function resumeRegistration(client: PoolClient, claim: string, email: string, password: string, origin: string) {
   const own = await registrationProgress(client, digest(claim));
-  if (own?.email === email) return own.verified ? { claim, registration: own } : null;
-  const { rows } = await client.query<{ id: string; password_hash: string }>(
+  if (own?.email === email && (!own.verified || own.completed)) return own.verified ? { claim, registration: own } : null;
+  const { rows } = await client.query<{ id: string; password_hash: string; legacy: boolean }>(
     'SELECT * FROM public.registration_resume_candidates($1)', [email],
   );
+  if (own?.email === email && own.verified && !rows.some((candidate) => candidate.legacy)) return { claim, registration: own };
   for (const candidate of rows) {
     if (!await verifyPassword({ hash: candidate.password_hash, password })) continue;
     const resumedClaim = newSecret();

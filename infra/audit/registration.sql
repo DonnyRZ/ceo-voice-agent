@@ -5,21 +5,23 @@ SELECT json_build_object(
   'users',(SELECT coalesce(json_agg(row_to_json(u)),'[]') FROM (
     SELECT id,"emailVerified","createdAt","updatedAt" FROM public."user" WHERE lower(email)=:'subject'
   ) u),
+  'session_count',(SELECT count(*) FROM public.session s JOIN public."user" u ON u.id=s."userId" WHERE lower(u.email)=:'subject'),
   'accounts',(SELECT coalesce(json_agg(row_to_json(a)),'[]') FROM (
     SELECT a.id,a."userId",a."providerId",a.password,a."createdAt",a."updatedAt"
     FROM public.account a JOIN public."user" u ON u.id=a."userId" WHERE lower(u.email)=:'subject'
   ) a),
   'access',(SELECT coalesce(json_agg(row_to_json(a)),'[]') FROM (
-    SELECT a.user_id,a.role,a.state,a.division_id,d.status AS division_status
+    SELECT a.user_id,a.role,a.state,a.division_id,to_jsonb(a)->'registration_complete' AS registration_complete,d.status AS division_status
     FROM public.account_access a JOIN public."user" u ON u.id=a.user_id
     LEFT JOIN public.divisions d ON d.id=a.division_id WHERE lower(u.email)=:'subject'
   ) a),
   'registrations',(SELECT coalesce(json_agg(row_to_json(r)),'[]') FROM (
     SELECT id,division_id,credential_hash,verified_at,completed_at,legacy_user_id,onboarding_step,
-      expires_at,sent_at,origin_device,delivery
+      expires_at,sent_at,origin_device,delivery,claim_hash LIKE 'retired:%' AS claim_retired
     FROM app_private.member_registrations WHERE email=:'subject'
   ) r),
   'candidates',(SELECT coalesce(json_agg(row_to_json(c)),'[]') FROM public.registration_resume_candidates(:'subject') c),
+  'recovery_available',app_private.registration_recovery_target(:'subject') IS NOT NULL,
   'functions',(SELECT json_agg(json_build_object('name',p.proname,'owner',pg_get_userbyid(p.proowner),
     'security_definer',p.prosecdef,'config',p.proconfig)) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
     WHERE n.nspname='public' AND p.proname IN ('registration_resume_candidates','resume_member_registration'))
