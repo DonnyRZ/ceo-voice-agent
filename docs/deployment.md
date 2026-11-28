@@ -12,8 +12,20 @@ Inspeksi server menemukan Nginx native dan Certbot. Untuk pemasangan domain oleh
 ## Alur branch dan auto-deploy
 
 1. Buat topic branch: `feat/nama-fitur`, `fix/nama-perbaikan`, `refactor/nama-perubahan`, `perf/...`, `test/...`, `docs/...`, `chore/...`, `build/...`, `ci/...`, atau `security/...`.
-2. Buat PR topic branch → `develop`. Sesudah merge, CI membangun dan menguji image stage lalu auto-deploy ke stage sesudah CI lulus.
-3. Promosi produksi melalui PR `develop` → `main` dari repository yang sama. Gunakan merge commit, bukan squash/rebase untuk promosi ini. Sesudah merge dan CI lulus, prod auto-deploy.
+2. Buat PR topic branch → `develop`. Setelah siap ditinjau, aktifkan auto-merge native GitHub per PR dengan metode merge commit. GitHub menunggu required checks dan seluruh persyaratan branch terpenuhi. Sesudah merge otomatis, CI membangun dan menguji image stage lalu auto-deploy ke stage sesudah CI lulus.
+3. Hanya atas permintaan eksplisit pemilik, buat PR promosi produksi `develop` → `main` dari repository yang sama dan aktifkan auto-merge pada PR production tersebut. Jangan otomatis membuat PR ke `main`. Gunakan merge commit, bukan squash/rebase untuk promosi ini. Sesudah merge dan CI lulus, prod auto-deploy.
+
+### Auto-merge native GitHub
+
+Pemilik/admin mengaktifkan **Settings → General → Pull Requests → Allow auto-merge** dan mempertahankan **Allow merge commits**. Pengaturan repository ini tidak otomatis mengaktifkan auto-merge pada setiap PR; engineer atau integrasi GitHub yang sesuai tetap harus mengaktifkannya per PR yang sudah siap ditinjau:
+
+```sh
+gh pr merge NOMOR_PR --repo DonnyRZ/ceo-voice-agent --auto --merge
+```
+
+Aktifkan ketika checks masih berjalan agar GitHub menunggu `checks`, `branch-policy`, dan seluruh persyaratan proteksi branch. Jika checks gagal, perbaiki melalui topic branch yang sama dan biarkan pemeriksaan berjalan lagi. Jangan memakai `--admin`, melemahkan aturan review, atau melewati larangan direct push, force push, dan penghapusan branch. Pengujian browser tetap terpisah dan bukan required check tambahan untuk deployment.
+
+Tidak diperlukan workflow merge, PAT, secret, cron, atau layanan baru. Hindari workflow yang melakukan merge memakai `GITHUB_TOKEN`, karena event hasil tindakannya dapat tidak memicu workflow deployment berikutnya. Auto-merge native menjalankan merge setelah persyaratan terpenuhi; workflow `push` yang sudah ada kemudian menjalankan jalur stage atau prod sesuai branch tujuan.
 
 Dilarang push langsung ke `develop`/`main` atau PR topic branch langsung ke `main`. Workflow Branch policy memeriksa metadata PR tanpa menjalankan kode PR dengan hak istimewa. Job package memeriksa lewat GitHub API bahwa SHA release berasal dari PR yang sudah di-merge dengan asal/tujuan yang sah; commit direct push ditolak.
 
